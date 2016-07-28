@@ -12,7 +12,7 @@ namespace Routing
 	/// 正の数なら成功：距離
 	/// 負の数なら失敗：失敗までのステップ数(正負反転)
 	/// </returns>
-	int SR(Experiment *exp, SGraph *g);
+	int SR(SGraph *g);
 
 	/// <summary>Normal Routing(全部記憶)
 	/// 前方隣接頂点と横方向を選ぶルーティング
@@ -23,7 +23,7 @@ namespace Routing
 	/// 正の数なら成功：距離
 	/// 負の数なら失敗：失敗までのステップ数(正負反転)
 	/// </returns>
-	int NR1(Experiment *exp, SGraph *g);
+	int NR1(SGraph *g);
 
 	/// <summary>Normal Routing(1つ前だけ記憶)
 	/// 前方隣接頂点と横方向を選ぶルーティング
@@ -34,7 +34,7 @@ namespace Routing
 	/// 正の数なら成功：距離
 	/// 負の数なら失敗：失敗までのステップ数(正負反転)
 	/// </returns>
-	int NR2(Experiment *exp, SGraph *g);
+	int NR2(SGraph *g);
 
 	/// <summary>Extra Routing
 	/// NR + パラメタが高いノードを優先
@@ -46,5 +46,5 @@ namespace Routing
 	/// 正の数なら成功：距離
 	/// 負の数なら失敗：失敗までのステップ数(正負反転)
 	/// </returns>
-	int ER(Experiment *exp, int* param, SGraph *g);
+	int ER(int* param, SGraph *g);
 }

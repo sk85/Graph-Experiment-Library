@@ -46,8 +46,8 @@ void check_GetNodeRandom(SGraph *g, SNode *n)
 	}
 }
 
-// void SGraph::GetConnectedNode(SNode *node1, SNode *node2)のテスト関数
-void check_GetConnectedNode(SGraph *g, SNode *n1, SNode *n2)
+// void SGraph::GetConnectedNodeRandom(SNode *node1, SNode *node2)のテスト関数
+void check_GetConnectedNodeRandom(SGraph *g, SNode *n1, SNode *n2)
 {
 	for (int i = 0; i < 100; i += 10)
 	{
@@ -57,7 +57,7 @@ void check_GetConnectedNode(SGraph *g, SNode *n1, SNode *n2)
 		do
 		{
 			g->GetNodeRandom(n1);
-			b = g->GetConnectedNode(n1, n2);
+			b = g->GetConnectedNodeRandom(n1, n2);
 
 		}while (!b);
 
@@ -75,9 +75,10 @@ int main(void)
 	SpinedCube sq;
 	sq.SetDimension(10);
 	CubeNode cn1, cn2;
-	for (size_t i = 0; i < 10; i++)
+	for (size_t i = 1; i <= 1000; i++)
 	{
-		check_GetConnectedNode(&sq, &cn1, &cn2);
+		printf_s("%5d / 1000\r", i);
+		sq.GetConnectedNodesRandom(&cn1, &cn2);
 	}
 	
 	//Sample::RoutingExperiment(&sq, 10000, "k.csv");

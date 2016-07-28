@@ -1,5 +1,46 @@
-#include "..\Header\Routing.h"
+#include <Routing.h>
 
+
+namespace Routing
+{
+	/*
+	int SR(SGraph *g)
+	{
+		uint32_t current = exp->node1;
+		int step = 0;
+		int distance = g->CalcDistance(exp->node1, exp->node2);
+
+		while (distance > 0)
+		{
+			uint32_t next = current;
+			for (int index = 0; index < g->GetDimension(); index++)
+			{
+				uint32_t neighbor = g->GetNeighbor(current, index);
+				if (!(exp->Faults[neighbor]))
+				{
+					int neighborDistance = g->CalcDistance(neighbor, exp->node2);
+					if (neighborDistance < distance)
+					{
+						next = neighbor;
+						distance = neighborDistance;
+						break;
+					}
+				}
+			}
+
+			step++;
+
+			// "”ñŒÌá‚©‚Â‘O•û"‚ªŒ©‚Â‚©‚ç‚È‚©‚Á‚½ê‡Ž¸”s
+			if (next == current)
+			{
+				return -step;
+			}
+
+			current = next;
+		}
+		return step;
+	}*/
+}
 /*
 namespace Routing
 {

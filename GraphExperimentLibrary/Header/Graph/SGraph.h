@@ -117,43 +117,15 @@ public:
 	/// <returns>
 	///		連結なノードが存在しないならば失敗
 	/// </returns>
-	bool GetConnectedNode(SNode* node1, SNode* node2);
+	bool GetConnectedNodeRandom(SNode* node1, SNode* node2);
+
+	/// <summary>連結で非故障な2頂点をランダムに選ぶ</summary>
+	/// <param name="node1">ノード</param>
+	/// <param name="node2">ノード</param>
+	/// <returns>
+	///		存在しなければ失敗
+	///		厳密には判定していないけど、100回やってダメなら失敗。
+	///		失敗したらGenerateFaultsし直すか、条件を見直すべき。
+	/// </returns>
+	bool GetConnectedNodesRandom(SNode* node1, SNode* node2);
 };
-
-
-
-
-
-/// <summary>実験に共通して使われる要素一式をまとめるクラス</summary>
-class Experiment
-{
-public:
-	/// <summary>故障頂点集合</summary>
-	bool* Faults;
-
-	/// <summary>非故障かつ連結な2頂点</summary>
-	SNode *node1, *node2;
-
-	Experiment(SGraph *g, int faultRatio)
-	{
-		// 故障を作る
-		g->GenerateFaults(faultRatio);
-
-		// ランダムに連結な2頂点を選ぶ
-		this->node2 = nullptr;
-		while (this->node2 != nullptr)
-		{
-			/*
-			this->node1 = g->GetNodeRandom(faultRatio);
-			this->node2 = g->GetConnectedNode(Faults, nullptr);*/
-		}
-	}
-
-	~Experiment()
-	{
-		if (Faults != nullptr){
-			delete[] Faults;
-		}
-	}
-};
-

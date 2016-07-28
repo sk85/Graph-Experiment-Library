@@ -85,6 +85,7 @@ int* SGraph::CalcAllDistanceBFS(SNode* node)
 			SNode* neighbor = GetNeighbor(current, i);
 			if (this->Faults[neighbor->GetIndex()])
 			{
+				delete neighbor;
 				continue;
 			}
 			else if (distance[neighbor->GetIndex()] > distance[current->GetIndex()])
@@ -149,7 +150,7 @@ void SGraph::GetNodeRandom(SNode* node)
 	node->SetAddr(index - 1);
 }
 // ok
-bool SGraph::GetConnectedNode(SNode *node1, SNode *node2)
+bool SGraph::GetConnectedNodeRandom(SNode *node1, SNode *node2)
 {
 	int* length = CalcAllDistanceBFS(node1);
 
@@ -186,5 +187,16 @@ bool SGraph::GetConnectedNode(SNode *node1, SNode *node2)
 
 	delete[] length;
 
+	return true;
+}
+
+bool SGraph::GetConnectedNodesRandom(SNode *node1, SNode *node2)
+{
+	int count = 0;
+	do
+	{
+		if (count++ > 100) return false;
+		this->GetNodeRandom(node1);
+	} while (!this->GetConnectedNodeRandom(node1, node2));
 	return true;
 }
