@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "..\Common.h"
+#include "..\..\Common.h"
 #include "Node.h"
 
 class Expansion {

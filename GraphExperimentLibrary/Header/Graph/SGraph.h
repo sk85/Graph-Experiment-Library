@@ -4,9 +4,6 @@
 #include <queue>
 #include <random>
 
-#include "Common.h"
-
-
 class SGraph {
 protected:
 	/// <summary>ŸŒ³”</summary>
@@ -41,7 +38,7 @@ public:
 		return	—×Ú’¸“_
 			•K‚¸’è‹`‚·‚é‚±‚Æ
 	*/
-	virtual ulong GetNeighbor(ulong node, int index) = 0;
+	virtual uint32_t GetNeighbor(uint32_t node, int index) = 0;
 
 
 

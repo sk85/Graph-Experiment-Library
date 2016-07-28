@@ -1,30 +1,4 @@
-// Super Class for cubic graphs
-/*
-	キューブ系グラフ用の基本クラス
-		・継承して使う
-			・
-		・以下のメソッドが用意
-			・故障頂点集合をランダム生成
-				・任意の故障度でおｋ
-			・2頂点間の距離を幅優先で計算
-				・故障頂点集合を与えれば故障を考慮して計算
-				・非連結なノードの距離は-1で返されるので、2頂点が連結か否かも簡単にチェック可能
-		・今後の予定
-			・テスト環境のモジュール化
-				
-
-	使い方
-		・すべての純粋仮想関数をオーバーライドする
-			・GetNeighborとCalcDiameterだけ
-			・Diameterは他で使ってないので消しちゃってもいいかも
-		・その他の仮想関数もできればオーバーライドする
-			・今のとこCalcDistanceだけ
-			・内部的に幅優先探索のメソッドを呼んでるので、効率的な手法が提案されているならそれを実装してあげたほうがいい
-		・SetDimensionで次元を与えてから他のメソッドを使う
-			・SetDimensionしなおして他の次元でもずっと使える
-*/
-
-#include "..\Header\SGraph.h"
+#include <Graph\SGraph.h>
 
 void SGraph::SetDimension(int _dim) {
 	this->Dimension = _dim;
@@ -42,14 +16,14 @@ void SGraph::SetRandSeed(int seed)
 
 int SGraph::CalcDistance(uint32_t node1, uint32_t node2) {
 	int* distanceTable = CalcAllDistanceBFS(node1);
-	ulong distance = distanceTable[node2];
+	uint32_t distance = distanceTable[node2];
 	delete[] distanceTable;
 	return distance;
 }
 
 int SGraph::CalcDistance(const bool *faults, uint32_t node1, uint32_t node2) {
 	int* distanceTable = CalcAllDistanceBFS(faults, node1);
-	ulong distance = distanceTable[node2];
+	uint32_t distance = distanceTable[node2];
 	delete[] distanceTable;
 	return distance;
 }
@@ -192,12 +166,3 @@ uint32_t SGraph::GetConnectedNode(bool *faults, uint32_t node)
 	}
 	return index - 1;
 }
-
-/*
-Experiment* SGraph::CreateExperiment2(int faultRatio)
-{
-	Experiment* exp = new Experiment(this, faultRatio);
-	return exp;
-}
-
-*/

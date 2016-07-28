@@ -21,20 +21,18 @@
   <ItemGroup>
     <ClCompile Include="Source\Common.cpp" />
     <ClCompile Include="Source\Main.cpp" />
-    <ClCompile Include="Source\Sample.cpp" />
-    <ClCompile Include="Source\SGraph.cpp" />
-    <ClCompile Include="Source\SpinedCube\Node.cpp" />
-    <ClCompile Include="Source\SpinedCube\SpinedCube.cpp" />
-    <ClCompile Include="Source\SpinedCube\SPR.cpp" />
+    <ClCompile Include="Source\Graph\SGraph.cpp" />
+    <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\Node.cpp" />
+    <ClCompile Include="Source\Graph\SpinedCube.cpp" />
+    <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\SPR.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Common.h" />
-    <ClInclude Include="Header\Sample.h" />
-    <ClInclude Include="Header\SGraph.h" />
-    <ClInclude Include="Header\SpinedCube\Expansion.h" />
-    <ClInclude Include="Header\SpinedCube\Node.h" />
-    <ClInclude Include="Header\SpinedCube\SpinedCube.h" />
-    <ClInclude Include="Header\SpinedCube\SPR.h" />
+    <ClInclude Include="Header\Graph\SGraph.h" />
+    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\Expansion.h" />
+    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\Node.h" />
+    <ClInclude Include="Header\Graph\SpinedCube.h" />
+    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\SPR.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C0DF6ECD-6112-40FC-87B9-C0B341265922}</ProjectGuid>
@@ -87,6 +85,15 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(MSBuildProjectDirectory)\Header;$(MSBuildProjectDirectory)\Header;</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(MSBuildProjectDirectory)\Header;</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(MSBuildProjectDirectory)\Header;</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(MSBuildProjectDirectory)\Header;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

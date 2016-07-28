@@ -1,7 +1,6 @@
 #include <iostream>
 
-#include "..\..\Header\Common.h"
-#include "..\..\Header\SpinedCube\SPR.h"
+#include <Graph\SpinedCube_shortestpathrouting\SPR.h>
 
 
 using namespace std;

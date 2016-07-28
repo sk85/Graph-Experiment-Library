@@ -2,8 +2,7 @@
 #include <fstream>
 
 #include "..\Header\Common.h"
-#include "..\Header\SpinedCube\SpinedCube.h"
-#include "..\Header\Sample.h"
+#include <Graph\SpinedCube.h>
 
 #include <chrono>
 
