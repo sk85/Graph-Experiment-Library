@@ -12,7 +12,7 @@ namespace Routing
 	/// 正の数なら成功：距離
 	/// 負の数なら失敗：失敗までのステップ数(正負反転)
 	/// </returns>
-	int SR(SGraph *g);
+	int SR(SGraph *g, SNode *node1, SNode *node2);
 
 	/// <summary>Normal Routing(全部記憶)
 	/// 前方隣接頂点と横方向を選ぶルーティング

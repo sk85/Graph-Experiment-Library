@@ -76,15 +76,18 @@ int* SGraph::CalcAllDistanceBFS(SNode* node)
 	// 探索本体
 	que.push(node);	// 始点をキューに入れる
 	distance[node->GetIndex()] = 0;
+	int count1 = 0, count2 = 0;
 	while (!que.empty())
 	{
 		SNode* current = que.front();	// キューから1つ取り出してcurrentとする
 		que.pop();
 		for (int i = 0; i < this->GetDegree(current); i++)
 		{
+			count1++;
 			SNode* neighbor = GetNeighbor(current, i);
 			if (this->Faults[neighbor->GetIndex()])
 			{
+				count2++;
 				delete neighbor;
 				continue;
 			}
@@ -93,6 +96,16 @@ int* SGraph::CalcAllDistanceBFS(SNode* node)
 				distance[neighbor->GetIndex()] = distance[current->GetIndex()] + 1;
 				que.push(neighbor);
 			}
+			else
+			{
+				count2++;
+				delete neighbor;
+			}
+		}
+		if (current != node)
+		{
+			count2++;
+			delete current;
 		}
 	}
 

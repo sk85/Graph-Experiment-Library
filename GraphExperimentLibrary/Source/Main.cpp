@@ -74,11 +74,14 @@ int main(void)
 {
 	SpinedCube sq;
 	sq.SetDimension(10);
+	int count = 1000;
 	CubeNode cn1, cn2;
-	for (size_t i = 1; i <= 1000; i++)
+	for (size_t i = 1; i <= count; i++)
 	{
-		printf_s("%5d / 1000\r", i);
-		sq.GetConnectedNodesRandom(&cn1, &cn2);
+		cn2.SetAddr(i);
+		printf_s("%5d / %d\r", i, count);
+		auto *n = sq.CalcAllDistanceBFS(&cn2);
+		delete n;
 	}
 	
 	//Sample::RoutingExperiment(&sq, 10000, "k.csv");

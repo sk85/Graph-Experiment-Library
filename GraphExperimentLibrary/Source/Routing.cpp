@@ -3,22 +3,22 @@
 
 namespace Routing
 {
-	/*
-	int SR(SGraph *g)
+	int SR(SGraph *g, SNode *node1, SNode *node2)
 	{
-		uint32_t current = exp->node1;
 		int step = 0;
-		int distance = g->CalcDistance(exp->node1, exp->node2);
+		int distance = g->CalcDistance(node1, node2);
 
-		while (distance > 0)
+		SNode *current = node1, *next = node1;
+		uint32_t goalIndex = node2->GetIndex();
+		while (next->GetIndex() != goalIndex)
 		{
-			uint32_t next = current;
-			for (int index = 0; index < g->GetDimension(); index++)
+			int degree = g->GetDegree(current);
+			for (int index = 0; index < degree; index++)
 			{
-				uint32_t neighbor = g->GetNeighbor(current, index);
-				if (!(exp->Faults[neighbor]))
+				SNode *neighbor = g->GetNeighbor(current, index);
+				if (!(g->IsFault(neighbor)))
 				{
-					int neighborDistance = g->CalcDistance(neighbor, exp->node2);
+					int neighborDistance = g->CalcDistance(neighbor, node2);
 					if (neighborDistance < distance)
 					{
 						next = neighbor;
@@ -39,7 +39,7 @@ namespace Routing
 			current = next;
 		}
 		return step;
-	}*/
+	}
 }
 /*
 namespace Routing

@@ -7,6 +7,7 @@
 class SNode
 {
 public:
+	virtual ~SNode() {};
 
 	/// <summary>
 	/// ƒm[ƒh‚Ì’Ê‚µ”Ô†‚ğæ“¾

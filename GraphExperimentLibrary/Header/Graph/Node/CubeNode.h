@@ -15,6 +15,7 @@ public:
 	CubeNode() {};
 	CubeNode(const CubeNode& obj) {};
 	CubeNode(uint32_t addr) { SetAddr(addr); };
+	virtual ~CubeNode() {};
 
 	// SNode‚©‚çŒp³
 	virtual uint32_t GetIndex() override;
