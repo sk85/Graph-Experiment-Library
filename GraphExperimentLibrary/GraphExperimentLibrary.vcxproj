@@ -68,7 +68,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(MSBuildProjectDirectory)\Header;</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -118,6 +120,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Header\Graph\Node\CubeNode.h" />
+    <ClInclude Include="Header\Graph\Node\SNode.h" />
+    <ClInclude Include="Header\Routing.h" />
+    <ClInclude Include="Header\Sample.h" />
+    <ClInclude Include="Header\Graph\SGraph.h" />
+    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\Expansion.h" />
+    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\Node.h" />
+    <ClInclude Include="Header\Graph\SpinedCube.h" />
+    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\SPR.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Main.cpp" />
+    <ClCompile Include="Source\Graph\Node\CubeNode.cpp" />
+    <ClCompile Include="Source\Routing.cpp" />
+    <ClCompile Include="Source\Sample.cpp" />
+    <ClCompile Include="Source\Graph\SGraph.cpp" />
+    <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\Node.cpp" />
+    <ClCompile Include="Source\Graph\SpinedCube.cpp" />
+    <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\SPR.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
