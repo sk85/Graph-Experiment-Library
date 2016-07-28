@@ -167,6 +167,7 @@ bool SGraph::GetConnectedNodeRandom(SNode *node1, SNode *node2)
 	// ˜AŒ‹‚Èƒm[ƒh‚ª‘¶İ‚µ‚È‚¢‚È‚ç‚Î¸”s
 	if (count == 0)
 	{
+		delete[] length;
 		return false;
 	}
 
