@@ -3,6 +3,7 @@
 #pragma once
 #include "Expansion.h"
 #include "Node.h"
+#include "..\Common.h"
 
 class SPR {
 private:

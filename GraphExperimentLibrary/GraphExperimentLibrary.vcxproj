@@ -18,6 +18,24 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Common.cpp" />
+    <ClCompile Include="Source\Main.cpp" />
+    <ClCompile Include="Source\Sample.cpp" />
+    <ClCompile Include="Source\SGraph.cpp" />
+    <ClCompile Include="Source\SpinedCube\Node.cpp" />
+    <ClCompile Include="Source\SpinedCube\SpinedCube.cpp" />
+    <ClCompile Include="Source\SpinedCube\SPR.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Header\Common.h" />
+    <ClInclude Include="Header\Sample.h" />
+    <ClInclude Include="Header\SGraph.h" />
+    <ClInclude Include="Header\SpinedCube\Expansion.h" />
+    <ClInclude Include="Header\SpinedCube\Node.h" />
+    <ClInclude Include="Header\SpinedCube\SpinedCube.h" />
+    <ClInclude Include="Header\SpinedCube\SPR.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C0DF6ECD-6112-40FC-87B9-C0B341265922}</ProjectGuid>
     <RootNamespace>GraphExperimentLibrary</RootNamespace>
@@ -119,27 +137,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="Header\Graph\Node\CubeNode.h" />
-    <ClInclude Include="Header\Graph\Node\SNode.h" />
-    <ClInclude Include="Header\Routing.h" />
-    <ClInclude Include="Header\Sample.h" />
-    <ClInclude Include="Header\Graph\SGraph.h" />
-    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\Expansion.h" />
-    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\Node.h" />
-    <ClInclude Include="Header\Graph\SpinedCube.h" />
-    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\SPR.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Source\Main.cpp" />
-    <ClCompile Include="Source\Graph\Node\CubeNode.cpp" />
-    <ClCompile Include="Source\Routing.cpp" />
-    <ClCompile Include="Source\Sample.cpp" />
-    <ClCompile Include="Source\Graph\SGraph.cpp" />
-    <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\Node.cpp" />
-    <ClCompile Include="Source\Graph\SpinedCube.cpp" />
-    <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\SPR.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -1,8 +1,7 @@
 #pragma once
 
+#include "..\Common.h"
 #include <iostream>
-
-typedef unsigned long ulong;
 
 class Node {
 private:

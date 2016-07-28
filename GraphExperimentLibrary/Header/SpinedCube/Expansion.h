@@ -2,8 +2,8 @@
 
 #include <iostream>
 
+#include "..\Common.h"
 #include "Node.h"
-
 
 class Expansion {
 private:
