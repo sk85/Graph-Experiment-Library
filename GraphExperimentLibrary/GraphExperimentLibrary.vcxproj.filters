@@ -48,6 +48,9 @@
     <ClCompile Include="Source\Common.cpp">
       <Filter>ソース ファイル\GRaph\SpinedCube_spr</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Test.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Routing.h">
@@ -70,6 +73,9 @@
     </ClInclude>
     <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\SPR.h">
       <Filter>ヘッダー ファイル\Graph\SpinedCube_spr</Filter>
+    </ClInclude>
+    <ClInclude Include="Header\Test.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

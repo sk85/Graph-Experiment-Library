@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Test.cpp" />
     <ClCompile Include="Source\Common.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Graph\SGraph.cpp" />
@@ -29,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Common.h" />
+    <ClInclude Include="Header\Test.h" />
     <ClInclude Include="Header\Graph\SGraph.h" />
     <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\Expansion.h" />
     <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\Node.h" />

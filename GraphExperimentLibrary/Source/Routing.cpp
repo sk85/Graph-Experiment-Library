@@ -2,7 +2,6 @@
 #include <Routing.h>
 
 
-
 int* Routing::CreateZeroParameter(SGraph *g)
 {
 	int* parameter = new int[g->GetNodeNum()];
@@ -173,8 +172,6 @@ int Routing::NormalRouting2(SGraph *g, uint32_t node1, uint32_t node2)
 	{
 		uint32_t mae = current;
 		uint32_t yoko = current;
-		int maeParam = -1;
-		int yokoParam = -1;
 		visited[current] = true;
 
 		for (int index = 0; index < g->GetDegree(current); index++)
@@ -193,6 +190,7 @@ int Routing::NormalRouting2(SGraph *g, uint32_t node1, uint32_t node2)
 			if (neighborDistance < distance)
 			{
 				mae = neighbor;
+				distance = neighborDistance;
 				break;
 			}
 			// 横方向なら記憶しておく
@@ -202,37 +200,35 @@ int Routing::NormalRouting2(SGraph *g, uint32_t node1, uint32_t node2)
 			}
 		}
 
+		// prev更新
+		preview = current;
+
 		// 前方があればそちらへ
 		if (mae != current)
 		{
-			if (visited[mae])
+			current = mae;
+			if (visited[mae])	// 前が通ったことあるやつなら失敗
 			{
 				delete[] visited;
 				return -step;
 			}
-			current = mae;
-			distance--;
 		}
 		else
 		{
-			// 横方向は見つかればそちらへ
-			if (yoko != current)
-			{
-				if (visited[mae])
-				{
-					delete[] visited;
-					return -step;
-				}
-				current = yoko;
-			}
-			// どちらもなければ失敗
-			else
+			// 前方も横も見つからないor横の候補が通過済みなら失敗
+			if (visited[yoko] || yoko == current)
 			{
 				delete[] visited;
 				return -step;
 			}
+			// 横方向は見つかればそちらへ
+			else
+			{
+				current = yoko;
+			}
 		}
-		preview = current;
+
+		// 1ステップ追加
 		step++;
 	}
 
@@ -292,6 +288,8 @@ int Routing::ExtraRouting(SGraph *g, uint32_t node1, uint32_t node2, int* param)
 			}
 		}
 
+		preview = current;
+
 		// 前方があればそちらへ
 		if (mae != current)
 		{
@@ -322,7 +320,6 @@ int Routing::ExtraRouting(SGraph *g, uint32_t node1, uint32_t node2, int* param)
 				return -step;
 			}
 		}
-		preview = current;
 		step++;
 	}
 
