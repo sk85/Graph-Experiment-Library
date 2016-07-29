@@ -243,3 +243,5 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/GraphExperimentLibrary/result.csv
+*.csv

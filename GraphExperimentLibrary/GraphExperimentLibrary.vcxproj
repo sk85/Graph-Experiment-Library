@@ -25,6 +25,7 @@
     <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\Node.cpp" />
     <ClCompile Include="Source\Graph\SpinedCube.cpp" />
     <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\SPR.cpp" />
+    <ClCompile Include="Source\Routing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Common.h" />
@@ -33,6 +34,7 @@
     <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\Node.h" />
     <ClInclude Include="Header\Graph\SpinedCube.h" />
     <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\SPR.h" />
+    <ClInclude Include="Header\Routing.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C0DF6ECD-6112-40FC-87B9-C0B341265922}</ProjectGuid>

@@ -3,11 +3,11 @@
 
 #include "..\Header\Common.h"
 #include <Graph\SpinedCube.h>
+#include <Routing.h>
 
 #include <chrono>
 
 using namespace std;
-
 
 int* GetParameter1(bool *faults, SGraph *g)
 {
@@ -239,8 +239,98 @@ bool Routing3(Experiment *exp, int* param, SGraph *g)
 
 int main(void)
 {
-	SpinedCube sq;
-	sq.SetDimension(10);
+	// 実験の条件を設定
+	SpinedCube sq;				// 対象のグラフを宣言
+	sq.SetDimension(10);		// 次元数をセット
+	const int trials = 1000;	// 試行回数
+	const int routingNum = 1;	// ルーティングの種類の数
+
+	// 結果を保持する領域の確保と初期化
+	int success[routingNum][10];	// ルーティング成功数
+	int step[routingNum][10];		// ステップ数の和
+	int fstep[routingNum][10];		// 失敗時ステップ数の和
+	for (size_t i = 0; i < routingNum; i++)	// 初期化
+	{
+		for (size_t j = 0; j < 10; j++)
+		{
+			success[i][j] = 0;
+			step[i][j] = 0;
+			fstep[i][j] = 0;
+		}
+	}
+
+	// 実験本体
+	for (uint32_t i = 1; i <= trials; i++)
+	{
+		for (int j = 0; j < 10; j++)
+		{
+			sq.GenerateFaults(j * 10);	// 故障を発生させる
+
+			uint32_t node1, node2;		// 出発ノードと目的ノード
+			do
+			{
+				node1 = sq.GetNodeRandom();
+				node2 = sq.GetConnectedNodeRandom(node1);
+			} while (node2 == node1);	// 連結な候補が見つかるまでループ
+
+			// パラメタを生成
+			int *param = Routing::CreateZeroParameter(&sq);
+
+			int result;
+			// ルーティング
+			result = Routing::ExtraRouting(&sq, node1, node2, param);
+			if (result > 0)
+			{
+				success[0][j]++;
+				step[0][j] += result;
+			}
+			else
+			{
+				fstep[0][j] += -result;
+			}
+
+			// ゴミ掃除
+			delete[] param;
+		}
+		printf_s("%5d / %d\r", i, trials);	// 進捗の表示
+	}
+
+	// 結果の出力
+	ofstream of("result.csv");
+	of << "成功率" << endl;
+	for (size_t i = 0; i < routingNum; i++)
+	{
+		for (size_t j = 0; j < 10; j++)
+		{
+			of << ((double)success[i][j] / trials) << ',';
+		}
+		of << endl;
+	}
+	of << "平均経路長" << endl;
+	for (size_t i = 0; i < routingNum; i++)
+	{
+		for (size_t j = 0; j < 10; j++)
+		{
+			of << ((double)step[i][j] / success[i][j]) << ',';
+		}
+		of << endl;
+	}
+	of << "失敗までの平均ステップ数" << endl;
+	for (size_t i = 0; i < routingNum; i++)
+	{
+		for (size_t j = 0; j < 10; j++)
+		{
+			of << ((double)fstep[i][j] / (trials - success[i][j])) << ',';
+		}
+		of << endl;
+	}
+	of.close();
+
+
+
+	std::cout << "end1";
+	getchar();
+	return 0;
 
 	int count[4][10];
 	for (size_t i = 0; i < 10; i++)
@@ -280,16 +370,16 @@ int main(void)
 		}
 	}
 
-	ofstream of("kekka2.csv");
+	ofstream of2("kekka2.csv");
 	for (size_t i = 0; i < 4; i++)
 	{
 		for (size_t j = 0; j < 10; j++)
 		{
-			of << count[i][j] << ',';
+			of2 << count[i][j] << ',';
 		}
-		of << endl;
+		of2 << endl;
 	}
-	of.close();
+	of2.close();
 
 	cout << endl << "end" << endl;
 	

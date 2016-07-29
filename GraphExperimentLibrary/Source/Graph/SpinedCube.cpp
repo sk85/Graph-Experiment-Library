@@ -3,10 +3,6 @@
 #include <Graph\SpinedCube.h>
 #include <Graph\SpinedCube_shortestpathrouting\SPR.h>
 
-int SpinedCube::CalcDiameter() {
-	return static_cast<int>(ceil(static_cast<double>(this->Dimension) / 3) + 3);
-}
-
 uint32_t SpinedCube::GetNeighbor(uint32_t s, int index) {
 	uint32_t d;
 	if (index > 3) {
@@ -25,4 +21,14 @@ uint32_t SpinedCube::GetNeighbor(uint32_t s, int index) {
 
 int SpinedCube::CalcDistance(uint32_t s, uint32_t d) {
 	return SPR::GetMinimalExpansion(s, d, this->Dimension).GetCount();
+}
+
+int SpinedCube::GetDegree(uint32_t node)
+{
+	return this->Dimension;
+}
+
+uint32_t SpinedCube::CalcNodeNum()
+{
+	return 1 << this->Dimension;
 }
