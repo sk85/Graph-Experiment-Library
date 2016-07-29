@@ -1,12 +1,5 @@
 #include <Graph\SGraph.h>
 
-/*
-SGraph::SGraph()
-{
-	this->Faults = nullptr;
-	this->SetDimension(3);
-}*/
-
 SGraph::~SGraph()
 {
 	delete[] Faults;
@@ -231,5 +224,13 @@ uint32_t SGraph::GetConnectedNodeRandom(uint32_t node)
 	}
 
 	delete[] length;
-	return index - 1;
+
+	if (index == 0)
+	{
+		return node;
+	}
+	else
+	{
+		return index - 1;
+	}
 }
