@@ -1,5 +1,5 @@
-# Cubes
-<p>ハイパーキューブ系列のグラフの実験に使えるコード群</p>
+# Graph-Experiment-Library
+グラフに関する実験がいろいろできるライブラリ
 
 ##更新
 <table>
