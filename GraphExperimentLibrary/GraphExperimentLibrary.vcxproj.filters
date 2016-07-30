@@ -51,6 +51,9 @@
     <ClCompile Include="Source\Test.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graph\PancakeGraph.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Routing.h">
@@ -75,6 +78,9 @@
       <Filter>ヘッダー ファイル\Graph\SpinedCube_spr</Filter>
     </ClInclude>
     <ClInclude Include="Header\Test.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Header\Graph\PancakeGraph.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

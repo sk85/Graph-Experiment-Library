@@ -81,7 +81,7 @@ int* SGraph::CalcAllDistanceBFS(uint32_t node)
 	{
 		uint32_t current = que.front();	// キューから1つ取り出してcurrentとする
 		que.pop();
-		for (int i = 0; i < this->Dimension; i++)
+		for (int i = 0; i < this->GetDegree(current); i++)
 		{
 			uint32_t neighbor = GetNeighbor(current, i);
 			if (distance[neighbor] > distance[current])
@@ -121,7 +121,7 @@ int* SGraph::CalcAllDistanceBFSF(uint32_t node)
 	{
 		uint32_t current = que.front();	// キューから1つ取り出してcurrentとする
 		que.pop();
-		for (int i = 0; i < this->Dimension; i++)
+		for (int i = 0; i < this->GetDegree(current); i++)
 		{
 			uint32_t neighbor = GetNeighbor(current, i);
 			if (this->Faults[neighbor])

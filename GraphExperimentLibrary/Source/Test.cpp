@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <Graph\SpinedCube.h>
+#include <Graph\PancakeGraph.h>
 #include <Test.h>
 #include <Routing.h>
 
@@ -166,5 +167,33 @@ namespace Test
 			of << endl;
 		}
 		of.close();
+	}
+
+	void e160731()
+	{
+		// PancakeGraphクラスのインスタンスpを宣言
+		PancakeGraph p;
+
+		for (size_t i = 2; i <= 10; i++)
+		{
+			// 次元数をセット
+			p.SetDimension(i);
+
+			// 距離の表を取得
+			int* lengthList = p.CalcAllDistanceBFS(0);
+
+			// 最大値(直径)を探す
+			int diameter = 0;
+			for (size_t j = 0; j < p.GetNodeNum(); j++)
+			{
+				if (lengthList[j] > diameter) diameter = lengthList[j];
+			}
+
+			// 表示
+			printf_s("n=%2u : NodeNum=%7u , diameter=%d\n", i, p.GetNodeNum(), diameter);
+
+			// メモリ解放
+			delete[] lengthList;
+		}
 	}
 }

@@ -9,10 +9,11 @@
 using namespace std;
 
 
+
 int main(void)
 {
-	Test::e160720();
-	std::cout << "FInish.\nPress enter.";
+	Test::e160731();
+	
 	getchar();
 	return 0;
 }

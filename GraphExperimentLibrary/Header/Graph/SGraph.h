@@ -132,36 +132,3 @@ public:
 	/// </returns>
 	uint32_t GetConnectedNodeRandom(uint32_t node);
 };
-
-
-/// <summary>実験に共通して使われる要素一式をまとめるクラス</summary>
-class Experiment
-{
-public:
-	/// <summary>故障頂点集合</summary>
-	bool* Faults;
-
-	/// <summary>非故障かつ連結な2頂点</summary>
-	uint32_t node1, node2;
-
-	Experiment(SGraph *g, int faultRatio)
-	{
-		// 故障を作る
-		g->GenerateFaults(faultRatio);
-
-		// ランダムに連結な2頂点を選ぶ
-		this->node2 = -1;
-		while (this->node2 == -1)
-		{
-			this->node1 = g->GetNodeRandom();
-			this->node2 = g->GetConnectedNodeRandom(node1);
-		}
-	}
-
-	~Experiment()
-	{
-		if (Faults != nullptr){
-			delete[] Faults;
-		}
-	}
-};
