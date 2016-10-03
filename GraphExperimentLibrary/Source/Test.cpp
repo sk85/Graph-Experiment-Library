@@ -5,16 +5,43 @@
 #include <Graph\PancakeGraph.h>
 #include <Test.h>
 #include <Routing.h>
+#include "..\Header\Common.h"
 
 using namespace std;
 
 namespace Test
 {
-	void e160720()
+	void e160930(SGraph *g, int maxDim)
+	{
+		for (size_t dim = 2; dim <= maxDim; dim++)
+		{
+			printf_s("Dim = %d\n", dim);
+			g->SetDimension(dim);
+
+			for (size_t s = 0; s < g->GetNodeNum(); s++)
+			{
+				int *distAry = g->CalcAllDistanceBFS(s);
+				for (size_t d = 0; d < g->GetNodeNum(); d++)
+				{
+					int dist = g->CalcDistance(s, d);
+					if (distAry[d] != dist)
+					{
+						printf_s("(%d, %d) BFS:%d Calc:%d\n", s, d, distAry[d], dist);
+						showBinary(s);
+						showBinary(d);
+						getchar();
+					}
+				}
+				delete[] distAry;
+			}
+		}
+	}
+
+
+	void e160720(SGraph *g, char *filename)
 	{
 		// 実験の条件を設定
-		SpinedCube sq;				// 対象のグラフを宣言
-		sq.SetDimension(10);		// 次元数をセット
+		g->SetDimension(10);		// 次元数をセット
 		const int trials = 1000;	// 試行回数
 		const int routingNum = 6;	// ルーティングの種類の数
 		char routingName[][4] = { "SR", "NR1", "NR2", "ER1", "ER2", "ER3" };
@@ -38,23 +65,23 @@ namespace Test
 		{
 			for (int j = 0; j < 10; j++)
 			{
-				sq.GenerateFaults(j * 10);	// 故障を発生させる
+				g->GenerateFaults(j * 10);	// 故障を発生させる
 
 				uint32_t node1, node2;		// 出発ノードと目的ノード
 				do
 				{
-					node1 = sq.GetNodeRandom();
-					node2 = sq.GetConnectedNodeRandom(node1);
+					node1 = g->GetNodeRandom();
+					node2 = g->GetConnectedNodeRandom(node1);
 				} while (node2 == node1);	// 連結な候補が見つかるまでループ
 
 											// パラメタを生成
-				int *param1 = Routing::CreateParameter(&sq);
-				int *param2 = Routing::CreateParameter(&sq, param1);
-				int *param3 = Routing::CreateParameter(&sq, param2);
+				int *param1 = Routing::CreateParameter(g);
+				int *param2 = Routing::CreateParameter(g, param1);
+				int *param3 = Routing::CreateParameter(g, param2);
 
 				int result;
 				// Simple
-				result = Routing::SimpleRouting(&sq, node1, node2);
+				result = Routing::SimpleRouting(g, node1, node2);
 				if (result > 0)
 				{
 					success[0][j]++;
@@ -66,7 +93,7 @@ namespace Test
 				}
 
 				// Normal 1
-				result = Routing::NormalRouting1(&sq, node1, node2);
+				result = Routing::NormalRouting1(g, node1, node2);
 				if (result > 0)
 				{
 					success[1][j]++;
@@ -78,7 +105,7 @@ namespace Test
 				}
 
 				// Normal 2
-				result = Routing::NormalRouting2(&sq, node1, node2);
+				result = Routing::NormalRouting2(g, node1, node2);
 				if (result > 0)
 				{
 					success[2][j]++;
@@ -90,7 +117,7 @@ namespace Test
 				}
 
 				// Extra 1
-				result = Routing::ExtraRouting(&sq, node1, node2, param1);
+				result = Routing::ExtraRouting(g, node1, node2, param1);
 				if (result > 0)
 				{
 					success[3][j]++;
@@ -102,7 +129,7 @@ namespace Test
 				}
 
 				// Extra 2
-				result = Routing::ExtraRouting(&sq, node1, node2, param2);
+				result = Routing::ExtraRouting(g, node1, node2, param2);
 				if (result > 0)
 				{
 					success[4][j]++;
@@ -114,7 +141,7 @@ namespace Test
 				}
 
 				// Extra 3
-				result = Routing::ExtraRouting(&sq, node1, node2, param3);
+				result = Routing::ExtraRouting(g, node1, node2, param3);
 				if (result > 0)
 				{
 					success[5][j]++;
@@ -135,7 +162,7 @@ namespace Test
 		std::cout << endl;
 
 		// 結果の出力
-		ofstream of("result.csv");
+		ofstream of(filename);
 		of << "成功率,0%,10%,20%,30%,40%,50%,60%,70%,80%,90%,\n";
 		for (size_t i = 0; i < routingNum; i++)
 		{

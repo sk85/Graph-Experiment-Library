@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Graph\LTQ.cpp" />
     <ClCompile Include="Source\Graph\PancakeGraph.cpp" />
     <ClCompile Include="Source\Test.cpp" />
     <ClCompile Include="Source\Common.cpp" />
@@ -31,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Common.h" />
+    <ClInclude Include="Header\Graph\LTQ.h" />
     <ClInclude Include="Header\Graph\PancakeGraph.h" />
     <ClInclude Include="Header\Test.h" />
     <ClInclude Include="Header\Graph\SGraph.h" />
@@ -110,6 +112,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt).exe</OutputFile>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -120,6 +124,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt).exe</OutputFile>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
