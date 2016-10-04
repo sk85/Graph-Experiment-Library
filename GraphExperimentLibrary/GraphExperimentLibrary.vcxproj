@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Graph\LTQ.cpp" />
+    <ClCompile Include="Source\Graph\MobiusCube.cpp" />
     <ClCompile Include="Source\Graph\PancakeGraph.cpp" />
     <ClCompile Include="Source\Test.cpp" />
     <ClCompile Include="Source\Common.cpp" />
@@ -33,6 +34,7 @@
   <ItemGroup>
     <ClInclude Include="Header\Common.h" />
     <ClInclude Include="Header\Graph\LTQ.h" />
+    <ClInclude Include="Header\Graph\MobiusCube.h" />
     <ClInclude Include="Header\Graph\PancakeGraph.h" />
     <ClInclude Include="Header\Test.h" />
     <ClInclude Include="Header\Graph\SGraph.h" />
