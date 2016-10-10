@@ -38,11 +38,10 @@ namespace Test
 	}
 
 
-	void e160720(SGraph *g, char *filename)
+	void e160720(SGraph *g, char *filename, int trials)
 	{
 		// 実験の条件を設定
 		g->SetDimension(10);		// 次元数をセット
-		const int trials = 1000;	// 試行回数
 		const int routingNum = 6;	// ルーティングの種類の数
 		char routingName[][4] = { "SR", "NR1", "NR2", "ER1", "ER2", "ER3" };
 

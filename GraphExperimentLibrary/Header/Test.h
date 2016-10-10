@@ -10,7 +10,7 @@ namespace Test
 	// 2016/07/20にやった実験
 	// 2016/09/30任意のSGraphに対して適応できるように更新
 	// SGraphに対するルーティングいろいろ
-	void e160720(SGraph *g, char *filename);
+	void e160720(SGraph *g, char *filename, int trials);
 	
 	// 2016/07/31にやった実験
 	// パンケーキグラフの直径を求める
