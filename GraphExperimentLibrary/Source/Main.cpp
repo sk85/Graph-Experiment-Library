@@ -15,9 +15,11 @@ using namespace std;
 
 int main(void)
 {
-	SpinedCube ltq;
+	SpinedCube sq;
+	LTQ ltq;
 
-	Test::e160720(&ltq, "result2.csv");
+	Test::e160720(&sq, "sq.csv");
+	Test::e160720(&ltq, "ltq.csv");
 
 	return 0;
 	
