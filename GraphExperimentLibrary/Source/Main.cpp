@@ -16,8 +16,14 @@ using namespace std;
 
 int main(void)
 {
-	SpinedCube sq;
 	LTQ ltq;
+	ltq.test();
+
+
+	return 0;
+
+	SpinedCube sq;
+	//LTQ ltq;
 	MobiusCube mq;
 
 	mq.SetType(0);
@@ -27,13 +33,6 @@ int main(void)
 	Test::e160720(&ltq, "ltq.csv", 500);
 	Test::e160720(&sq, "sq.csv", 500);
 
-	return 0;
-	
-	
-	
-	Test::e160731();
-	
-	getchar();
 	return 0;
 }
 
