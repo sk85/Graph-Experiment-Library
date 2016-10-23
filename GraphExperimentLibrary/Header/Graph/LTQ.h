@@ -2,9 +2,6 @@
 
 #include "SGraph.h"
 
-#define TYPE_0 0b10
-#define TYPE_1 0b11
-
 class LTQ : public SGraph
 {
 public:
@@ -19,10 +16,10 @@ private:
 	// —×ÚŒˆ’èƒoƒCƒiƒŠ
 	class DecisionBinary
 	{
-	public:
+	private:
 		__readonly int Index;
 		__readonly uint32_t Type;
-
+	public:
 		DecisionBinary() {};
 
 		DecisionBinary(uint32_t type, int index)
@@ -36,12 +33,59 @@ private:
 			if (Index < 2)
 				return 0b01 << Index;
 			else
-				return Type << (Index - 1);
+				return (0b10 + Type) << (Index - 1);
 		}
+
+		uint32_t GetType() { return Type; }
+		uint32_t GetIndex() { return Index; }
 	};
 
+	class DBary
+	{
+	private:
+		DecisionBinary Ary[32];
+		int Count;
+
+	public:
+		DBary()
+		{
+			Count = 0;
+		}
+
+		void Add(DecisionBinary db)
+		{
+			Ary[Count++] = db;
+		}
+
+		void Add(uint32_t type, int index)
+		{
+			Add(DecisionBinary(type, index));
+		}
+
+		void Reset()
+		{
+			Count = 0;
+		}
+
+		DecisionBinary Get(int index)
+		{
+			return Ary[index];
+		}
+
+		int GetCount()
+		{
+			return Count;
+		}
+
+		void Marge(DBary *sub)
+		{
+			for (int i = 0; i < sub->GetCount(); i++)
+				Add(sub->Get(i));
+		}
+	};
+	DBary& ttt(uint32_t s, uint32_t d);
 	int GetPreferredNeighbor(uint32_t s, uint32_t d);
-	void GetPreferredNeighborSub(uint32_t &c, int index, int &Count, DecisionBinary *Ary, DecisionBinary db1, DecisionBinary db2);
+	void GetPreferredNeighborSub(uint32_t *c, int index, DBary *Ary, DBary *subAry);
 	int GetExpansionSizeSingle(uint32_t s, uint32_t d);
 	int GetExpansionSizeDouble(uint32_t s, uint32_t d);
 };
