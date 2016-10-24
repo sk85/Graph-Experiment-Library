@@ -1,9 +1,13 @@
 #pragma once
 
 #include <Graph\SGraph.h>
+#include <Graph\LTQ.h>
 
 namespace Test
 {
+	// LTQのGetPreferredNeighborが正しいかテストする
+	void e161024(int minDim, int maxDim);
+
 	// SGraphのCalcDistanceが正しいかテストする
 	void e160930(SGraph *g, int maxDim);
 

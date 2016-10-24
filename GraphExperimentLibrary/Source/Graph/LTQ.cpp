@@ -1,7 +1,6 @@
 #include <Graph\LTQ.h>
 #include "../../Header/Common.h"
 #include <chrono>
-#define TEST
 
 uint32_t LTQ::GetNeighbor(uint32_t s, int index)
 {
@@ -106,95 +105,38 @@ int LTQ::GetExpansionSizeDouble(uint32_t s, uint32_t d)
 
 void LTQ::test()
 {
-	printf_s("b\n");
-#ifdef TESTa
-	{
-		SetDimension(14);
-		auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
-		for (uint32_t s = 0; s < NodeNum; s++)
-		{
-			for (uint32_t d = 0; d < NodeNum; d++)
-			{
-				GetPreferredNeighbor(s, d);
-			}
-		}
-		auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
-		auto dur = end - start;        // 要した時間を計算
-		auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-		// 要した時間をミリ秒（1/1000秒）に変換して表示
-		std::cout << msec << " milli sec \n";
-	}
-	{
-		auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
-		for (uint32_t s = 0; s < NodeNum; s++)
-		{
-			for (uint32_t d = 0; d < NodeNum; d++)
-			{
-				CalcDistance(s, d);
-			}
-		}
-		auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
-		auto dur = end - start;        // 要した時間を計算
-		auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-		// 要した時間をミリ秒（1/1000秒）に変換して表示
-		std::cout << msec << " milli sec \n";
-	}
-#endif
-
 	for (size_t dim = 2; dim < 16; dim++)
 	{
 		SetDimension(dim);
 
+		auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
 		printf_s("n = %d開始\n", dim);
 
-		for (uint32_t s = 0; s < NodeNum; s++)
+		for (uint32_t s = 0; s < GetNodeNum(); s++)
 		{
-			for (uint32_t d = 0; d < NodeNum; d++)
+			for (uint32_t d = 0; d < GetNodeNum(); d++)
 			{
-				// 正解の計算
-				int count = 0;
-				int distance = CalcDistance(s, d);
-				for (int i = 0; i < GetDegree(s); i++)
-				{
-					if (CalcDistance(GetNeighbor(s, i), d) < distance) count++;
-				}
-
-				// 計算
-				LTQ::DBary ary = LTQ::ttt(s, d);
-				int countTest = 0;
-				for (int i = 0; i < ary.GetCount(); i++)
-				{
-					if (ary.Get(i).GetType() == (s & 1)) countTest++;
-				}
+				int count1 = GetPreferredNeighbor(s, d);
+				int count2 = ttt(s, d);
 
 				// 表示
-				if (countTest != count)
+				if (count1 != count2)
 				{
-					printf_s("------------------------------------------------------\n");
-					printf_s("d(%d, %d) = %d\n", s, d, distance);
-					printf_s("%10d = ", d);
-					showBinary(d);
-					for (int i = 0; i < ary.GetCount(); i++)
-					{
-						DecisionBinary db = ary.Get(i);
-						printf_s("d(%3d,%3d) : ", db.GetType(), db.GetIndex());
-						showBinary(ary.Get(i).GetBinary());
-					}
-					printf_s("正解 : %d\nttt  : %d\n", count, countTest);
+					printf_s("(%d, %d)  count1 = %d, count2 = %d", s, d, count1, count2);
 					getchar();
 				}
 			}
 		}
-		printf_s("...ok\n");
+		auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
+		auto dur = end - start;        // 要した時間を計算
+		auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+		printf_s("...ok. 所要時間 : %dmsec.\n", msec);
 	}
 }
 
-LTQ::DBary& LTQ::ttt(uint32_t s, uint32_t d)
+int LTQ::ttt(uint32_t s, uint32_t d)
 {
-	if (d == 10)
-	{
-		int a = 0;
-	}
+
 	uint32_t c_single = s ^ d;
 	uint32_t c_single2 = c_single;
 	uint32_t c_double = c_single;
@@ -250,7 +192,7 @@ LTQ::DBary& LTQ::ttt(uint32_t s, uint32_t d)
 	int count_single = ary_single.GetCount() + ((c_single & 1) << 10);	// sとdが別タイプなら+∞
 	int count_double = ary_double.GetCount() + ((s ^ d) & 1 ? 1 : 2);	// タイプの移動を追加
 
-	if (count_single < count_double) return ary_single;
+	if (count_single < count_double) return ary_single.GetCount();
 
 	int count = 0;
 	int count2 = 0;
@@ -271,11 +213,11 @@ LTQ::DBary& LTQ::ttt(uint32_t s, uint32_t d)
 	// いきなり移動した場合
 	int count_single2 = ary_single2.GetCount() + ((s ^ d) & 1 ? 1 : 2);	// タイプの移動を追加
 
-	// 第0bit
-	// 同じタイプの場合→違うタイプが1以上ならいきなり行ってOK
-	// 違うタイプの場合→同じタイプで0またはいきなり行っても同等ならOK
+																		// 第0bit
+																		// 同じタイプの場合→違うタイプが1以上ならいきなり行ってOK
+																		// 違うタイプの場合→同じタイプで0またはいきなり行っても同等ならOK
 	if (
-			(!((s ^ d) & 1) && (count2 > 0)) || ((s ^ d) & 1) && (count == 0 || count_double == count_single2)
+		(!((s ^ d) & 1) && (count2 > 0)) || ((s ^ d) & 1) && (count == 0 || count_double == count_single2)
 		)
 	{
 		DecisionBinary db = DecisionBinary(type_s, 0);
@@ -305,128 +247,135 @@ LTQ::DBary& LTQ::ttt(uint32_t s, uint32_t d)
 		}
 	}
 
-	return ary;
+	int countt = 0;
+	for (size_t i = 0; i < ary.GetCount(); i++)
+	{
+		if (ary.Get(i).GetType() == (s & 1)) countt++;
+	}
+
+	return countt;
 }
 
 int LTQ::GetPreferredNeighbor(uint32_t s, uint32_t d)
 {
-	// c0 →0タイプのDBのみ
-	// c1 →1タイプのDBのみ
-	// c2 →両タイプのDB
-	// c3 →前方用
-	uint32_t c2 = s ^ d;
-	uint32_t c[2] = { c2 , c2 };
-	uint32_t c3 = c2;
-	DBary ary[2];
-	DBary ary2;
-	DBary ary3;
+
+	uint32_t c_single = s ^ d;
+	uint32_t c_single2 = c_single;
+	uint32_t c_double = c_single;
+	uint32_t c = c_single;
+	DBary ary_single;
+	DBary ary_single2;
+	DBary ary_double;
+	DBary ary;
 	DBary subAry;
-	uint32_t type = s & 1;
+	uint32_t type_s = s & 1;
 
 	for (int i = this->Dimension - 1; i > 1; --i)
 	{
-		if (c[0] >> i)
+		// その他
 		{
-			DecisionBinary db = DecisionBinary(0, i);
-			ary[0].Add(db);
-			c[0] ^= db.GetBinary();
-		}
-		if (c[1] >> i)
-		{
-			DecisionBinary db = DecisionBinary(1, i);
-			ary[1].Add(db);
-			c[1] ^= db.GetBinary();
-		}
-		if (c2 >> i)
-		{
-			DecisionBinary db = DecisionBinary((c2 >> (i - 1)) & 1, i);
-			ary2.Add(db);
-			c2 ^= db.GetBinary();
-		}
-		if (c3 >> i)
-		{
-			if (c3 >> (i - 1) == 0b10)
+			if (c_single >> i)
 			{
-				DecisionBinary db = DecisionBinary(0, i);
-				ary3.Add(db);
-				c3 ^= db.GetBinary();
-				subAry.Reset();
-				subAry.Add(DecisionBinary(1, i));
-				GetPreferredNeighborSub(&c3, i - 2, &ary3, &subAry);
+				DecisionBinary db = DecisionBinary(type_s, i);
+				ary_single.Add(db);
+				c_single ^= db.GetBinary();
 			}
-			else
+			if (c_single2 >> i)
 			{
-				DecisionBinary db = DecisionBinary(1, i);
-				ary3.Add(db);
-				c3 ^= db.GetBinary();
-				subAry.Reset();
-				subAry.Add(DecisionBinary(0, i));
-				GetPreferredNeighborSub(&c3, i - 2, &ary3, &subAry);
+				DecisionBinary db = DecisionBinary(type_s ^ 1, i);
+				ary_single2.Add(db);
+				c_single2 ^= db.GetBinary();
+			}
+			if (c_double >> i)
+			{
+				DecisionBinary db = DecisionBinary((c_double >> (i - 1)) & 1, i);
+				ary_double.Add(db);
+				c_double ^= db.GetBinary();
 			}
 		}
-	}
 
-	// 1タイプ(正)
-	if (c[type] >> 1)
-	{
-		ary[type].Add(type, 1);
-	}
-
-	// 1タイプ(逆)
-	ary[type ^ 1].Add(type, 0);
-	if ((s ^ d) & 1)
-	{
-		ary[type ^ 1].Add(type ^ 1, 0);
-	}
-	if (c[type ^ 1] >> 1)
-	{
-		ary[type ^ 1].Add(type, 1);
-	}
-
-	// 2タイプ
-	ary2.Add(type, 0);
-	if (((s ^ d) & 1) == 0)
-	{
-		ary2.Add(type ^ 1, 0);
-	}
-	if (c2 >> 1)
-	{
-		ary2.Add(type, 1);
-	}
-
-	int count_single = ary[type].GetCount() + ((c[type] & 1) << 10);
-	int count_double = ary2.GetCount();
-
-	if (count_single < count_double)	// 1タイプの方が最短
-	{
-
-		return count_single;
-	}
-	else if (count_single > count_double)	// 2タイプの方が最短
-	{
-		int count = 0;
-		uint32_t type = s & 1;
-		for (int i = 0; i < ary3.GetCount(); i++)
+		if (c >> i)
 		{
-			if (ary3.Get(i).GetType() == type) count++;
+			uint32_t type = (c >> (i - 1)) & 1;
+			DecisionBinary db = DecisionBinary(type, i);
+			ary.Add(db);
+			c ^= db.GetBinary();
+			subAry.Reset();
+			subAry.Add(DecisionBinary(type ^ 1, i));
+			GetPreferredNeighborSub(&c, i - 2, &ary, &subAry);
 		}
-		if (count == 0) count++;	// 同タイプで無ければ、タイプを渡る枝が1つ
-		if (c3 & 0b10) count++;		// 第1bit
-		if (count_double == (ary[type ^ 1].GetCount() + (c[type ^ 1] >> 1) + ((c[type ^ 1] & 1) << 10) + 2 - (c[type ^ 1] & 1)))
-		{
-			count++;
-		}
-
-		return count;
-		// 同じタイプのやつ全部
-		// 上が0ならタイプを変えるとこ
-		// あと第2bit
 	}
-	else	// どちらも最短
+
+	// その他
+	if (c_single >> 1) ary_single.Add(type_s, 1);
+	if (c_single2 >> 1) ary_single2.Add(type_s ^ 1, 1);
+	if (c_double >> 1) ary_double.Add(type_s, 1);
+
+	int count_single = ary_single.GetCount() + ((c_single & 1) << 10);	// sとdが別タイプなら+∞
+	int count_double = ary_double.GetCount() + ((s ^ d) & 1 ? 1 : 2);	// タイプの移動を追加
+
+	if (count_single < count_double) return ary_single.GetCount();
+
+	int count = 0;
+	int count2 = 0;
+	for (int i = 0; i < ary.GetCount(); i++)
 	{
-		// 全部＋タイプを変えるとこ＋第2bit
+		if (ary.Get(i).GetType() == type_s) count++;
+		else count2++;
 	}
 
+	// 第1bit
+	if (c >> 1)
+	{
+		DecisionBinary db = DecisionBinary(type_s, 1);
+		ary.Add(db);
+		c ^= db.GetBinary();
+	}
+
+	// いきなり移動した場合
+	int count_single2 = ary_single2.GetCount() + ((s ^ d) & 1 ? 1 : 2);	// タイプの移動を追加
+
+																		// 第0bit
+																		// 同じタイプの場合→違うタイプが1以上ならいきなり行ってOK
+																		// 違うタイプの場合→同じタイプで0またはいきなり行っても同等ならOK
+	if (
+		(!((s ^ d) & 1) && (count2 > 0)) || ((s ^ d) & 1) && (count == 0 || count_double == count_single2)
+		)
+	{
+		DecisionBinary db = DecisionBinary(type_s, 0);
+		ary.Add(db);
+		c ^= db.GetBinary();
+	}
+
+	// 同じ場合
+	if (count_single == count_double)
+	{
+		for (int i = 0; i < ary_single.GetCount(); i++)
+		{
+			uint32_t db = ary_single.Get(i).GetBinary();
+			bool f = true;
+			for (int j = 0; j < ary.GetCount(); j++)
+			{
+				if (ary.Get(j).GetBinary() == db)
+				{
+					f = false;
+					break;
+				}
+			}
+			if (f)
+			{
+				ary.Add(ary_single.Get(i));
+			}
+		}
+	}
+
+	int countt = 0;
+	for (size_t i = 0; i < ary.GetCount(); i++)
+	{
+		if (ary.Get(i).GetType() == (s & 1)) countt++;
+	}
+
+	return countt;
 }
 
 

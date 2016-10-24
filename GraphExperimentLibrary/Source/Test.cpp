@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <chrono>
 
 #include <Graph\SpinedCube.h>
 #include <Graph\PancakeGraph.h>
@@ -11,6 +12,52 @@ using namespace std;
 
 namespace Test
 {
+	void e161024(int minDim, int maxDim)
+	{
+		printf_s("LTQ::GetPreferredNeighbor(uint32_t s, uint32_t d)の動作確認を開始します\n");
+
+		LTQ ltq;
+
+		for (size_t dim = 2; dim < 16; dim++)
+		{
+			ltq.SetDimension(dim);
+
+			auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
+			printf_s("n = %d開始\n", dim);
+
+			for (uint32_t s = 0; s < ltq.GetNodeNum(); s++)
+			{
+				for (uint32_t d = 0; d < ltq.GetNodeNum(); d++)
+				{
+					// 正解の計算
+					int count = 0;
+					int distance = ltq.CalcDistance(s, d);
+					for (int i = 0; i < ltq.GetDegree(s); i++)
+					{
+						if (ltq.CalcDistance(ltq.GetNeighbor(s, i), d) < distance) count++;
+					}
+
+					// 計算
+					int countTest = ltq.GetPreferredNeighbor(s, d);
+
+					// 表示
+					if (countTest != count)
+					{
+						printf_s("d(%d, %d) = %d  ", s, d, distance);
+						printf_s("count = %d, testCount = %d", count, countTest);
+						printf_s("d = %d", d);
+						showBinary(d);
+						getchar();
+					}
+				}
+			}
+			auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
+			auto dur = end - start;        // 要した時間を計算
+			auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+			printf_s("...ok. 所要時間 : %dmsec.\n", msec);
+		}
+	}
+
 	void e160930(SGraph *g, int maxDim)
 	{
 		for (size_t dim = 2; dim <= maxDim; dim++)
@@ -36,7 +83,6 @@ namespace Test
 			}
 		}
 	}
-
 
 	void e160720(SGraph *g, char *filename, int trials)
 	{
