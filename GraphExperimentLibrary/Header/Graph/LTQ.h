@@ -12,6 +12,7 @@ public:
 	virtual uint32_t CalcNodeNum() override;
 	void test();
 	int GetPreferredNeighbor(uint32_t s, uint32_t d);
+	int ttt(uint32_t s, uint32_t d);
 
 private:
 	// —×ÚŒˆ’èƒoƒCƒiƒŠ
@@ -85,7 +86,6 @@ private:
 		}
 	};
 
-	int ttt(uint32_t s, uint32_t d);
 	void GetPreferredNeighborSub(uint32_t *c, int index, DBary *Ary, DBary *subAry);
 	int GetExpansionSizeSingle(uint32_t s, uint32_t d);
 	int GetExpansionSizeDouble(uint32_t s, uint32_t d);

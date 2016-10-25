@@ -18,7 +18,7 @@ namespace Test
 
 		LTQ ltq;
 
-		for (size_t dim = 2; dim < 16; dim++)
+		for (size_t dim = minDim; dim < maxDim; dim++)
 		{
 			ltq.SetDimension(dim);
 

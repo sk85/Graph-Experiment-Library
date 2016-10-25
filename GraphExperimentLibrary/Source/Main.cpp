@@ -18,9 +18,53 @@ using namespace std;
 int main(void)
 {
 	LTQ ltq;
-	int maxDim = 10;
 	// ltq.test();
 
+	int dim = 13;
+	{
+		printf_s("GetPreferredNeighborのチューニング\n");
+		printf_s("-----------------------------------------\n");
+		Test::e161024(2, 10);
+		printf_s("-----------------------------------------\n");
+		printf_s("速度比較開始\n");
+
+		ltq.SetDimension(dim);
+
+		auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
+
+		for (uint32_t s = 0; s < ltq.GetNodeNum(); s++)
+		{
+			for (uint32_t d = 0; d < ltq.GetNodeNum(); d++)
+			{
+				int count = ltq.ttt(s, d);
+			}
+		}
+		auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
+		auto dur = end - start;        // 要した時間を計算
+		auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+		printf_s("旧 : %10dmsec.\n", msec);
+
+
+		start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
+
+		for (uint32_t s = 0; s < ltq.GetNodeNum(); s++)
+		{
+			for (uint32_t d = 0; d < ltq.GetNodeNum(); d++)
+			{
+				int count = ltq.GetPreferredNeighbor(s, d);
+			}
+		}
+		end = std::chrono::system_clock::now();       // 計測終了時刻を保存
+		dur = end - start;        // 要した時間を計算
+		msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+		printf_s("新 : %10dmsec.\n", msec);
+	}
+
+	getchar();
+	return 0;
+
+	// 明日確認する
+	int maxDim = 13;
 	{
 		printf_s("GetPreferredNeighbor\n");
 		for (size_t dim = 2; dim <= maxDim; dim++)
@@ -43,7 +87,6 @@ int main(void)
 			printf_s("...ok. 所要時間 : %10dmsec.\n", msec);
 		}
 	}
-
 	{
 		printf_s("総当り\n");
 
@@ -72,12 +115,6 @@ int main(void)
 			printf_s("...ok. 所要時間 : %10dmsec.\n", msec);
 		}
 	}
-
-	getchar();
-
-	//Test::e161024(2, 15);
-
-	return 0;
 
 	SpinedCube sq;
 	// LTQ ltq;
