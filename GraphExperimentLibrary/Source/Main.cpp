@@ -31,33 +31,36 @@ int main(void)
 		ltq.SetDimension(dim);
 
 		auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
+		int count = 0;
 
 		for (uint32_t s = 0; s < ltq.GetNodeNum(); s++)
 		{
 			for (uint32_t d = 0; d < ltq.GetNodeNum(); d++)
 			{
-				int count = ltq.ttt(s, d);
+				count += ltq.ttt(s, d);
 			}
 		}
 		auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
 		auto dur = end - start;        // 要した時間を計算
-		auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-		printf_s("旧 : %10dmsec.\n", msec);
+		auto before = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+		printf_s("旧 : %10dmsec. %d\n", before, count);
 
 
 		start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
-
+		count = 0;
 		for (uint32_t s = 0; s < ltq.GetNodeNum(); s++)
 		{
 			for (uint32_t d = 0; d < ltq.GetNodeNum(); d++)
 			{
-				int count = ltq.GetPreferredNeighbor(s, d);
+				count += ltq.GetPreferredNeighbor(s, d);
 			}
 		}
 		end = std::chrono::system_clock::now();       // 計測終了時刻を保存
 		dur = end - start;        // 要した時間を計算
-		msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-		printf_s("新 : %10dmsec.\n", msec);
+		auto after = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+		printf_s("新 : %10dmsec. %d\n", after, count);
+
+		printf_s("%0.00lf%%", (double)after / before * 100);
 	}
 
 	getchar();

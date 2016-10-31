@@ -44,8 +44,8 @@ namespace Test
 					if (countTest != count)
 					{
 						printf_s("d(%d, %d) = %d  ", s, d, distance);
-						printf_s("count = %d, testCount = %d", count, countTest);
-						printf_s("d = %d", d);
+						printf_s("count = %d, testCount = %d\n", count, countTest);
+						printf_s("d = %d  ", d);
 						showBinary(d);
 						getchar();
 					}
