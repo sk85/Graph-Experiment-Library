@@ -53,87 +53,6 @@ uint32_t LTQ::CalcNodeNum()
 	return 1 << this->Dimension;
 }
 
-int LTQ::GetExpansionSizeSingle(uint32_t s, uint32_t d)
-{
-	if ((s ^ d) & 1) return 100;
-
-	uint32_t c = s ^ d;
-	uint32_t type = s & 1;
-	int dist = 0;
-
-	for (int i = this->Dimension - 1; i > 1; --i)
-	{
-		if (c & (1 << i))
-		{
-			c ^= (0b10 + type) << (i - 1);
-			dist++;
-		}
-	}
-
-	if (c == 0b10) dist++;
-
-	return dist;
-}
-
-int LTQ::GetExpansionSizeDouble(uint32_t s, uint32_t d)
-{
-	uint32_t c = s ^ d;
-	int dist = 0;
-
-	for (int i = this->Dimension - 1; i > 1; --i)
-	{
-		if (c & (1 << i))
-		{
-			c &= ~(0b11 << (i - 1));
-			dist++;
-		}
-	}
-
-	if ((s ^ d) & 1)
-	{
-		if (c & 0b10) dist += 2;
-		else dist++;
-	}
-	else
-	{
-		if (c & 0b10) dist += 3;
-		else dist += 2;
-	}
-
-	return dist;
-}
-
-void LTQ::test()
-{
-	for (size_t dim = 2; dim < 16; dim++)
-	{
-		SetDimension(dim);
-
-		auto start = std::chrono::system_clock::now();      // 計測スタート時刻を保存
-		printf_s("n = %d開始\n", dim);
-
-		for (uint32_t s = 0; s < GetNodeNum(); s++)
-		{
-			for (uint32_t d = 0; d < GetNodeNum(); d++)
-			{
-				int count1 = GetPreferredNeighbor(s, d);
-				int count2 = ttt(s, d);
-
-				// 表示
-				if (count1 != count2)
-				{
-					printf_s("(%d, %d)  count1 = %d, count2 = %d", s, d, count1, count2);
-					getchar();
-				}
-			}
-		}
-		auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
-		auto dur = end - start;        // 要した時間を計算
-		auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-		printf_s("...ok. 所要時間 : %dmsec.\n", msec);
-	}
-}
-
 int LTQ::ttt(uint32_t s, uint32_t d)
 {
 
@@ -267,17 +186,14 @@ int LTQ::GetPreferredNeighbor(uint32_t s, uint32_t d)
 	uint32_t a_double[2] = {0, 0};
 	uint32_t a = 0;
 	uint32_t a_sub = 0;
-	DBary ary_single;
-	DBary ary;
-	DBary subAry;
 	uint32_t type_s = s & 1;
+	bool flag = false;
 
+	// 同じタイプのみを通る場合など
 	for (int i = this->Dimension - 1; i > 1; --i)
 	{
 		if (c_single >> i)
 		{
-			DecisionBinary db = DecisionBinary(type_s, i);
-			ary_single.Add(db);
 			a_single ^= 1 << i;
 			c_single ^= (0b10 + type_s) << (i - 1);
 		}
@@ -292,190 +208,96 @@ int LTQ::GetPreferredNeighbor(uint32_t s, uint32_t d)
 			a_double[t] ^= 1 << i;
 			c_double ^= (0b10 + t) << (i - 1);
 		}
-
 	}
-
-	bool flag = false;
-	for (int i = this->Dimension - 1; i > 1; --i)
-	{
-		if (c >> i)
-		{
-			uint32_t type = (c >> (i - 1)) & 1;
-
-			c ^= (0b10 + type) << (i - 1);
-			// c &= (1 << (i - 1)) - 1;
-
-			if (type == type_s) ary.Add(type, i);
-			a ^= ((type ^ type_s) ^ 1) << i;
-
-			if (flag)
-			{
-				if (type)
-				{
-					if (type == type_s) subAry.Add(type, i + 1);
-					a_sub ^= ((type ^ type_s) ^ 1) << (i + 1);
-				}
-				else
-				{
-					ary.Marge(&subAry);
-					a |= a_sub;
-
-					if (type != type_s) ary.Add(type ^ 1, i + 1);
-					a ^= (type ^ type_s) << (i + 1);
-
-					subAry.Reset();
-					a_sub = 0;
-					flag = false;
-				}
-			}
-
-			if (type != type_s) subAry.Add(type ^ 1, i);
-			a_sub ^= (type ^ type_s) << i;
-			flag = true;
-
-			--i;
-		}
-		else
-		{
-			subAry.Reset();
-			a_sub = 0;
-			flag = false;
-		}
-	}
-
-
-
-	if (c & 0b100)	// c = 0001ab
-	{
-		if (c & 0b10)	// c = 00011b
-		{
-			ary.Marge(&subAry);
-			a |= a_sub;
-		}
-
-		c ^= c & 0b110;
-		ary.Add((c >> 1) & 1, 2);
-		a ^= ((c >> 1) ^ type_s ^ 1) << 2;
-	}
-	else
-	{
-		if (c & 0b10)	// c = 00001b
-		{
-			c ^= c & 0b10;
-			ary.Add(s & 1, 1);
-			a ^= 0b10;
-			if (flag)
-			{
-				if (type_s == 1) ary.Add(1, 2);
-				a ^= type_s << 2;
-
-
-				ary.Marge(&subAry);
-				a |= a_sub;
-			}
-		}
-	}
-
-	////// NOW
-	if (ary.GetCount() != __popcnt(a))
-	{
-		printf_s("a");
-	}
-
-	subAry.Reset();
 
 	// 第1ビットの処理
-	if (c_single >> 1)
-	{
-		ary_single.Add(type_s, 1);
-		a_single ^= 0b10;
-	}
+	if (c_single >> 1) a_single ^= 0b10;
 	if (c_single2 >> 1) a_single2 ^= 0b10;
-	if (c_double >> 1) a_double[s & 1] ^= 0b10;
+	if (c_double >> 1) a_double[type_s] ^= 0b10;
 
 	// 第0ビットの処理とか
 	int count_single = __popcnt(a_single) + ((c_single & 1) << 10);	// sとdが別タイプなら+∞
 	int count_double = __popcnt(a_double[0]) + __popcnt(a_double[1]) + 2 - ((s ^ d) & 1);	// タイプの移動を追加
 
-	if (count_single < count_double) 
+	// 単一タイプの方が小さいならそのDB
+	if (count_single < count_double)
 	{
 		return count_single;
 	}
 	else
 	{
-
-	}
-	int count = 0;
-	int count2 = 0;
-	for (int i = 0; i < ary.GetCount(); i++)
-	{
-		if (ary.Get(i).GetType() == type_s) count++;
-		else count2++;
-	}
-
-	// 第1bit
-	if (c >> 1)
-	{
-		DecisionBinary db = DecisionBinary(type_s, 1);
-		ary.Add(db);
-		c ^= db.GetBinary();
-	}
-
-	// いきなり移動した場合
-	int count_single2 = __popcnt(a_single2) + 2 - ((s ^ d) & 1);	// タイプの移動を追加
-
-																		// 第0bit
-																		// 同じタイプの場合→違うタイプが1以上ならいきなり行ってOK
-																		// 違うタイプの場合→同じタイプで0またはいきなり行っても同等ならOK
-	if (
-		!((s ^ d) & 1) || ((s ^ d) & 1) && (count == 0 || count_double == count_single2)
-		)
-	{
-		DecisionBinary db = DecisionBinary(type_s, 0);
-		ary.Add(db);
-		c ^= db.GetBinary();
-	}
-
-	// 同じ場合
-	if (count_single == count_double)
-	{
-		for (int i = 0; i < ary_single.GetCount(); i++)
+		// 下4桁まで
+		int index = this->Dimension - 1;
+		while (index > 1)
 		{
-			uint32_t db = ary_single.Get(i).GetBinary();
-			bool f = true;
-			for (int j = 0; j < ary.GetCount(); j++)
+			if (c >> index)
 			{
-				if (ary.Get(j).GetBinary() == db)
+				uint32_t type = (c >> (index - 1)) & 1;
+
+				c ^= (0b10 + type) << (index - 1);
+				a ^= ((type ^ type_s) ^ 1) << index;
+
+				if (flag)
 				{
-					f = false;
-					break;
+					if (type)
+					{
+						a_sub ^= ((type ^ type_s) ^ 1) << (index + 1);
+					}
+					else
+					{
+						a |= a_sub;
+						a ^= (type ^ type_s) << (index + 1);
+						a_sub = 0;
+					}
+				}
+				a_sub ^= (type ^ type_s) << index;
+				flag = true;
+				index -= 2;
+			}
+			else
+			{
+				a_sub = 0;
+				flag = false;
+				index -= 1;
+			}
+		}
+
+		// 下3桁から
+		if (c & 0b100)	// c = 0001ab
+		{
+			if (c & 0b10)	// c = 00011b
+			{
+				a |= a_sub;
+			}
+
+			c ^= c & 0b110;
+			a ^= type_s << 2;
+		}
+		else
+		{
+			if (c & 0b10)	// c = 00001b
+			{
+				c ^= c & 0b10;
+				a ^= 0b10;
+				if (flag)
+				{
+					a ^= type_s << 2;
+					a |= a_sub;
 				}
 			}
-			if (f)
-			{
-				ary.Add(ary_single.Get(i));
-			}
 		}
+
+		// 初手で別タイプに移動するケース
+			// 第0bitが	同じタイプの場合→いきなり行ってOK
+			//			違うタイプの場合→いきなり行っても同等ならOK
+		int count_single2 = __popcnt(a_single2) + 2 - ((s ^ d) & 1);	// タイプの移動を追加
+		if (!((s ^ d) & 1) || count_double == count_single2) a ^= 1;
+
+		// 単一タイプバージョンと複数タイプバージョンが同等なら単一タイプバージョンをマージ
+		if (count_single == count_double) a |= a_single;
+
+		return __popcnt(a);
 	}
-
-	int countt = 0;
-	for (size_t i = 0; i < ary.GetCount(); i++)
-	{
-		if (ary.Get(i).GetType() == (s & 1)) countt++;
-	}
-
-	/*
-	if (s == 1 && d == 14)
-	{
-		printf_s("-------------------------------------\n");
-		for (size_t i = 0; i < ary.GetCount(); i++)
-		{
-			showBinary(ary.Get(i).GetBinary());
-		}
-		printf_s("-------------------------------------\n");
-	}*/
-
-	return countt;
 }
 
 

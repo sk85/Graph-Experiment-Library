@@ -10,7 +10,6 @@ public:
 	virtual int CalcDistance(uint32_t s, uint32_t d) override;
 	virtual int GetDegree(uint32_t node) override;
 	virtual uint32_t CalcNodeNum() override;
-	void test();
 	int GetPreferredNeighbor(uint32_t s, uint32_t d);
 	int ttt(uint32_t s, uint32_t d);
 
@@ -87,6 +86,4 @@ private:
 	};
 
 	void GetPreferredNeighborSub(uint32_t *c, int index, DBary *Ary, DBary *subAry);
-	int GetExpansionSizeSingle(uint32_t s, uint32_t d);
-	int GetExpansionSizeDouble(uint32_t s, uint32_t d);
 };
