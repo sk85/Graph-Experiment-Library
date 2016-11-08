@@ -29,7 +29,6 @@ protected:
 	virtual uint32_t CalcNodeNum() = 0;
 
 public:
-
 	//SGraph();
 	virtual ~SGraph();
 
@@ -60,6 +59,16 @@ public:
 	/// <param name="index">隣接頂点の番号</param>
 	/// <returns>隣接頂点</returns>
 	virtual uint32_t GetNeighbor(uint32_t node, int index) = 0;
+
+	/// <summary>
+	/// ノードsからdへの前方隣接頂点を返す
+	///		デフォでは全隣接頂点の距離を計算している
+	///		必要に応じてオーバーライド
+	/// </summary>
+	/// <param name="s">出発頂点</param>
+	/// <param name="d">目的頂点</param>
+	/// <returns>第i隣接頂点が前方であるときに第iビットが1であるようなビット列</returns>
+	virtual uint32_t GetPreferredNeighbor(uint32_t s, uint32_t d);
 
 	/// <summary>
 	/// 頂点が故障かどうかを返す

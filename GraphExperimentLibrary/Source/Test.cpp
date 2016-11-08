@@ -30,21 +30,24 @@ namespace Test
 				for (uint32_t d = 0; d < ltq.GetNodeNum(); d++)
 				{
 					// ³‰ð‚ÌŒvŽZ
-					int count = 0;
+					uint32_t correctAnswer = 0;
 					int distance = ltq.CalcDistance(s, d);
 					for (int i = 0; i < ltq.GetDegree(s); i++)
 					{
-						if (ltq.CalcDistance(ltq.GetNeighbor(s, i), d) < distance) count++;
+						if (ltq.CalcDistance(ltq.GetNeighbor(s, i), d) < distance)
+						{
+							correctAnswer |= 1 << i;
+						}
 					}
 
 					// ŒvŽZ
-					int countTest = ltq.GetPreferredNeighbor(s, d);
+					int testAnswer = ltq.GetPreferredNeighbor(s, d);
 
 					// •\Ž¦
-					if (countTest != count)
+					if (correctAnswer != testAnswer)
 					{
 						printf_s("d(%d, %d) = %d  ", s, d, distance);
-						printf_s("count = %d, testCount = %d\n", count, countTest);
+						//printf_s("count = %d, testCount = %d\n", count, countTest);
 						printf_s("d = %d  ", d);
 						showBinary(d);
 						getchar();
