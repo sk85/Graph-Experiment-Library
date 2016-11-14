@@ -48,37 +48,60 @@ public:
 	/// <param name="seed">シード値</param>
 	void SetRandSeed(int seed);
 
-	/// <summary>頂点の次数を返す</summary>
+	/// <summary>
+	///		頂点の次数を返す
+	/// </summary>
 	/// <returns>次数</returns>
 	virtual int GetDegree(uint32_t node) = 0;
 
 	/// <summary>
-	/// index(0≦index＜Dimension)に対して一意な隣接頂点を返す
+	///		index(0≦index＜Dimension)に対して一意な隣接頂点を返す
+	///		<para>位相に応じて必ずオーバーライドすること</para>
 	/// </summary>
 	/// <param name="node">ノード</param>
-	/// <param name="index">隣接頂点の番号</param>
-	/// <returns>隣接頂点</returns>
+	/// <param name="index">何番目の隣接頂点か</param>
+	/// <returns>隣接頂点のアドレス</returns>
 	virtual uint32_t GetNeighbor(uint32_t node, int index) = 0;
 
 	/// <summary>
-	/// ノードsからdへの前方隣接頂点を返す
-	///		デフォでは全隣接頂点の距離を計算している
-	///		必要に応じてオーバーライド
+	///		ノードsからdへの前方隣接頂点を返す
+	///		<para>変更がなければすべての隣接頂点の距離を計算して求めるためO(n^2)</para>
+	///		<para>必要に応じてオーバーライドすること</para>
 	/// </summary>
-	/// <param name="s">出発頂点</param>
-	/// <param name="d">目的頂点</param>
+	/// <param name="s">出発頂点のアドレス</param>
+	/// <param name="d">目的頂点のアドレス</param>
 	/// <returns>第i隣接頂点が前方であるときに第iビットが1であるようなビット列</returns>
-	virtual uint32_t GetPreferredNeighbor(uint32_t s, uint32_t d);
+	virtual uint32_t GetForwardNeighbor(uint32_t s, uint32_t d);
 
 	/// <summary>
-	/// 頂点が故障かどうかを返す
+	///		ノードsからdへの横方隣接頂点を返す
+	///		<para>変更がなければすべての隣接頂点の距離を計算して求めるためO(n^2)</para>
+	///		<para>必要に応じてオーバーライドすること</para>
+	/// </summary>
+	/// <param name="s">出発頂点のアドレス</param>
+	/// <param name="d">目的頂点のアドレス</param>
+	/// <returns>第i隣接頂点が横方であるときに第iビットが1であるようなビット列</returns>
+	virtual uint32_t GetSideNeighbor(uint32_t s, uint32_t d);
+
+	/// <summary>
+	///		ノードsからdへの後方隣接頂点を返す
+	///		<para>変更がなければすべての隣接頂点の距離を計算して求めるためO(n^2)</para>
+	///		<para>必要に応じてオーバーライドすること</para>
+	/// </summary>
+	/// <param name="s">出発頂点のアドレス</param>
+	/// <param name="d">目的頂点のアドレス</param>
+	/// <returns>第i隣接頂点が後方であるときに第iビットが1であるようなビット列</returns>
+	virtual uint32_t GetBackwardNeighbor(uint32_t s, uint32_t d);
+
+	/// <summary>
+	///		頂点が故障かどうかを返す
 	/// </summary>
 	/// <param name="node">ノード</param>
 	/// <returns>故障かどうか</returns>
 	bool IsFault(uint32_t node);
 
 	/// <summary>
-	/// 2頂点が連結かどうかを返す(ちょっと重い)
+	///		2頂点が連結かどうかを返す(ちょっと重い)
 	/// </summary>
 	/// <param name="node1">ノード</param>
 	/// <param name="node2">ノード</param>

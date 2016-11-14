@@ -1,7 +1,5 @@
 #include <Graph\LTQ.h>
-#include "../../Header/Common.h"
 
-#include <chrono>
 #include <vector>
 
 uint32_t LTQ::GetNeighbor(uint32_t s, int index)
@@ -55,7 +53,7 @@ uint32_t LTQ::CalcNodeNum()
 	return 1 << this->Dimension;
 }
 
-uint32_t LTQ::GetPreferredNeighbor(uint32_t s, uint32_t d)
+uint32_t LTQ::GetForwardNeighbor(uint32_t s, uint32_t d)
 {
 	uint32_t c_single = s ^ d;
 	uint32_t c_single2 = c_single;
@@ -182,14 +180,16 @@ uint32_t LTQ::GetPreferredNeighbor(uint32_t s, uint32_t d)
 
 void LTQ::CalcCapability()
 {
-	std::vector<std::vector<int>> capability(this->GetNodeNum());
+	int diameter = this->GetDiameter();
+	int num = this->GetNodeNum() * (diameter + 1);
+	int** capability = (int**)new int[num];
 
-	for (size_t node = 0; node < this->GetNodeNum(); node++)
+	for (size_t node = 0; node < num; node++)
 	{
 		capability[node][0] = this->IsFault(node) ? 0 : 1;
 	}
 
-	for (size_t i = 0; i <= this->GetDiameter(); i++)
+	for (size_t i = 0; i <= diameter; i++)
 	{
 		for (size_t node = 1; node < this->GetNodeNum(); node++)
 		{
@@ -197,7 +197,6 @@ void LTQ::CalcCapability()
 				capability[node][i] = 0;
 			else
 				capability[node][i] = 1;
-			
 		}
 	}
 }

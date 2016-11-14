@@ -50,36 +50,36 @@ int* Routing::CreateParameter(SGraph *g, int *param)
 
 int Routing::SimpleRouting(SGraph *g, const uint32_t node1, const uint32_t node2)
 {
-	int distance = g->CalcDistance(node1, node2);
 	uint32_t current = node1;
 	int step = 0;
 
 	while (current != node2)
 	{
-		uint32_t mae = current;
+		uint32_t candidate = current;
+
+		// 前方隣接頂点の中で非故障なノードがあればそこへルーティング
+		uint32_t forward = g->GetForwardNeighbor(current, node2);
 		for (int index = 0; index < g->GetDegree(node1); index++)
 		{
-			uint32_t neighbor = g->GetNeighbor(current, index);
-			if (!g->IsFault(neighbor))
+			if (forward & (1 << index))
 			{
-				int neighborDistance = g->CalcDistance(neighbor, node2);
-				if (neighborDistance < distance)
+				uint32_t neighbor = g->GetNeighbor(current, index);
+				if (!g->IsFault(neighbor))
 				{
-					mae = neighbor;
-					distance = neighborDistance;
+					candidate = neighbor;
 					break;
 				}
 			}
 		}
 
-		// "非故障かつ前方"が見つからなかった場合失敗
-		if (mae == current)
+		// ルーティングができない(＝非故障かつ前方が見つからない)ならば失敗
+		if (candidate == current)
 		{
 			return -step;
 		}
 
 		step++;
-		current = mae;
+		current = candidate;
 	}
 	return step;
 }
@@ -159,77 +159,61 @@ int Routing::NormalRouting1(SGraph *g, uint32_t node1, uint32_t node2)
 int Routing::NormalRouting2(SGraph *g, uint32_t node1, uint32_t node2)
 {
 	bool* visited = new bool[g->GetNodeNum()];
-	for (size_t i = 0; i < g->GetNodeNum(); i++)
-	{
-		visited[i] = false;
-	}
+	for (size_t i = 0; i < g->GetNodeNum(); i++) visited[i] = false;
 
-	int distance = g->CalcDistance(node1, node2);
 	uint32_t current = node1;
 	uint32_t preview = node1;
 	int step = 0;
 	while (current != node2)
 	{
-		uint32_t mae = current;
-		uint32_t yoko = current;
+		uint32_t candidate = current;
 		visited[current] = true;
 
-		for (int index = 0; index < g->GetDegree(current); index++)
+		// 前方隣接頂点の中で非故障なノードがあればそこへルーティング
+		uint32_t forward = g->GetForwardNeighbor(current, node2);
+		for (int index = 0; index < g->GetDegree(node1); index++)
 		{
-			uint32_t neighbor = g->GetNeighbor(current, index);
-
-			// 故障or一つ手前で通っているときはスキップ
-			if (g->IsFault(neighbor) || neighbor == preview)
+			if (forward & (1 << index))
 			{
-				continue;
-			}
-
-			int neighborDistance = g->CalcDistance(neighbor, node2);
-
-			// 前方ならそれを選ぶ
-			if (neighborDistance < distance)
-			{
-				mae = neighbor;
-				distance = neighborDistance;
-				break;
-			}
-			// 横方向なら記憶しておく
-			else if (neighborDistance == distance)
-			{
-				yoko = neighbor;
+				uint32_t neighbor = g->GetNeighbor(current, index);
+				if (!g->IsFault(neighbor))
+				{
+					candidate = neighbor;
+					break;
+				}
 			}
 		}
 
-		// prev更新
-		preview = current;
-
-		// 前方があればそちらへ
-		if (mae != current)
+		// 前方にルーティングできなかった場合
+		if (candidate == current)
 		{
-			current = mae;
-			if (visited[mae])	// 前が通ったことあるやつなら失敗
+			// 横方隣接頂点の中で非故障なノードがあればそこへルーティング
+			uint32_t side = g->GetSideNeighbor(current, node2);
+			for (int index = 0; index < g->GetDegree(node1); index++)
 			{
-				delete[] visited;
-				return -step;
-			}
-		}
-		else
-		{
-			// 前方も横も見つからないor横の候補が通過済みなら失敗
-			if (visited[yoko] || yoko == current)
-			{
-				delete[] visited;
-				return -step;
-			}
-			// 横方向は見つかればそちらへ
-			else
-			{
-				current = yoko;
+				if (side & (1 << index))
+				{
+					uint32_t neighbor = g->GetNeighbor(current, index);
+					if (!g->IsFault(neighbor) && neighbor != preview)
+					{
+						candidate = neighbor;
+						break;
+					}
+				}
 			}
 		}
 
-		// 1ステップ追加
+		// ルーティングができない(＝非故障かつ前方も横方も見つからない)
+		// or 通ったことのある頂点に到達(ループ)ならば失敗
+		if (candidate == current || visited[candidate])
+		{
+			step = -step;
+			break;
+		}
+
 		step++;
+		preview = current;
+		current = candidate;
 	}
 
 	delete[] visited;

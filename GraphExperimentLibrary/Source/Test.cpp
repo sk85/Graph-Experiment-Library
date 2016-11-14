@@ -41,7 +41,7 @@ namespace Test
 					}
 
 					// ŒvŽZ
-					int testAnswer = ltq.GetPreferredNeighbor(s, d);
+					int testAnswer = ltq.GetForwardNeighbor(s, d);
 
 					// •\Ž¦
 					if (correctAnswer != testAnswer)

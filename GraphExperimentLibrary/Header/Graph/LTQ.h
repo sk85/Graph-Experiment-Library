@@ -10,7 +10,7 @@ public:
 	virtual int CalcDistance(uint32_t s, uint32_t d) override;
 	virtual int GetDegree(uint32_t node) override;
 	virtual uint32_t CalcNodeNum() override;
-	virtual uint32_t GetPreferredNeighbor(uint32_t s, uint32_t d);
+	virtual uint32_t GetForwardNeighbor(uint32_t s, uint32_t d);
 
 	void CalcCapability();
 	int GetDiameter();

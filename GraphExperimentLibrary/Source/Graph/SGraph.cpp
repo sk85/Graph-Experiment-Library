@@ -34,13 +34,35 @@ void SGraph::SetRandSeed(int seed)
 	MT.seed(seed);
 }
 
-uint32_t SGraph::GetPreferredNeighbor(uint32_t s, uint32_t d)
+uint32_t SGraph::GetForwardNeighbor(uint32_t s, uint32_t d)
 {
 	int distance = this->CalcDistance(s, d);
 	uint32_t answer = 0;
-	for (size_t i = 0; i < this->GetDegree(s); i++)
+	for (int i = 0; i < this->GetDegree(s); i++)
 	{
-		if (this->CalcDistance(this->GetNeighbor(s, d), d) < distance) answer |= 1 << i;
+		if (this->CalcDistance(this->GetNeighbor(s, i), d) < distance) answer |= (1 << i);
+	}
+	return answer;
+}
+
+uint32_t SGraph::GetSideNeighbor(uint32_t s, uint32_t d)
+{
+	int distance = this->CalcDistance(s, d);
+	uint32_t answer = 0;
+	for (int i = 0; i < this->GetDegree(s); i++)
+	{
+		if (this->CalcDistance(this->GetNeighbor(s, i), d) == distance) answer |= 1 << i;
+	}
+	return answer;
+}
+
+uint32_t SGraph::GetBackwardNeighbor(uint32_t s, uint32_t d)
+{
+	int distance = this->CalcDistance(s, d);
+	uint32_t answer = 0;
+	for (int i = 0; i < this->GetDegree(s); i++)
+	{
+		if (this->CalcDistance(this->GetNeighbor(s, i), d) > distance) answer |= 1 << i;
 	}
 	return answer;
 }
