@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Score.cpp" />
     <ClCompile Include="Source\Graph\LTQ.cpp" />
     <ClCompile Include="Source\Graph\MobiusCube.cpp" />
     <ClCompile Include="Source\Graph\PancakeGraph.cpp" />
@@ -43,6 +44,7 @@
     <ClInclude Include="Header\Graph\SpinedCube.h" />
     <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\SPR.h" />
     <ClInclude Include="Header\Routing.h" />
+    <ClInclude Include="Header\Score.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C0DF6ECD-6112-40FC-87B9-C0B341265922}</ProjectGuid>

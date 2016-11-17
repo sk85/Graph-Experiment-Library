@@ -1,7 +1,5 @@
 #include <Graph\LTQ.h>
 
-#include <vector>
-
 uint32_t LTQ::GetNeighbor(uint32_t s, int index)
 {
 	if (index < 2)
@@ -178,27 +176,72 @@ uint32_t LTQ::GetForwardNeighbor(uint32_t s, uint32_t d)
 	}
 }
 
-void LTQ::CalcCapability()
+Score& LTQ::CalcCapability1()
 {
 	int diameter = this->GetDiameter();
-	int num = this->GetNodeNum() * (diameter + 1);
-	int** capability = (int**)new int[num];
 
-	for (size_t node = 0; node < num; node++)
+	Score c(this->NodeNum, diameter + 1);
+
+	// c_0‚ğ‰Šú‰»
+	for (uint32_t node = 0; node < diameter; node++)
 	{
-		capability[node][0] = this->IsFault(node) ? 0 : 1;
+		if (this->IsFault(node))
+			c.Set(node, 0, 0);
+		else
+			c.Set(node, 0, 1);
 	}
 
-	for (size_t i = 0; i <= diameter; i++)
+	// c_1`‚ğ‰Šú‰»
+	for (int k = 1; k <= diameter; k++)
 	{
-		for (size_t node = 1; node < this->GetNodeNum(); node++)
+		for (uint32_t node = 0; node < this->GetNodeNum(); node++)
 		{
-			if (this->IsFault(node))
-				capability[node][i] = 0;
+			int tmp = 0;
+			for (int index = 1; index < this->GetDegree(node); index++)
+			{
+				tmp += c.Get(this->GetNeighbor(node, index), k - 1);
+			}
+			if (tmp > this->Dimension - 1 - k)
+				c.Set(node, k, 1);
 			else
-				capability[node][i] = 1;
+				c.Set(node, k, 0);
 		}
 	}
+	return c;
+}
+
+Score& LTQ::CalcCapability2()
+{
+	int diameter = this->GetDiameter();
+
+	Score c(this->NodeNum, diameter + 1);
+
+	// c_0‚ğ‰Šú‰»
+	for (uint32_t node = 0; node < diameter; node++)
+	{
+		if (this->IsFault(node))
+			c.Set(node, 0, 0);
+		else
+			c.Set(node, 0, 1);
+	}
+
+	// c_1`‚ğ‰Šú‰»
+	for (int k = 1; k <= diameter; k++)
+	{
+		for (uint32_t node = 0; node < this->GetNodeNum(); node++)
+		{
+			int tmp = 0;
+			for (int index = 0; index < this->GetDegree(node); index++)
+			{
+				tmp += c.Get(this->GetNeighbor(node, index), k - 1);
+			}
+			if (tmp > this->Dimension - k)
+				c.Set(node, k, 1);
+			else
+				c.Set(node, k, 0);
+		}
+	}
+	return c;
 }
 
 int LTQ::GetDiameter()
@@ -207,4 +250,9 @@ int LTQ::GetDiameter()
 		return (this->Dimension + 2) / 2;
 	else
 		return (this->Dimension + 4) / 2;
+}
+
+int LTQ::Routing_Takano1603(uint32_t s, uint32_t d)
+{
+
 }

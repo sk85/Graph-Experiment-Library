@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Score.h>
 #include "SGraph.h"
 
 class LTQ : public SGraph
@@ -12,6 +13,9 @@ public:
 	virtual uint32_t CalcNodeNum() override;
 	virtual uint32_t GetForwardNeighbor(uint32_t s, uint32_t d);
 
-	void CalcCapability();
+	Score& CalcCapability1();
+	Score& CalcCapability2();
 	int GetDiameter();
+
+	int Routing_Takano1603(uint32_t s, uint32_t d);
 };
