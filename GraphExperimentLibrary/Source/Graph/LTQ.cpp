@@ -1,4 +1,5 @@
-#include <Graph\LTQ.h>
+#include "LTQ.h"
+#include "..\Common.h"
 
 uint32_t LTQ::GetNeighbor(uint32_t s, int index)
 {
@@ -176,19 +177,19 @@ uint32_t LTQ::GetForwardNeighbor(uint32_t s, uint32_t d)
 	}
 }
 
-Score& LTQ::CalcCapability1()
+Score* LTQ::CalcCapability1()
 {
 	int diameter = this->GetDiameter();
 
-	Score c(this->NodeNum, diameter + 1);
+	Score *c = new Score(this->NodeNum, diameter + 1);
 
 	// c_0を初期化
-	for (uint32_t node = 0; node < diameter; node++)
+	for (uint32_t node = 0; node < this->GetNodeNum(); node++)
 	{
 		if (this->IsFault(node))
-			c.Set(node, 0, 0);
+			c->Set(node, 0, 0);
 		else
-			c.Set(node, 0, 1);
+			c->Set(node, 0, 1);
 	}
 
 	// c_1～を初期化
@@ -199,12 +200,12 @@ Score& LTQ::CalcCapability1()
 			int tmp = 0;
 			for (int index = 1; index < this->GetDegree(node); index++)
 			{
-				tmp += c.Get(this->GetNeighbor(node, index), k - 1);
+				tmp += c->Get(this->GetNeighbor(node, index), k - 1);
 			}
 			if (tmp > this->Dimension - 1 - k)
-				c.Set(node, k, 1);
+				c->Set(node, k, 1);
 			else
-				c.Set(node, k, 0);
+				c->Set(node, k, 0);
 		}
 	}
 	return c;
@@ -217,7 +218,7 @@ Score& LTQ::CalcCapability2()
 	Score c(this->NodeNum, diameter + 1);
 
 	// c_0を初期化
-	for (uint32_t node = 0; node < diameter; node++)
+	for (uint32_t node = 0; node < this->GetNodeNum(); node++)
 	{
 		if (this->IsFault(node))
 			c.Set(node, 0, 0);
@@ -252,7 +253,255 @@ int LTQ::GetDiameter()
 		return (this->Dimension + 4) / 2;
 }
 
-int LTQ::Routing_Takano1603(uint32_t s, uint32_t d)
+uint32_t LTQ::CalcInnerForward(uint32_t node1, uint32_t node2)
 {
+	uint32_t c1 = node1 ^ node2, c2 = c1;
+	int count1 = 0, count2 = 0, countE = 0;
+	uint32_t type_node1 = 0b10 + (node1 & 1);
+	uint32_t innerFoward1 = 0, innerFoward2= 0;
 
+	for (int i = this->Dimension - 1; i > 1; --i)
+	{
+		if (c1 >> i)
+		{
+			c1 ^= type_node1 << (i - 1);
+			innerFoward1 |= (1 << i);
+			count1++;
+		}
+		if (c2 >> i)
+		{
+			uint32_t type = (c2 >> (i - 1));
+			if (type == type_node1) innerFoward2 |= (1 << i);
+			c2 ^= type << (i - 1);
+			count2++;
+		}
+	}
+	count1 += (c1 >> 1) + ((c1 & 1) << 10);
+	count2 += 2 + (c2 >> 1) - (c2 & 1);
+	innerFoward1 |= c1;
+	innerFoward2 |= c2 & 0b10;
+
+	if (count1 <= count2)
+		return innerFoward1;
+	else
+		return innerFoward2;
+}
+
+int LTQ::Routing_Stupid(uint32_t node1, uint32_t node2)
+{
+	uint32_t current = node1;
+	int step = 0;
+
+	while (current != node2)
+	{
+		uint32_t innerFoward = CalcInnerForward(current, node2);
+
+		// 中間目的頂点までのルーティング
+		while (innerFoward != 0)
+		{
+			int nextIndex = -1;
+
+			// 内部前方から移動先候補を探す
+			int i = GetDegree(current);
+			while ((i = GetNextBitIndex(innerFoward, i - 1)) >= 0)
+			{
+				if (!IsFault(GetNeighbor(current, i)))
+				{
+					nextIndex = i;
+					break;
+				}
+			}
+
+			// 移動先候補がなければ失敗
+			if (nextIndex < 0) return -step;
+
+			// 移動先候補があればそちらへ
+			current = GetNeighbor(current, nextIndex);
+			innerFoward ^= 1 << nextIndex;
+			step++;
+		}
+
+		// サブグラフを渡る
+		if (current != node2)
+		{
+			uint32_t neighbor = GetNeighbor(current, 0);
+
+			// 渡った先が故障なら失敗
+			if (IsFault(neighbor)) return -step;
+
+			// 非故障なら移動
+			step++;
+			current = neighbor;
+		}
+	}
+	return step;
+}
+
+int LTQ::Routing_TakanoSotsuron(uint32_t node1, uint32_t node2, Score* score)
+{
+	uint32_t current = node1;
+	int step = 0;
+
+	while (current != node2)
+	{
+		uint32_t innerFoward = CalcInnerForward(current, node2);
+		uint32_t intermediate = current;
+
+		// 中間目的頂点を設定
+		int i = GetDegree(current);
+		while ((i = GetNextBitIndex(innerFoward, i - 1)) >= 0)
+		{
+			intermediate = GetNeighbor(intermediate, i);
+		}
+
+		// 中間目的頂点までのルーティング
+		while (current != intermediate)
+		{
+			int nextIndex1 = -1;
+			int nextIndex2 = -1;
+
+			// [内部前方かつCapable]と[内部前方かつ非故障]を探す
+			int i = GetDegree(current);
+			while ((i = GetNextBitIndex(innerFoward, i - 1)) >= 0)
+			{
+				uint32_t neighbor = GetNeighbor(current, i);
+				int distance = CalcDistance(neighbor, intermediate);
+				if (score->Get(neighbor, distance) == 1)
+				{
+					nextIndex1 = i;
+					break;
+				}
+				if (!IsFault(neighbor))
+				{
+					nextIndex2 = i;
+				}
+			}
+
+			// [内部前方かつCapable]があればそちらへルーティング
+			if (nextIndex1 >= 0)
+			{
+				innerFoward ^= 1 << nextIndex1;
+				current = GetNeighbor(current, nextIndex1);
+				step++;
+			}
+			// [内部前方かつ非故障]があればそちらへルーティング
+			else if (nextIndex2 >= 0)
+			{
+				innerFoward ^= 1 << nextIndex2;
+				current = GetNeighbor(current, nextIndex2);
+				step++;
+			}
+			// 移動先候補がなければ失敗
+			else
+			{
+				return -step;
+			}
+		}
+
+		// サブグラフを渡る
+		if (current != node2)
+		{
+			uint32_t neighbor = GetNeighbor(current, 0);
+
+			// 渡った先が故障なら失敗
+			if (IsFault(neighbor)) return -step;
+
+			// 非故障なら移動
+			step++;
+			current = neighbor;
+		}
+	}
+	return step;
+}
+
+int LTQ::Routing_TakanoSotsuronKai(uint32_t node1, uint32_t node2, Score* score)
+{
+	uint32_t current = node1;
+	int step = 0;
+
+	while (current != node2)
+	{
+		uint32_t innerFoward = CalcInnerForward(current, node2);
+		uint32_t intermediate = current;
+
+		// 中間目的頂点を設定
+		int i = GetDegree(current);
+		while ((i = GetNextBitIndex(innerFoward, i - 1)) >= 0)
+		{
+			intermediate = GetNeighbor(intermediate, i);
+		}
+
+		// 中間目的頂点までのルーティング
+		while (current != intermediate)
+		{
+			int nextIndex1 = -1;
+
+			// [内部前方かつCapable]を探す
+			i = GetDegree(current);
+			while ((i = GetNextBitIndex(innerFoward, i - 1)) >= 0)
+			{
+				uint32_t neighbor = GetNeighbor(current, i);
+				int distance = CalcDistance(neighbor, intermediate);
+				if (score->Get(neighbor, distance) == 1)
+				{
+					nextIndex1 = i;
+					break;
+				}
+			}
+
+			// [内部前方かつCapable]があればそちらへルーティング
+			if (nextIndex1 >= 0)
+			{
+				innerFoward ^= 1 << nextIndex1;
+				current = GetNeighbor(current, nextIndex1);
+				step++;
+				continue;
+			}
+
+			// [前方かつ非故障]を探す
+			uint32_t foward = GetForwardNeighbor(current, node2);
+			i = GetDegree(current);
+			while ((i = GetNextBitIndex(foward, i - 1)) >= 0)
+			{
+				uint32_t neighbor = GetNeighbor(current, i);
+				if (!IsFault(neighbor))
+				{
+					nextIndex1 = i;
+					break;
+				}
+			}
+
+			// [前方かつ非故障]があればそちらへルーティング
+			if (nextIndex1 >= 0)
+			{
+				current = GetNeighbor(current, nextIndex1);
+				step++;
+				innerFoward = CalcInnerForward(current, node2);
+				intermediate = current;
+				while ((i = GetNextBitIndex(innerFoward, i - 1)) >= 0)
+				{
+					intermediate = GetNeighbor(intermediate, i);
+				}
+			}
+			// 移動先候補がなければ失敗
+			else
+			{
+				return -step;
+			}
+		}
+
+		// サブグラフを渡る
+		if (current != node2)
+		{
+			uint32_t neighbor = GetNeighbor(current, 0);
+
+			// 渡った先が故障なら失敗
+			if (IsFault(neighbor)) return -step;
+
+			// 非故障なら移動
+			step++;
+			current = neighbor;
+		}
+	}
+	return step;
 }

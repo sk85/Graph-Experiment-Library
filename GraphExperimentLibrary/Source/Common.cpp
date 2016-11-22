@@ -2,7 +2,7 @@
 #include <atltime.h>
 #include <string>
 
-#include "..\Header\Common.h"
+#include "Common.h"
 
 
 

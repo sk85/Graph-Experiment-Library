@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Graph\SpinedCube.h>
+#include "Graph\SGraph.h"
 
 namespace Routing
 {

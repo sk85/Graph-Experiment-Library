@@ -1,7 +1,6 @@
 #pragma once
 
-#include <Graph\SGraph.h>
-#include <Graph\LTQ.h>
+#include "Graph\SGraph.h"
 
 namespace Test
 {

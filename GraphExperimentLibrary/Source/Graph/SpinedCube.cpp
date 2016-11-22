@@ -1,7 +1,7 @@
 
 
-#include <Graph\SpinedCube.h>
-#include <Graph\SpinedCube_shortestpathrouting\SPR.h>
+#include "SpinedCube.h"
+#include "SpinedCube_shortestpathrouting\SPR.h"
 
 uint32_t SpinedCube::GetNeighbor(uint32_t s, int index) {
 	uint32_t d;

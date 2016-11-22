@@ -13,40 +13,69 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="ヘッダー ファイル\Graph">
-      <UniqueIdentifier>{65ec1c96-82d7-4db0-8d26-17093a511880}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\Graph\SpinedCube_spr">
-      <UniqueIdentifier>{ae9f3e3f-1131-4e30-8fa0-2e15cc26caef}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\Graph">
-      <UniqueIdentifier>{a77d9780-0b9a-49c6-b872-33b5a0f4c388}</UniqueIdentifier>
+      <UniqueIdentifier>{aa58cd3d-6793-4ada-b669-d03a36c93e2c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Graph\SpinedCube_spr">
-      <UniqueIdentifier>{f9a22ba4-14c2-4653-81af-a8eb26fac41c}</UniqueIdentifier>
+    <Filter Include="ソース ファイル\Graph\SpinedCube">
+      <UniqueIdentifier>{244c8bdf-eef0-40c2-b7cd-a8e384fcb02e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Graph">
+      <UniqueIdentifier>{7a6e74d5-7811-406f-bcf5-abf06ab83c17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Graph\SpinedCube">
+      <UniqueIdentifier>{dbd50df1-5377-4d77-990d-4ca08090cd35}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Common.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Routing.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Score.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Test.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graph\LTQ.h">
+      <Filter>ヘッダー ファイル\Graph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graph\MobiusCube.h">
+      <Filter>ヘッダー ファイル\Graph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graph\PancakeGraph.h">
+      <Filter>ヘッダー ファイル\Graph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graph\SGraph.h">
+      <Filter>ヘッダー ファイル\Graph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graph\SpinedCube.h">
+      <Filter>ヘッダー ファイル\Graph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graph\SpinedCube_shortestpathrouting\SPR.h">
+      <Filter>ヘッダー ファイル\Graph\SpinedCube</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graph\SpinedCube_shortestpathrouting\Node.h">
+      <Filter>ヘッダー ファイル\Graph\SpinedCube</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graph\SpinedCube_shortestpathrouting\Expansion.h">
+      <Filter>ヘッダー ファイル\Graph\SpinedCube</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Common.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Routing.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graph\SGraph.cpp">
-      <Filter>ソース ファイル\Graph</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\Node.cpp">
-      <Filter>ソース ファイル\Graph\SpinedCube_spr</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\SPR.cpp">
-      <Filter>ソース ファイル\Graph\SpinedCube_spr</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Graph\SpinedCube.cpp">
-      <Filter>ソース ファイル\Graph</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Common.cpp">
-      <Filter>ソース ファイル\Graph\SpinedCube_spr</Filter>
+    <ClCompile Include="Source\Score.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Test.cpp">
       <Filter>ソース ファイル</Filter>
@@ -60,46 +89,17 @@
     <ClCompile Include="Source\Graph\PancakeGraph.cpp">
       <Filter>ソース ファイル\Graph</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Score.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\Graph\SGraph.cpp">
+      <Filter>ソース ファイル\Graph</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Header\Routing.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\Graph\SGraph.h">
-      <Filter>ヘッダー ファイル\Graph</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\Graph\SpinedCube.h">
-      <Filter>ヘッダー ファイル\Graph</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\Common.h">
-      <Filter>ヘッダー ファイル\Graph\SpinedCube_spr</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\Expansion.h">
-      <Filter>ヘッダー ファイル\Graph\SpinedCube_spr</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\Node.h">
-      <Filter>ヘッダー ファイル\Graph\SpinedCube_spr</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\SPR.h">
-      <Filter>ヘッダー ファイル\Graph\SpinedCube_spr</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\Test.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\Graph\LTQ.h">
-      <Filter>ヘッダー ファイル\Graph</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\Graph\MobiusCube.h">
-      <Filter>ヘッダー ファイル\Graph</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\Graph\PancakeGraph.h">
-      <Filter>ヘッダー ファイル\Graph</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\Score.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
+    <ClCompile Include="Source\Graph\SpinedCube.cpp">
+      <Filter>ソース ファイル\Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\Node.cpp">
+      <Filter>ソース ファイル\Graph\SpinedCube</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\SPR.cpp">
+      <Filter>ソース ファイル\Graph\SpinedCube</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

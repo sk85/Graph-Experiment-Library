@@ -2,11 +2,12 @@
 #include <iostream>
 #include <chrono>
 
-#include <Graph\SpinedCube.h>
-#include <Graph\PancakeGraph.h>
-#include <Test.h>
-#include <Routing.h>
-#include "..\Header\Common.h"
+#include "Test.h"
+#include "Routing.h"
+#include "Graph\SGraph.h"
+#include "Graph\PancakeGraph.h"
+#include "Graph\LTQ.h"
+#include "Common.h"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ namespace Test
 
 		LTQ ltq;
 
-		for (size_t dim = minDim; dim < maxDim; dim++)
+		for (int dim = minDim; dim <= maxDim; dim++)
 		{
 			ltq.SetDimension(dim);
 

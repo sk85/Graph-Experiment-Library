@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Graph\SGraph.h>
+#include "Graph\SGraph.h"
 
 class Score
 {

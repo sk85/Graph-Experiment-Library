@@ -1,4 +1,4 @@
-#include <Graph\SGraph.h>
+#include "SGraph.h"
 
 SGraph::~SGraph()
 {
@@ -266,4 +266,40 @@ uint32_t SGraph::GetConnectedNodeRandom(uint32_t node)
 	{
 		return index - 1;
 	}
+}
+
+int SGraph::Routing_Simple(const uint32_t node1, const uint32_t node2)
+{
+	uint32_t current = node1;
+	int step = 0;
+
+	while (current != node2)
+	{
+		uint32_t candidate = current;
+
+		// 前方隣接頂点の中で非故障なノードがあればそこへルーティング
+		uint32_t forward = GetForwardNeighbor(current, node2);
+		for (int index = 0; index < GetDegree(current); index++)
+		{
+			if (forward & (1 << index))
+			{
+				uint32_t neighbor = GetNeighbor(current, index);
+				if (!IsFault(neighbor))
+				{
+					candidate = neighbor;
+					break;
+				}
+			}
+		}
+
+		// ルーティングができない(＝非故障かつ前方が見つからない)ならば失敗
+		if (candidate == current)
+		{
+			return -step;
+		}
+
+		step++;
+		current = candidate;
+	}
+	return step;
 }

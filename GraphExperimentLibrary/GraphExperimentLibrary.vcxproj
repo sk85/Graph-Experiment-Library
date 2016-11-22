@@ -19,32 +19,32 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Score.cpp" />
+    <ClInclude Include="Source\Common.h" />
+    <ClInclude Include="Source\Graph\LTQ.h" />
+    <ClInclude Include="Source\Graph\MobiusCube.h" />
+    <ClInclude Include="Source\Graph\PancakeGraph.h" />
+    <ClInclude Include="Source\Graph\SGraph.h" />
+    <ClInclude Include="Source\Graph\SpinedCube.h" />
+    <ClInclude Include="Source\Graph\SpinedCube_shortestpathrouting\Expansion.h" />
+    <ClInclude Include="Source\Graph\SpinedCube_shortestpathrouting\Node.h" />
+    <ClInclude Include="Source\Graph\SpinedCube_shortestpathrouting\SPR.h" />
+    <ClInclude Include="Source\Routing.h" />
+    <ClInclude Include="Source\Score.h" />
+    <ClInclude Include="Source\Test.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Common.cpp" />
     <ClCompile Include="Source\Graph\LTQ.cpp" />
     <ClCompile Include="Source\Graph\MobiusCube.cpp" />
     <ClCompile Include="Source\Graph\PancakeGraph.cpp" />
-    <ClCompile Include="Source\Test.cpp" />
-    <ClCompile Include="Source\Common.cpp" />
-    <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Graph\SGraph.cpp" />
-    <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\Node.cpp" />
     <ClCompile Include="Source\Graph\SpinedCube.cpp" />
+    <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\Node.cpp" />
     <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\SPR.cpp" />
+    <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Routing.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Header\Common.h" />
-    <ClInclude Include="Header\Graph\LTQ.h" />
-    <ClInclude Include="Header\Graph\MobiusCube.h" />
-    <ClInclude Include="Header\Graph\PancakeGraph.h" />
-    <ClInclude Include="Header\Test.h" />
-    <ClInclude Include="Header\Graph\SGraph.h" />
-    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\Expansion.h" />
-    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\Node.h" />
-    <ClInclude Include="Header\Graph\SpinedCube.h" />
-    <ClInclude Include="Header\Graph\SpinedCube_shortestpathrouting\SPR.h" />
-    <ClInclude Include="Header\Routing.h" />
-    <ClInclude Include="Header\Score.h" />
+    <ClCompile Include="Source\Score.cpp" />
+    <ClCompile Include="Source\Test.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C0DF6ECD-6112-40FC-87B9-C0B341265922}</ProjectGuid>

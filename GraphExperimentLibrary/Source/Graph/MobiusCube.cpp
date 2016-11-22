@@ -1,4 +1,4 @@
-#include <Graph\MobiusCube.h>
+#include "MobiusCube.h"
 
 void MobiusCube::SetType(int _type)
 {

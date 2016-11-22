@@ -28,6 +28,17 @@ protected:
 	/// <returns>ノード数</returns>
 	virtual uint32_t CalcNodeNum() = 0;
 
+	// 前方隣接頂点ビット列などから次のIndexを返す
+	// fromから下に探索して見つからなければ-1
+	int GetNextBitIndex(uint32_t bits, int from)
+	{
+		for (int i = from; i >= 0; --i)
+		{
+			if (bits & (1 << i)) return i;
+		}
+		return -1;
+	}
+
 public:
 	//SGraph();
 	virtual ~SGraph();
@@ -147,7 +158,6 @@ public:
 
 
 
-
 	/// <summary>故障要素集合を作る</summary>
 	/// <param name="faultRatio">故障率(%)</param>
 	void GenerateFaults(int faultRatio);
@@ -163,4 +173,8 @@ public:
 	///		失敗時はreturnが引数と一致
 	/// </returns>
 	uint32_t GetConnectedNodeRandom(uint32_t node);
+
+
+	// 
+	int Routing_Simple(const uint32_t node1, const uint32_t node2);
 };

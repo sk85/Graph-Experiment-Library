@@ -1,4 +1,4 @@
-#include <Graph\PancakeGraph.h>
+#include "PancakeGraph.h"
 
 
 unsigned PancakeGraph::InitPerm(int nn, int rr) {

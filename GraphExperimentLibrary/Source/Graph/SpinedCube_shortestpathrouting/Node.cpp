@@ -1,4 +1,4 @@
-#include <Graph\SpinedCube_shortestpathrouting\Node.h>
+#include "Node.h"
 
 
 // コンストラクタたち
