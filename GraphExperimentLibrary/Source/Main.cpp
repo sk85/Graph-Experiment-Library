@@ -16,24 +16,8 @@ void test(int dim, int trials, char* filename);
 
 int main(void)
 {
-	
-	LTQ ltq;
-	ltq.SetDimension(10);
-	ltq.GenerateFaults(10);
-	auto a = ltq.CalcCapability1();
-	ofstream ofs("a.csv");
-	for (size_t i = 0; i < ltq.GetNodeNum(); i++)
-	{
-		for (size_t j = 0; j < 6; j++)
-		{
-			ofs << a->Get(i, j) << ",";
-		}
-		ofs << endl;
-	}
-	ofs.close();
 
-
-	test(10, 100, "test.csv");
+	test(10, 1000, "test10-1000.csv");
 
 
 	return 0;
@@ -43,9 +27,9 @@ void test(int dim, int trials, char* filename)
 {
 	LTQ ltq;
 	ltq.SetDimension(dim);
-	const int RoutingNum = 4;
+	const int RoutingNum = 5;
 
-	char routingName[][30] = { "ŽG1", "ŽG2", "‚–ì‘²˜_(‰¼)", "‚–ì‘²˜_(‰¼2)" };
+	char routingName[][30] = { "ŽG1", "ŽG2", "‚–ì‘²˜_(‰¼)", "‚–ì‘²˜_(‰¼2)", "TM-Mk2" };
 	int successCount[RoutingNum][10];
 	int totalSteps[RoutingNum][10];
 	for (size_t i = 0; i < RoutingNum; i++)
@@ -105,6 +89,16 @@ void test(int dim, int trials, char* filename)
 				}
 				// ‚–ì‚­‚ñ‚Ì‘²˜_‰ü
 				id = 3;
+				step = ltq.Routing_TakanoSotsuronKai(node1, node2, score);
+				if (step > 0)
+				{
+					successCount[id][faultRatio]++;
+					totalSteps[id][faultRatio] += step;
+				}
+				delete score;
+				// ‚–ì‚­‚ñ‚Ì‘²˜_‰ü“ñ
+				score = ltq.CalcCapability2();
+				id = 4;
 				step = ltq.Routing_TakanoSotsuronKai(node1, node2, score);
 				if (step > 0)
 				{

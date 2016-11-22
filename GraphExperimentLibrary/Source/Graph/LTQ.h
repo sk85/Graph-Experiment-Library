@@ -22,7 +22,7 @@ public:
 				{
 					uint32_t forward = CalcInnerForward(node1, node2);
 					int distance = CalcDistance(node1, node2);
-					for (size_t i = 0; i < GetDegree(node1); i++)
+					for (int i = 0; i < GetDegree(node1); i++)
 					{
 						if (forward & (1 << i))
 						{
@@ -56,10 +56,10 @@ public:
 
 	/// <summary>
 	///		Capabilityを計算
-	///		<para>HQと同じように計算</para>
+	///		<para>改二</para>
 	/// </summary>
 	/// <returns>CapabilityのScoreオブジェクト</returns>
-	Score& CalcCapability2();
+	Score* CalcCapability2();
 
 	/// <summary>直径を計算する</summary>
 	/// <returns>直径</returns>

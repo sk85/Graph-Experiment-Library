@@ -58,13 +58,13 @@ namespace Test
 			auto end = std::chrono::system_clock::now();       // 計測終了時刻を保存
 			auto dur = end - start;        // 要した時間を計算
 			auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-			printf_s("...ok. 所要時間 : %dmsec.\n", msec);
+			printf_s("...ok. 所要時間 : %lldmsec.\n", msec);
 		}
 	}
 
 	void e160930(SGraph *g, int maxDim)
 	{
-		for (size_t dim = 2; dim <= maxDim; dim++)
+		for (int dim = 2; dim <= maxDim; dim++)
 		{
 			printf_s("Dim = %d\n", dim);
 			g->SetDimension(dim);
@@ -110,7 +110,7 @@ namespace Test
 		}
 
 		// 実験本体
-		for (uint32_t i = 1; i <= trials; i++)
+		for (int i = 1; i <= trials; i++)
 		{
 			for (int j = 0; j < 10; j++)
 			{

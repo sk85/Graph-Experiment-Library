@@ -211,35 +211,35 @@ Score* LTQ::CalcCapability1()
 	return c;
 }
 
-Score& LTQ::CalcCapability2()
+Score* LTQ::CalcCapability2()
 {
 	int diameter = this->GetDiameter();
 
-	Score c(this->NodeNum, diameter + 1);
+	Score *c = new Score(this->NodeNum, diameter + 1);
 
-	// c_0を初期化
+	// c_1を初期化
 	for (uint32_t node = 0; node < this->GetNodeNum(); node++)
 	{
 		if (this->IsFault(node))
-			c.Set(node, 0, 0);
+			c->Set(node, 1, 0);
 		else
-			c.Set(node, 0, 1);
+			c->Set(node, 1, 1);
 	}
 
-	// c_1～を初期化
-	for (int k = 1; k <= diameter; k++)
+	// c_2～を初期化
+	for (int k = 2; k <= diameter; k++)
 	{
 		for (uint32_t node = 0; node < this->GetNodeNum(); node++)
 		{
 			int tmp = 0;
 			for (int index = 0; index < this->GetDegree(node); index++)
 			{
-				tmp += c.Get(this->GetNeighbor(node, index), k - 1);
+				tmp += c->Get(this->GetNeighbor(node, index), k - 1);
 			}
 			if (tmp > this->Dimension - k)
-				c.Set(node, k, 1);
+				c->Set(node, k, 1);
 			else
-				c.Set(node, k, 0);
+				c->Set(node, k, 0);
 		}
 	}
 	return c;
@@ -431,8 +431,8 @@ int LTQ::Routing_TakanoSotsuronKai(uint32_t node1, uint32_t node2, Score* score)
 			intermediate = GetNeighbor(intermediate, i);
 		}
 
-		// 中間目的頂点までのルーティング
-		while (current != intermediate)
+		// 中間目的頂点に到達していない場合
+		if (current != intermediate)
 		{
 			int nextIndex1 = -1;
 
@@ -474,23 +474,18 @@ int LTQ::Routing_TakanoSotsuronKai(uint32_t node1, uint32_t node2, Score* score)
 			// [前方かつ非故障]があればそちらへルーティング
 			if (nextIndex1 >= 0)
 			{
+				innerFoward = CalcInnerForward(current, node2);
 				current = GetNeighbor(current, nextIndex1);
 				step++;
-				innerFoward = CalcInnerForward(current, node2);
-				intermediate = current;
-				while ((i = GetNextBitIndex(innerFoward, i - 1)) >= 0)
-				{
-					intermediate = GetNeighbor(intermediate, i);
-				}
+				continue;
 			}
+
 			// 移動先候補がなければ失敗
-			else
-			{
-				return -step;
-			}
+			return -step;
 		}
 
-		// サブグラフを渡る
+		// 中間目的頂点に到達している場合
+		// 中間目的頂点 != 目的頂点ならサブグラフを渡る
 		if (current != node2)
 		{
 			uint32_t neighbor = GetNeighbor(current, 0);

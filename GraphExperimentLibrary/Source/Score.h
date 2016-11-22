@@ -6,7 +6,7 @@ class Score
 {
 private:
 	int** Array;
-	int NodeNum;
+	uint32_t NodeNum;
 	int Size;
 public:
 	Score(uint32_t nodeNum, int size);
