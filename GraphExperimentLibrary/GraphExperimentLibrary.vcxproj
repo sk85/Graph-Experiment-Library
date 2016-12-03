@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Common.h" />
+    <ClInclude Include="Source\Experiment\Results.h" />
     <ClInclude Include="Source\Graph\LTQ.h" />
     <ClInclude Include="Source\Graph\MobiusCube.h" />
     <ClInclude Include="Source\Graph\PancakeGraph.h" />
@@ -30,10 +31,11 @@
     <ClInclude Include="Source\Graph\SpinedCube_shortestpathrouting\SPR.h" />
     <ClInclude Include="Source\Routing.h" />
     <ClInclude Include="Source\Score.h" />
-    <ClInclude Include="Source\Test.h" />
+    <ClInclude Include="Source\Experiment\Test.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Common.cpp" />
+    <ClCompile Include="Source\Experiment\Results.cpp" />
     <ClCompile Include="Source\Graph\LTQ.cpp" />
     <ClCompile Include="Source\Graph\MobiusCube.cpp" />
     <ClCompile Include="Source\Graph\PancakeGraph.cpp" />
@@ -44,7 +46,7 @@
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Routing.cpp" />
     <ClCompile Include="Source\Score.cpp" />
-    <ClCompile Include="Source\Test.cpp" />
+    <ClCompile Include="Source\Experiment\Test.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C0DF6ECD-6112-40FC-87B9-C0B341265922}</ProjectGuid>

@@ -25,6 +25,12 @@
     <Filter Include="ヘッダー ファイル\Graph\SpinedCube">
       <UniqueIdentifier>{dbd50df1-5377-4d77-990d-4ca08090cd35}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Experiment">
+      <UniqueIdentifier>{4a1dca3b-2993-466a-9d91-d82bf76e72c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Experiment">
+      <UniqueIdentifier>{cde285f0-3edb-41b9-9178-84d5263bfa4b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Common.h">
@@ -34,9 +40,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Score.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Test.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Graph\LTQ.h">
@@ -63,6 +66,12 @@
     <ClInclude Include="Source\Graph\SpinedCube_shortestpathrouting\Expansion.h">
       <Filter>ヘッダー ファイル\Graph\SpinedCube</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Experiment\Results.h">
+      <Filter>ヘッダー ファイル\Experiment</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Experiment\Test.h">
+      <Filter>ヘッダー ファイル\Experiment</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Common.cpp">
@@ -75,9 +84,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Score.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Test.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Source\Graph\LTQ.cpp">
@@ -100,6 +106,12 @@
     </ClCompile>
     <ClCompile Include="Source\Graph\SpinedCube_shortestpathrouting\SPR.cpp">
       <Filter>ソース ファイル\Graph\SpinedCube</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Experiment\Test.cpp">
+      <Filter>ソース ファイル\Experiment</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Experiment\Results.cpp">
+      <Filter>ソース ファイル\Experiment</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,9 +1,12 @@
 #pragma once
 
-#include "Graph\SGraph.h"
+#include "..\Graph\SGraph.h"
 
 namespace Test
 {
+	// LTQのCapability関連の実験
+	void e161122(int dim, int trials, char* path);
+
 	// LTQのGetPreferredNeighborが正しいかテストする
 	void e161024(int minDim, int maxDim);
 

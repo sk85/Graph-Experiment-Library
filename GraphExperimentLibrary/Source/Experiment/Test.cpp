@@ -3,16 +3,54 @@
 #include <chrono>
 
 #include "Test.h"
-#include "Routing.h"
-#include "Graph\SGraph.h"
-#include "Graph\PancakeGraph.h"
-#include "Graph\LTQ.h"
-#include "Common.h"
+#include "Results.h"
+#include "..\Routing.h"
+#include "..\Graph\PancakeGraph.h"
+#include "..\Graph\LTQ.h"
+#include "..\Common.h"
 
 using namespace std;
 
 namespace Test
 {
+	void e161122(int dim, int trials, char* path)
+	{
+		LTQ ltq;
+		ltq.SetDimension(dim);
+
+		Results r;
+		r.Add("SR");
+		r.Add("SR-C");
+		r.Add("SR-C2");
+
+		for (int i = 1; i <= trials; i++)
+		{
+			printf_s("\r%5d/%5d", i, trials);
+			for (int faultRatio = 0; faultRatio < 10; faultRatio++)
+			{
+				ltq.GenerateFaults(faultRatio * 10);	// 故障を発生させる
+
+				uint32_t node1, node2;		// 出発ノードと目的ノード
+				do
+				{
+					node1 = ltq.GetNodeRandom();
+					node2 = ltq.GetConnectedNodeRandom(node1);
+				} while (node2 == node1);	// 連結な候補が見つかるまでループ
+
+				r.Update(0, faultRatio, ltq.Routing_Simple(node1, node2));
+
+				Score* c = ltq.CalcCapability();
+				r.Update(1, faultRatio, ltq.Routing_SimpleCapability(node1, node2, c));
+				delete c;
+
+				c = ltq.CalcCapability2();
+				r.Update(2, faultRatio, ltq.Routing_SimpleCapability2(node1, node2, c));
+				delete c;
+			}
+		}
+		r.Save(path, trials);
+	}
+
 	void e161024(int minDim, int maxDim)
 	{
 		printf_s("LTQ::GetPreferredNeighbor(uint32_t s, uint32_t d)の動作確認を開始します\n");
@@ -69,15 +107,15 @@ namespace Test
 			printf_s("Dim = %d\n", dim);
 			g->SetDimension(dim);
 
-			for (size_t s = 0; s < g->GetNodeNum(); s++)
+			for (uint32_t s = 0; s < g->GetNodeNum(); s++)
 			{
 				int *distAry = g->CalcAllDistanceBFS(s);
-				for (size_t d = 0; d < g->GetNodeNum(); d++)
+				for (uint32_t d = 0; d < g->GetNodeNum(); d++)
 				{
 					int dist = g->CalcDistance(s, d);
 					if (distAry[d] != dist)
 					{
-						printf_s("(%d, %d) BFS:%d Calc:%d\n", s, d, distAry[d], dist);
+						printf_s("(%u, %u) BFS:%d Calc:%d\n", s, d, distAry[d], dist);
 						showBinary(s);
 						showBinary(d);
 						getchar();
@@ -250,7 +288,7 @@ namespace Test
 		// PancakeGraphクラスのインスタンスpを宣言
 		PancakeGraph p;
 
-		for (size_t i = 2; i <= 10; i++)
+		for (int i = 2; i <= 10; i++)
 		{
 			// 次元数をセット
 			p.SetDimension(i);

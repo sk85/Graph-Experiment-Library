@@ -12,13 +12,13 @@ public:
 #ifdef DEBUG
 	void Debug_CalcInnerForward()
 	{
-		for (size_t dim = 2; dim <= 11; dim++)
+		for (int dim = 2; dim <= 11; dim++)
 		{
 			printf_s("dim = %d\n", dim);
 			SetDimension(dim);
-			for (size_t node1 = 0; node1 < GetNodeNum(); node1++)
+			for (uint32_t node1 = 0; node1 < GetNodeNum(); node1++)
 			{
-				for (size_t node2 = 0; node2 < GetNodeNum(); node2++)
+				for (uint32_t node2 = 0; node2 < GetNodeNum(); node2++)
 				{
 					uint32_t forward = CalcInnerForward(node1, node2);
 					int distance = CalcDistance(node1, node2);
@@ -30,7 +30,7 @@ public:
 							int distance_n = CalcDistance(neighbor, node2);
 							if (distance_n != distance - 1)
 							{
-								printf_s("d(%d, %d) = %d, d(%d, %d) = %d", node1, node2, distance, neighbor, node2, distance_n);
+								printf_s("d(%u, %u) = %d, d(%u, %u) = %d", node1, node2, distance, neighbor, node2, distance_n);
 								getchar();
 							}
 						}
@@ -52,7 +52,7 @@ public:
 	///		<para>サブグラフごとに計算(高野くんの卒論)</para>
 	/// </summary>
 	/// <returns>CapabilityのScoreオブジェクト</returns>
-	Score* CalcCapability1();
+	Score* CalcCapability();
 
 	/// <summary>
 	///		Capabilityを計算
@@ -69,7 +69,8 @@ public:
 	int LTQ::Routing_Stupid(uint32_t node1, uint32_t node2);
 
 	/// <summary>
-	///		ルーティング
+	///		Simple Routing whth Capability
+	///		<para>SRでScoreの高いものを優先して選ぶ</para>
 	///		<para>高野くんの卒論方式</para>
 	/// </summary>
 	/// <param name="node1">出発頂点のアドレス</param>
@@ -79,10 +80,10 @@ public:
 	///		ルーティングのステップ数。
 	///		失敗ならば0または負の数
 	/// </returns>
-	int Routing_TakanoSotsuron(uint32_t node1, uint32_t node2, Score* score);
+	int Routing_SimpleCapability(uint32_t node1, uint32_t node2, Score* score);
 
 	// 高野くんの卒論改
-	int Routing_TakanoSotsuronKai(uint32_t node1, uint32_t node2, Score* score);
+	int Routing_SimpleCapability2(uint32_t node1, uint32_t node2, Score* score);
 
 	// 同じサブグラフ内の前方隣接頂点を返す。
 	// 最短経路選択の途中で現れるexpansionなので、全てとは限らない
