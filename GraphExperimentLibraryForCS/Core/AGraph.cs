@@ -98,7 +98,7 @@ namespace Graph.Core
         /// </summary>
         /// <param name="node">ノードアドレス</param>
         /// <returns>nodeの次数</returns>
-        public abstract int GetDegree(UInt32 node);
+        public abstract int GetDegree(INode node);
 
         /// <summary>
         /// nodeの第indexエッジと接続する隣接ノードを返します。
@@ -106,17 +106,17 @@ namespace Graph.Core
         /// <param name="node">ノードアドレス</param>
         /// <param name="index">エッジの番号</param>
         /// <returns>隣接ノードのアドレス</returns>
-        public abstract UInt32 GetNeighbor(UInt32 node, int index);
+        public abstract INode GetNeighbor(INode node, int index);
 
         /// <summary>
         /// nodeから他のノードへの距離を幅優先探索により計算して返します。
         /// </summary>
         /// <param name="node">ノードアドレス</param>
         /// <returns>nodeからの距離の表</returns>
-        public int[] CalcAllDistanceBFS(UInt32 node)
+        public int[] CalcAllDistanceBFS(INode node)
         {
             int[] array = new int[NodeNum];         // 距離の表
-            Queue<UInt32> que = new Queue<uint>();  // 探索用のキュー
+            Queue<INode> que = new Queue<INode>();  // 探索用のキュー
 
             // 距離の初期値は∞
             for (UInt32 i = 0; i < NodeNum; i++)
@@ -126,16 +126,16 @@ namespace Graph.Core
 
             // 探索本体
             que.Enqueue(node);
-            array[node] = 0;
+            array[node.ID] = 0;
             while(que.Count > 0)
             {
-                UInt32 current = que.Dequeue();
+                INode current = que.Dequeue();
                 for (int i = 0; i < GetDegree(node); i++)
                 {
-                    UInt32 neighbor = GetNeighbor(node, i);
-                    if (array[neighbor] > array[current])
+                    INode neighbor = GetNeighbor(current, i);
+                    if (array[neighbor.ID] > array[current.ID])
                     {
-                        array[neighbor] = array[current] + 1;
+                        array[neighbor.ID] = array[current.ID] + 1;
                         que.Enqueue(neighbor);
                     }
                 }

@@ -44,8 +44,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\AGraph.cs" />
+    <Compile Include="Core\BinaryNode.cs" />
+    <Compile Include="Core\INode.cs" />
     <Compile Include="Core\LocallyTwistedCube.cs" />
     <Compile Include="Core\CrossedCube.cs" />
+    <Compile Include="Debug\TestCodes.cs" />
+    <Compile Include="Debug\Tools.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -34,7 +34,7 @@ namespace Graph.Core
         /// </summary>
         /// <param name="node">ノードアドレス</param>
         /// <returns></returns>
-        public override int GetDegree(uint node)
+        public override int GetDegree(INode node)
         {
             return Dimension;
         }
@@ -45,15 +45,16 @@ namespace Graph.Core
         /// <param name="node">ノードアドレス</param>
         /// <param name="index">エッジの番号</param>
         /// <returns>隣接ノードのアドレス</returns>
-        public override UInt32 GetNeighbor(UInt32 node, int index)
+        public override INode GetNeighbor(INode node, int index)
         {
+            BinaryNode binNode = (BinaryNode)node;
             if (index == 0)
             {
-                return node ^ 0b01;
+                return binNode ^ 0b1;
             }
             else
             {
-                return 0;
+                return binNode ^ ((0b10 + (binNode.Addr & 0b1)) << (index - 1));
             }
         }
     }
