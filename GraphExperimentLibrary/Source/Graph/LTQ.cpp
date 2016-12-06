@@ -1,3 +1,4 @@
+#include <intrin.h>
 #include "LTQ.h"
 #include "..\Common.h"
 
@@ -93,6 +94,7 @@ uint32_t LTQ::GetForwardNeighbor(uint32_t s, uint32_t d)
 	if (c_double >> 1) a_double[type_s] ^= 0b10;
 
 	// 第0ビットの処理とか
+	
 	int count_single = __popcnt(a_single) + ((c_single & 1) << 10);	// sとdが別タイプなら+∞
 	int count_double = __popcnt(a_double[0]) + __popcnt(a_double[1]) + 2 - ((s ^ d) & 1);	// タイプの移動を追加
 

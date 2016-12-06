@@ -66,7 +66,7 @@ uint32_t MobiusCube::ExactRoute(uint32_t node1, uint32_t node2)
 		// ‚¢‚Á‚±‰º‚ªgood‚Å‚ ‚é
 		int term_ = (sum >> (index - 2)) & 1;
 		int edge_ = (node1 >> (index)) & 1;
-		if 
+		
 	}
 	else
 	{

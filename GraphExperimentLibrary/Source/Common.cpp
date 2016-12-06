@@ -1,5 +1,4 @@
 #include <iostream>
-#include <atltime.h>
 #include <string>
 
 #include "Common.h"
@@ -15,10 +14,3 @@ void showBinary(addr a) {
 	std::cout << std::endl;
 }
 
-
-std::string getTime() {
-	SYSTEMTIME t;
-	GetLocalTime(&t);
-
-	return std::to_string(t.wMonth) + "/" + std::to_string(t.wDay) + " " + std::to_string(t.wHour) + ":" + std::to_string(t.wMinute) + ":" + std::to_string(t.wSecond);
-}

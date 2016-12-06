@@ -54,276 +54,188 @@ namespace Graph.Core
             return binNode ^ mask;
         }
 
-
-
-        public List<BinaryNode> GetFowardNeighbor2(BinaryNode node1, BinaryNode node2)
+        public IEnumerable<int> GetFowardNeighbor2(BinaryNode node1, BinaryNode node2)
         {
-            int count = 0;  // 上位に存在する枝候補の数
-            BinaryNode tmp = null;
-            List<BinaryNode> set = new List<BinaryNode>();
+            UInt32 u = node1.Addr, v = node2.Addr, diff = u ^ v;
 
-            void addTmp()
-            {
-                if(tmp != null)
-                {
-                    set.Add(tmp);
-                    tmp = null;
-                }
-            }
+            // 出発頂点と目的頂点が同じなら前方は存在しない
+            if (u == v) yield break;
 
-            // iはビットペアの左側が第何ビットかを表す
-            for (int i = Dimension - 1; i > 1; i--)
+            int count = 0;  // 現在見つかっている前方隣接頂点の数
+            int tmp = -1;   // 前方かわからない隣接頂点のindex
+            bool flag = true;   // まだ一度も揃えるべきビットペアに行き当たっていない
+
+            // iは現在見ているビットペアの左側のindex
+            for (int i = (Dimension - 1) | 1; i > 0; i -= 2)
             {
-                if (node1[i] != node2[i])
+                UInt32 pair = (diff >> (i - 1)) & 0b11;
+                // 揃える必要のないビットペアならスキップ
+                if (pair == 0) continue;
+
+                // 揃えるべき最左のビットペアのとき
+                if (flag)
                 {
-                    // 奇数(左側)
-                    if ((i & 1) == 1)
+                    // ペアの両方を揃えるとき
+                    if (pair == 0b11)
                     {
-                        if (node1[i - 1] == 1)
-                        {
-                            if (count > 0)
-                            {
-                                addTmp();
-                            }
-                        }
-                        else
-                        {
-
-                        }
+                        yield return i;
+                        yield return i - 1;
+                        count += 2;
                     }
-                }
-            }
-
-
-            return null;
-        }
-
-        public IEnumerable<BinaryNode> GetFowardNeighbor3(BinaryNode node1, BinaryNode node2)
-        {
-            int count = 0;  // 上位に存在する枝候補の数
-            BinaryNode tmp = null;
-
-            // iはビットペアの左側が第何ビットかを表す
-            for (int i = Dimension + (Dimension & 1); i > 1; i -= 2)
-            {
-                if (node1[i] != node2[i])
-                {
-                    if (node1[i - 1] == 1)
-                    {
-                        // x1/Xy かつ上に候補が有る
-                        if (count > 0)
-                        {
-                            if (tmp != null)
-                            {
-                                yield return tmp;
-                                tmp = null;
-                            }
-                        }
-                        else
-                        {
-                            // x1/X1 かつ上に候補がない
-                            if (node2[i - 1] == 1)
-                            {
-                                tmp = (BinaryNode)GetNeighbor(node1, i);
-                                count += 1;
-                            }
-                            // x1/X0 かつ上に候補がない
-                            else
-                            {
-                                yield return (BinaryNode)GetNeighbor(node1, i);
-                                yield return (BinaryNode)GetNeighbor(node1, i - 1);
-                                count += 2;
-                            }
-                        }
-                    }
+                    // ペアのどちらか片方のみを揃えるとき
                     else
                     {
-                        if (node2[i - 1] == 1)
-                        {
-                            // x0/X1 かつ候補が複数
-                            if (count > 1)
-                            {
-                                yield return (BinaryNode)GetNeighbor(node1, i);
-                                yield return (BinaryNode)GetNeighbor(node1, i - 1);
-                                if (tmp != null)
-                                {
-                                    yield return tmp;
-                                    tmp = null;
-                                }
-                                count += 2;
-                            }
-                            // x0/X1 かつ候補がすくない
-                            else
-                            {
-                                yield return (BinaryNode)GetNeighbor(node1, i - 1);
-                                if (tmp != null)
-                                {
-                                    yield return tmp;
-                                    tmp = null;
-                                }
-                                count += 1;
-                            }
-                        }
-                        else
-                        {
-                            // x0/X0 かつ候補が存在する
-                            if (count > 0)
-                            {
-                                yield return (BinaryNode)GetNeighbor(node1, i);
-                                if (tmp != null)
-                                {
-                                    yield return tmp;
-                                    tmp = null;
-                                }
-                                count += 1;
-                            }
-                            // x0/X0 かつ候補が存在しない
-                            else
-                            {
-                                tmp = (BinaryNode)GetNeighbor(node1, i);
-                                count += 1;
-                            }
-                        }
+                        tmp = pair == 0b10 ? i : i - 1;
+                        count++;
                     }
+                    flag = false;
                 }
-                else
-                {
-                    if (node1[i - 1] == 1 && node2[i - 1] == 0)
-                    {
-                        if (count > 1)
-                        {
-                            yield return (BinaryNode)GetNeighbor(node1, i - 1);
-                            count += 1;
 
-                        }
-                        else if (count == 1)
+                // まだ前方隣接頂点が1つも見つかっていない
+                else if ((count & 1) == 0)
+                {
+                    // ペアを両方揃えたい場合
+                    if (pair == 0b11)
+                    {
+                        // a1 / A0　：　上だけやる
+                        if (node1[i - 1] == 1)
                         {
-                            yield return (BinaryNode)GetNeighbor(node1, i - 1);
-                            if (tmp != null)
-                            {
-                                tmp = null;
-                                count -= 1;
-                            }
-                            count += 1;
+                            yield return tmp;
                         }
+                        // a0 / A1　：　右だけやる
                         else
                         {
-                            tmp = (BinaryNode)GetNeighbor(node1, i - 1);
-                            count += 1;
+                            // 上に丁度2個でおしまいのときこまる
+                            tmp = i - 1;
+                        }
+                        count++;
+                    }
+
+                    // ペアの左だけ揃えたい場合
+                    else if (pair == 0b10)
+                    {
+                        // a1 / A1　：　上に一個しかないのでできない。上は未確定
+                        // a0 / A0　：　上もここもできる
+                        if (node1[i - 1] == 0)
+                        {
+                            yield return tmp;
+                            yield return i;
+                            count += 2;
                         }
                     }
-                    else if (node1[i - 1] == 0 && node2[i - 1] == 1)
-                    {
-                        if (count > 0)
-                        {
-                            yield return (BinaryNode)GetNeighbor(node1, i - 1);
-                            count += 1;
 
-                        }
-                        else
+                    // ペアの右だけ揃えたい場合
+                    else
+                    {
+                        // a0 / a1　：　上に一個しかないのでできない。上は未確定
+                        // a1 / a0　：　上に一個しかないので先にやるが、下次第
+                        if (node1[i - 1] == 1)
                         {
-                            if (tmp != null)
-                            {
-                                yield return tmp;
-                                tmp = null;
-                                count += 1;
-                            }
+                            tmp = i - 1;
                         }
                     }
                 }
             }
         }
+
 
         public IEnumerable<int> GetFowardNeighbor(BinaryNode node1, BinaryNode node2)
         {
-            // 出発頂点と目的頂点が同じなら何もなし
-            if (node1.ID == node2.ID) yield break;
+            UInt32 u = node1.Addr, v = node2.Addr, diff = u ^ v;
 
-            int count = 0;              // 上位に存在する枝候補の数
-            int tmp = -1;
-            int index = Dimension | 1;  // ビットペアの左側が第何ビットかを表す
+            // 出発頂点と目的頂点が同じなら前方は存在しない
+            if (u == v) yield break;
 
-            // 最左な異なるビットを探す
-            while (node1[index] == node2[index]) index--;
+            int count = 0;      // 現在見つかっている前方隣接頂点の数
+            int tmp = -1;       // 前方かわからない隣接頂点のindex
+            int i;              // 現在見ているビットペアの左側のindex
 
-            // 左かつ両方揃える場合
-            if ((index & 1) == 1 && node1[index - 1] != node2[index - 1])
+            // 最初の揃えるべきビットペアを調べる
             {
-                yield return index;
-                yield return index - 1;
-                count += 2;
-            }
-            // 片方しか揃えない場合
-            else
-            {
-                tmp = index;
-            }
+                i = (Dimension - 1) | 1;
+                UInt32 pair;
+                while ((pair = (diff >> (i - 1)) & 0b11) == 0) i -= 2;
 
-            // 一番右まで
-            while (index-- > 0)
-            {
-                // 普通パターン
-                // 左 かつ 異なる かつ 下は同じ
-                // 右 かつ
-                if (
-                    (index & 1) == 1 && node1[index] != node2[index] && node1[index - 1] != node2[index - 1] ||
-                    (index & 1) == 0 
-                    )
+                // ペアの両方を揃えるとき
+                if (pair == 0b11)
                 {
-                    yield return index;
-                    if (count == 0) yield return tmp;
+                    yield return i;
+                    yield return i - 1;
+                    count += 2;
                 }
-                // node1の右が１ かつ 少なくとも左は揃える
-                else if (node1[index - 1] == 1 && node1[index] != node2[index])
+                // ペアのどちらか片方のみを揃えるとき
+                else
                 {
-                    //if (count == 0) yield return tmp;
+                    tmp = pair == 0b10 ? i : i - 1;
+                    count++;
                 }
-                index -= 2;
             }
 
-            /*
+            // 他のペアも調べる
+            for (i -= 2; i > 0; i -= 2)
             {
-                for (int i = Dimension | 1; i > 1; i -= 2)
+                UInt32 pair = (diff >> (i - 1)) & 0b11;
+
+                // 揃える必要のないビットペアならスキップ
+                if (pair == 0) continue;
+                
+                // 上に奇数個揃えるビットが有るとき
+                else if ((count & 1) == 1)
                 {
-                    if (node1[i - 1] == 1)
+                    // ペアを両方揃えたい場合
+                    if (pair == 0b11)
                     {
-                        // 01/00か11/10
-                        if (node1[i] == node2[i] && node1[i - 1] != node2[i - 1])
+                        // a1 / A0　：　上だけやる
+                        if (node1[i - 1] == 1)
                         {
-
+                            if (tmp > 0)
+                            {
+                                yield return tmp;
+                                tmp = -1;
+                            }
                         }
-                        // 01/11か11/01
-                        else if (node1[i] != node2[i] && node1[i - 1] == node2[i - 1])
+                        // a0 / A1　：　右だけやる
+                        else
                         {
+                            // 上に丁度2個でおしまいのときこまる
 
+                            tmp = i - 1;
                         }
-                        // 01/10か11/00
-                        else if (node1[i] != node2[i] && node1[i - 1] != node2[i - 1])
-                        {
+                        count++;
+                    }
 
+                    // ペアの左だけ揃えたい場合
+                    else if (pair == 0b10)
+                    {
+                        // a1 / A1　：　上に一個しかないのでできない。上は未確定
+                        // a0 / A0　：　上もここもできる
+                        if (node1[i - 1] == 0)
+                        {
+                            //yield return tmp;
+                            //yield return i;
+                            count += 2;
                         }
                     }
+
+                    // ペアの右だけ揃えたい場合
                     else
                     {
-                        // 00/01か10/11
-                        if (node1[i] == node2[i] && node1[i - 1] != node2[i - 1])
+                        // a0 / a1　：　上に一個しかないのでできない。上は未確定
+                        // a1 / a0　：　上に一個しかないので先にやるが、下次第
+                        if (node1[i - 1] == 1)
                         {
-
-                        }
-                        // 00/10か10/00
-                        else if (node1[i] != node2[i] && node1[i - 1] == node2[i - 1])
-                        {
-
-                        }
-                        // 00/11か10/01
-                        else if (node1[i] != node2[i] && node1[i - 1] != node2[i - 1])
-                        {
-
+                            //tmp = i - 1;
                         }
                     }
                 }
+
+                // 上に偶数個
+                else
+                {
+
+                }
             }
-            */
         }
+
     }
 }
