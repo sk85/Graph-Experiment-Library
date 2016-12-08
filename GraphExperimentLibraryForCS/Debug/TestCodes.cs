@@ -53,6 +53,7 @@ namespace Graph.Debug
                 for (UInt32 node2 = 0; node2 < graph.NodeNum; node2++)
                 {
                     Console.WriteLine("d({0,2}, {1,2}) = {2}", node1, node2, array[node2]);
+                    Console.ReadKey();
                 }
                 Console.ReadKey();
             }

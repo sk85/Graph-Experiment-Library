@@ -36,10 +36,17 @@ namespace GraphExperimentLibraryForCS
             int dim = 10;
             CrossedCube graph = new CrossedCube(dim);
 
+            //TestCodes.ShowAllDistances(graph);
+            graph.Check_GetFowardNeighbor();
+
+            //Graph.Experiment.Experiment.check(graph);
+
             //Graph.Experiment.Experiment.ShowFowardNeighbor(graph, new BinaryNode(0b111001), new BinaryNode(0b000000));
             //Console.WriteLine("------------------------------");
-            
-            Graph.Experiment.Experiment.ShowAllFowardNeighbor(graph);
+
+            //Graph.Experiment.Experiment.ShowAllFowardNeighbor(graph);
+
+            //Graph.Experiment.Experiment.ShowFowardOrSideNeighbor(graph);
         }
     }
 
