@@ -9,7 +9,7 @@ namespace Graph.Core
     /// <summary>
     /// クロスドキューブのクラスです。
     /// </summary>
-    class CrossedCube : AGraph
+    partial class CrossedCube : AGraph
     {
         /// <summary>
         /// AGraphのコンストラクタを呼びます。
@@ -54,91 +54,6 @@ namespace Graph.Core
             return binNode ^ mask;
         }
 
-        public IEnumerable<int> GetFowardNeighbor2(BinaryNode node1, BinaryNode node2)
-        {
-            UInt32 u = node1.Addr, v = node2.Addr, diff = u ^ v;
-
-            // 出発頂点と目的頂点が同じなら前方は存在しない
-            if (u == v) yield break;
-
-            int count = 0;  // 現在見つかっている前方隣接頂点の数
-            int tmp = -1;   // 前方かわからない隣接頂点のindex
-            bool flag = true;   // まだ一度も揃えるべきビットペアに行き当たっていない
-
-            // iは現在見ているビットペアの左側のindex
-            for (int i = (Dimension - 1) | 1; i > 0; i -= 2)
-            {
-                UInt32 pair = (diff >> (i - 1)) & 0b11;
-                // 揃える必要のないビットペアならスキップ
-                if (pair == 0) continue;
-
-                // 揃えるべき最左のビットペアのとき
-                if (flag)
-                {
-                    // ペアの両方を揃えるとき
-                    if (pair == 0b11)
-                    {
-                        yield return i;
-                        yield return i - 1;
-                        count += 2;
-                    }
-                    // ペアのどちらか片方のみを揃えるとき
-                    else
-                    {
-                        tmp = pair == 0b10 ? i : i - 1;
-                        count++;
-                    }
-                    flag = false;
-                }
-
-                // まだ前方隣接頂点が1つも見つかっていない
-                else if ((count & 1) == 0)
-                {
-                    // ペアを両方揃えたい場合
-                    if (pair == 0b11)
-                    {
-                        // a1 / A0　：　上だけやる
-                        if (node1[i - 1] == 1)
-                        {
-                            yield return tmp;
-                        }
-                        // a0 / A1　：　右だけやる
-                        else
-                        {
-                            // 上に丁度2個でおしまいのときこまる
-                            tmp = i - 1;
-                        }
-                        count++;
-                    }
-
-                    // ペアの左だけ揃えたい場合
-                    else if (pair == 0b10)
-                    {
-                        // a1 / A1　：　上に一個しかないのでできない。上は未確定
-                        // a0 / A0　：　上もここもできる
-                        if (node1[i - 1] == 0)
-                        {
-                            yield return tmp;
-                            yield return i;
-                            count += 2;
-                        }
-                    }
-
-                    // ペアの右だけ揃えたい場合
-                    else
-                    {
-                        // a0 / a1　：　上に一個しかないのでできない。上は未確定
-                        // a1 / a0　：　上に一個しかないので先にやるが、下次第
-                        if (node1[i - 1] == 1)
-                        {
-                            tmp = i - 1;
-                        }
-                    }
-                }
-            }
-        }
-
-
         public IEnumerable<int> GetFowardNeighbor(BinaryNode node1, BinaryNode node2)
         {
             UInt32 u = node1.Addr, v = node2.Addr, diff = u ^ v;
@@ -146,149 +61,370 @@ namespace Graph.Core
             // 出発頂点と目的頂点が同じなら前方は存在しない
             if (u == v) yield break;
 
+            int count = 0;
+            int tmp = -1;   // 前方かわからない隣接頂点のindex
+
+            // iは現在見ているビットペアの左側のindex
+            for (int i = (Dimension - 1) | 1; i > 0; i -= 2)
+            {
+                // OK
+                // 初回
+                if (count == 0)
+                {
+                    if (node1[i] != node2[i])
+                    {
+                        // 両方異なる
+                        if (node1[i - 1] != node2[i - 1])
+                        {
+                            yield return i;
+                            yield return i - 1;
+                            count += 2;
+                        }
+                        // 左のみ異なる
+                        else
+                        {
+                            tmp = i;
+                            count++;
+                        }
+                    }
+                    // 右のみ異なる
+                    else if (node1[i - 1] != node2[i - 1])
+                    {
+                        tmp = i - 1;
+                        count++;
+                    }
+                }
+
+                // OK
+                // count=1
+                else if (count == 1)
+                {
+                    // 左が異なる
+                    if (node1[i] != node2[i])
+                    {
+                        // 両方異なる
+                        if (node1[i - 1] != node2[i - 1])
+                        {
+                            // 右が０  (00, 11), (10, 01)
+                            if (node1[i - 1] == 0)
+                            {
+                                yield return i - 1;
+                                count++;
+                            }
+                            // 右が１  (01, 10), (11, 00)
+                            else
+                            {
+                                yield return tmp;
+                                count++;
+                            }
+                        }
+                        // 左だけ異なる
+                        else
+                        {
+                            // 右が０  (00, 10), (10, 00)
+                            if (node1[i - 1] == 0)
+                            {
+                                yield return i;
+                                yield return tmp;
+                                tmp = -1;
+                                count++;
+                            }
+                            // 右が１  (01, 11), (11, 01)
+                            else
+                            {
+                                // 第iは勝手に揃うので何もしない。
+                                // countも増えず、tmpもそのまま
+                            }
+                        }
+                    }
+                    // 左が同じ
+                    else
+                    {
+                        // 右だけ異なる
+                        if (node1[i - 1] != node2[i - 1])
+                        {
+                            // 右が０  (00, 01), (10, 11)
+                            if (node1[i - 1] == 0)
+                            {
+                                yield return tmp;
+                                count++;
+                            }
+                            // 右が１  (01, 00), (11, 10)
+                            else
+                            {
+                                yield return i - 1;
+                                count++;
+                            }
+                        }
+                        // 両方同じ
+                        else
+                        {
+                            // 右が０  (00, 00), (10, 10)
+                            if (node1[i - 1] == 0)
+                            {
+                                // 何もしない。
+                                // countも増えず、tmpもそのまま
+                            }
+                            // 右が１  (01, 01), (11, 11)
+                            else
+                            {
+                                // iがずれちゃうので先に揃えとく
+                                yield return tmp;
+                                yield return i;
+                                count++;
+                            }
+                        }
+                    }
+                }
+
+                // TODO
+                // count >= 2
+                else
+                {
+                    // 左が異なる
+                    if (node1[i] != node2[i])
+                    {
+                        // 両方異なる
+                        if (node1[i - 1] != node2[i - 1])
+                        {
+                            // 右が０  (00, 11), (10, 01)
+                            if (node1[i - 1] == 0)
+                            {
+                                // countが奇数
+                                if ((count & 1) == 1)
+                                {
+                                    yield return i - 1;
+                                    count++;
+                                }
+                                // countが偶数
+                                else
+                                {
+                                    // 何もしないがcountは増える
+                                    count++;
+                                }
+                            }
+                            // 右が１  (01, 10), (11, 00)
+                            else
+                            {
+                                // 何もしないがcountは増える
+                                count++;
+                            }
+                        }
+                        // 左だけ異なる
+                        else
+                        {
+                            // 右が０  (00, 10), (10, 00)
+                            if (node1[i - 1] == 0)
+                            {
+                                yield return i;
+                                count++;
+                            }
+                            // 右が１  (01, 11), (11, 01)
+                            else
+                            {
+                                // countが奇数
+                                if ((count & 1) == 1)
+                                {
+                                    // 何もしないしcountは増えない
+                                }
+                                // countが偶数
+                                else
+                                {
+                                    yield return i;
+                                    count++;
+                                }
+                            }
+                        }
+                    }
+                    // 左が同じ
+                    else
+                    {
+                        // TODO
+                        // 右だけ異なる
+                        if (node1[i - 1] != node2[i - 1])
+                        {
+                            // 右が０  (00, 01), (10, 11)
+                            if (node1[i - 1] == 0)
+                            {
+                                // countが奇数
+                                if ((count & 1) == 1)
+                                {
+                                    // 何もしないがcountは増える
+                                    count++;
+                                }
+                                // countが偶数
+                                else
+                                {
+                                    yield return i - 1;
+                                    count++;
+                                }
+                            }
+                            // 右が１  (01, 00), (11, 10)
+                            else
+                            {
+                                yield return i - 1;
+                                count++;
+                            }
+                        }
+                        // 両方同じ
+                        else
+                        {
+                            // 右が０  (00, 00), (10, 10)
+                            if (node1[i - 1] == 0)
+                            {
+                                // 何もしないしcountは増えない
+                            }
+                            // 右が１  (01, 01), (11, 11)
+                            else
+                            {
+                                // countが奇数
+                                if ((count & 1) == 1)
+                                {
+                                    yield return i;
+                                    count++;
+                                }
+                                // countが偶数
+                                else
+                                {
+                                    // 何もしないしcountは増えない
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (count == 1)
+            {
+                yield return tmp;
+            }
+        }
+
+        public IEnumerable<int> GetFowardNeighbor2(BinaryNode node1, BinaryNode node2)
+        {
+            UInt32 u = node1.Addr, v = node2.Addr, diff = u ^ v;
+
+            // 出発頂点と目的頂点が同じなら前方は存在しない
+            if (u == v) yield break;
+
             int count = 0;      // 現在見つかっている枝の数
-            List<int> tmp = new List<int>();
+            //List<int> tmp = new List<int>();
+            int tmp = -1;
 
             for (int i = Dimension | 1; i > 0; i -= 2)
             {
-                // Case1
-                if (node1[i] == node2[i] && node1[i - 1] == node2[i - 1])
+                // どちらも同じなら何もしない
+                
+                if (node1[i] != node2[i] && node1[i - 1] == node2[i - 1])
                 {
-                    // 確定
-                    // u^iもu^(i-1)も含まれない
-                }
-                // Case2
-                else if (node1[i] == node2[i] && node1[i - 1] == 0 && node2[i - 1] == 1)
-                {
-                    // 確定
-                    // u^iは含まれない
-
-                    // 確認中
-                    // iより大きいのが偶数ならばu^(i-1)を含む
-                    if ((count & 1) == 0)
+                    // 左だけ異なる、右が1	(01, 11), (11, 01)
+                    if (node1[i - 1] == 1)
                     {
-                        yield return i - 1;
-                    }
-                    // 第(i-1)辺はいずれ現れるのでカウントを進める
-                    count++;
-                }
-                // Case3
-                else if (node1[i] == node2[i] && node1[i - 1] == 1 && node2[i - 1] == 0)
-                {
-                    // 確定
-                    // u^iは含まれない
-
-                    // 確認中
-                    // u^(i-1)を含む
-                    if (count == 0)
-                    {
-                        tmp.Add(i - 1);
-                    }
-                    else if (count == 1)
-                    {
-                        tmp.Clear();
-                        yield return i - 1;
-                    }
-                    else
-                    {
-                        foreach (int j in tmp) yield return j;
-                        yield return i - 1;
-                    }
-                    
-                    // 第(i-1)辺はいずれ現れるのでカウントを進める
-                    count++;
-                }
-                // Case4
-                else if (node1[i] == 0 && node2[i] == 1 && node1[i - 1] == node2[i - 1])
-                {
-                    // 確定
-                    // u^(i-1)は含まれない
-
-                    // 確認中
-                    // u^iを含む
-                    tmp.Add(i);
-
-                    // 第(i-1)辺はいずれ現れるのでカウントを進める
-                    count++;
-                }
-                // Case5
-                else if (node1[i] == 1 && node2[i] == 0 && node1[i - 1] == node2[i - 1])
-                {
-                    // 確定
-                    // u^(i-1)は含まれない
-
-                    // 確認中
-                    // iより大きいのが偶数ならばu^iを含む
-                    if ((count & 1) == 0)
-                    {
-                        yield return i;
-                    }
-                }
-                // Case6
-                else if (node1[i] != node2[i] && node1[i - 1] == 0 && node2[i - 1] == 1)
-                {
-                    // iより大きいのが存在しなければu^iを含む
-                    if (count == 0)
-                    {
-                        yield return i;
-                        count++;
-                    }
-                    // iより大きいのが奇数ならu^(i-1)を含む
-                    if ((count & 1) == 1)
-                    {
-                        yield return i - 1;
-                    }
-                    // 第(i-1)辺はいずれ現れるのでカウントを進める
-                    count++;
-                }
-                // Case7
-                else if (node1[i] != node2[i] && node1[i - 1] == 1 && node2[i - 1] == 0)
-                {
-                    // iより大きいのが存在しなければu^iもu^(i-1)も含む
-                    if (count == 0)
-                    {
-                        yield return i - 1;
-                        yield return i;
-                        count += 2; ;
-                    }
-                }
-            }
-
-        }
-
-        public void Check_GetFowardNeighbor()
-        {
-            for (UInt32 node2ID = 0; node2ID < NodeNum; node2ID++)
-            {
-                BinaryNode node2 = new BinaryNode(node2ID);
-                int[] distance = CalcAllDistanceBFS(node2);
-
-                for (UInt32 node1ID = 0; node1ID < NodeNum; node1ID++)
-                {
-                    BinaryNode node1 = new BinaryNode(node1ID);
-
-                    Console.WriteLine("d({0}, {1}) = {2}", node1ID, node2ID, distance[node1ID]);
-                    Console.WriteLine("  u   = {0}", Debug.Tools.UIntToBinStr(node1.Addr, Dimension, 2));
-                    Console.WriteLine("  v   = {0}", Debug.Tools.UIntToBinStr(node2.Addr, Dimension, 2));
-                    Console.WriteLine("s ^ d = {0}\n", Debug.Tools.UIntToBinStr((node1 ^ node2).Addr, Dimension, 2));
-
-                    var FN = GetFowardNeighbor(node1, node2);
-
-                    bool flag = false;
-                    foreach (var neighborIndex in FN)
-                    {
-                        UInt32 neighborID = ((BinaryNode)GetNeighbor(node1, neighborIndex)).Addr;
-                        if (distance[neighborID] >= distance[node1ID])
+                        if (count == 0)
                         {
-                            Console.Write(" u^{0}  = {1}", neighborIndex, Debug.Tools.UIntToBinStr(neighborID, Dimension, 2));
-                            Console.WriteLine("\td({0}, {1}) = {2}", neighborID, node2ID, distance[neighborID]);
-                            flag = true;
+                            tmp = i;
+                            count++;
+                        }
+                        else
+                        {
+                            count++;
                         }
                     }
-                    Console.WriteLine("------------------------------");
-                    if (flag) Console.ReadKey();
+                    // 左だけ異なる，右が0	(00, 10), (10, 00)
+                    else
+                    {
+                        if (count == 0)
+                        {
+                            tmp = i;
+                            count++;
+                        }
+                        else
+                        {
+                            if (tmp != -1)
+                            {
+                                yield return tmp;
+                                tmp = -1;
+                            }
+                            
+                            yield return i;
+                            count++;
+                        }
+                    }
+                    
+                }
+                else if (node1[i] == node2[i] && node1[i - 1] != node2[i - 1])
+                {
+                    // 右だけ異なる，右が１	(01, 00), (11, 10)
+                    if (node1[i - 1] == 1)
+                    {
+                        if (count == 0)
+                        {
+                            tmp = i - 1;
+                            count++;
+                        }
+                        else if (count == 1)
+                        {
+                            tmp = i - 1;
+                            count++;
+                        }
+                        else
+                        {
+                            count++;
+                        }
+                    }
+                    // 右だけ異なる，右が０	(00, 10), (10, 00)
+                    else
+                    {
+                        if (count == 0)
+                        {
+                            tmp = i - 1;
+                            count++;
+                        }
+                        else
+                        {
+                            count++;
+                        }
+                    }
+                }
+                else if (node1[i] != node2[i] && node1[i - 1] != node2[i - 1])
+                {
+                    // 両方異なる，右が１	(01, 10), (11, 00)
+                    if (node1[i - 1] == 1)
+                    {
+                        if (count == 0)
+                        {
+                            yield return i;
+                            yield return i - 1;
+                            count += 2;
+                        }
+                        else
+                        {
+                            count++;
+                        }
+                    }
+                    // 両方異なる，右が０	(00, 11), (10, 01)
+                    else
+                    {
+                        if (count == 0)
+                        {
+                            yield return i;
+                            yield return i - 1;
+                            count += 2;
+                        }
+                        else if (count == 1)
+                        {
+                            yield return i - 1;
+                            tmp = -1;
+                            count++;
+                        }
+                        else
+                        {
+                            count++;
+                        }
+                    }
                 }
             }
+
         }
     }
 }

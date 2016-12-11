@@ -11,7 +11,7 @@ namespace Graph.Core
     /// 任意のグラフ用のクラスに継承して用います。
     /// <para>ノード数が2^32未満(キューブ系ならn＜32)であるという前提で実装しています。</para>
     /// </summary>
-    abstract class AGraph
+    abstract partial class AGraph
     {
         private int __Dimension;
         private int __FaultRatio;
