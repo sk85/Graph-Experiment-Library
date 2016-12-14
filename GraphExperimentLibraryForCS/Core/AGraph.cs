@@ -13,12 +13,20 @@ namespace Graph.Core
     /// </summary>
     abstract partial class AGraph
     {
+
+        /************************************************************************
+         * 
+         *  基本的なメンバ
+         *      ノード数、故障、故障率など
+         *  
+         ************************************************************************/
+
         private int __Dimension;
         private int __FaultRatio;
 
         /// <summary>
         /// グラフの次元数です。
-        /// <para>更新すると勝手にNodeNumも更新されます。</para>
+        /// <para>更新すると勝手にNodeNumや、それに関わるもろもろも更新されます。</para>
         /// </summary>
         public int Dimension
         {
@@ -27,6 +35,7 @@ namespace Graph.Core
             {
                 __Dimension = value;
                 NodeNum = CalcNodeNum(Dimension);
+                FaultFlags = new bool[NodeNum];
             }
         }
         
@@ -37,13 +46,12 @@ namespace Graph.Core
 
         /// <summary>
         /// グラフのノード故障率(％)です。
-        /// <para>0 ≦ FaultRatio ≦ 100です。</para>
-        /// <para>更新すると勝手にFaultNodeNumも更新されます。</para>
+        /// <para>GenerateFaultsを使うと更新されます。</para>
         /// </summary>
         public int FaultRatio
         {
             get { return __FaultRatio; }
-            set
+            private set
             {
                 __FaultRatio = value;
                 FaultNodeNum = (UInt32)(NodeNum * ((double)__FaultRatio / 100));
@@ -57,9 +65,9 @@ namespace Graph.Core
 
         /// <summary>
         /// ノードが故障しているかを示します。
-        /// 第iノードが故障ならば
+        /// FaultFlags[i] = 第iノードが故障か否か
         /// </summary>
-        protected bool[] FaultFlags;
+        public bool[] FaultFlags { get; protected set; }
 
         /// <summary>
         /// 乱数オブジェクト。
@@ -67,14 +75,26 @@ namespace Graph.Core
         /// </summary>
         protected Random Rand;
 
+
+
+
+
+
+        /************************************************************************
+         * 
+         *  基本的なメソッド
+         *      コンストラクタ、ノード数、シード値の設定、距離の計算など
+         *  
+         ************************************************************************/
+
         /// <summary>
         /// コンストラクタ。
-        /// とりあえずは
+        /// とりあえずは次元数の設定とRandの初期化くらい
         /// </summary>
-        protected AGraph(int dim)
+        protected AGraph(int dim, int randSeed)
         {
             Dimension = dim;
-            SetRandSeed(0);
+            SetRandSeed(randSeed);
         }
 
         /// <summary>
@@ -98,7 +118,7 @@ namespace Graph.Core
         /// </summary>
         /// <param name="node">ノードアドレス</param>
         /// <returns>nodeの次数</returns>
-        public abstract int GetDegree(INode node);
+        public abstract int GetDegree(Node node);
 
         /// <summary>
         /// nodeの第indexエッジと接続する隣接ノードを返します。
@@ -106,17 +126,17 @@ namespace Graph.Core
         /// <param name="node">ノードアドレス</param>
         /// <param name="index">エッジの番号</param>
         /// <returns>隣接ノードのアドレス</returns>
-        public abstract INode GetNeighbor(INode node, int index);
+        public abstract Node GetNeighbor(Node node, int index);
 
         /// <summary>
         /// nodeから他のノードへの距離を幅優先探索により計算して返します。
         /// </summary>
         /// <param name="node">ノードアドレス</param>
         /// <returns>nodeからの距離の表</returns>
-        public int[] CalcAllDistanceBFS(INode node)
+        public int[] CalcAllDistanceBFS(Node node)
         {
             int[] array = new int[NodeNum];         // 距離の表
-            Queue<INode> que = new Queue<INode>();  // 探索用のキュー
+            Queue<Node> que = new Queue<Node>();  // 探索用のキュー
 
             // 距離の初期値は∞
             for (UInt32 i = 0; i < NodeNum; i++)
@@ -129,10 +149,10 @@ namespace Graph.Core
             array[node.ID] = 0;
             while(que.Count > 0)
             {
-                INode current = que.Dequeue();
+                Node current = que.Dequeue();
                 for (int i = 0; i < GetDegree(node); i++)
                 {
-                    INode neighbor = GetNeighbor(current, i);
+                    Node neighbor = GetNeighbor(current, i);
                     if (array[neighbor.ID] > array[current.ID])
                     {
                         array[neighbor.ID] = array[current.ID] + 1;
@@ -142,6 +162,115 @@ namespace Graph.Core
             }
 
             return array;
+        }
+
+        /// <summary>
+        /// nodeから他のノードへの距離を幅優先探索により計算して返します。
+        /// <para>こちらは故障を考慮します。到達不可能ならば-1</para>
+        /// </summary>
+        /// <param name="node">ノードアドレス</param>
+        /// <returns>nodeからの距離の表</returns>
+        public int[] CalcAllDistanceBFSF(Node node)
+        {
+            int[] array = new int[NodeNum];         // 距離の表
+            const int inf = 100000;
+            Queue<Node> que = new Queue<Node>();  // 探索用のキュー
+
+            // 距離の初期値は∞
+            for (UInt32 i = 0; i < NodeNum; i++)
+            {
+                array[i] = inf;
+            }
+
+            // 探索本体
+            que.Enqueue(node);
+            array[node.ID] = 0;
+            while (que.Count > 0)
+            {
+                Node current = que.Dequeue();
+                for (int i = 0; i < GetDegree(node); i++)
+                {
+                    Node neighbor = GetNeighbor(current, i);
+                    if (!FaultFlags[neighbor.ID] && array[neighbor.ID] > array[current.ID])
+                    {
+                        array[neighbor.ID] = array[current.ID] + 1;
+                        que.Enqueue(neighbor);
+                    }
+                }
+            }
+
+            // ∞を-1に
+            for (UInt32 i = 0; i < NodeNum; i++)
+            {
+                if (array[i] == inf) array[i] = -1;
+            }
+
+            return array;
+        }
+
+        /// <summary>
+        /// 2頂点が連結かどうかを返します。
+        /// </summary>
+        /// <param name="node1">頂点1</param>
+        /// <param name="node2">頂点2</param>
+        /// <returns>頂点1と頂点2が連結か否か</returns>
+        bool IsConnected(Node node1, Node node2)
+        {
+            return CalcAllDistanceBFS(node1)[node2.ID] > 0;
+        }
+
+        /// <summary>
+        /// FaultFlagsを指定の故障率で設定
+        /// </summary>
+        /// <param name="faultRatio">故障率(%)</param>
+        public void GenerateFaults(int faultRatio)
+        {
+            FaultRatio = faultRatio;
+
+            // 初期化
+            for (UInt32 i = 0; i < NodeNum; i++) FaultFlags[i] = false;
+
+            // ランダムに故障の生成
+            for (UInt32 i = 0; i < FaultNodeNum; i++)
+            {
+                UInt32 rand = (UInt32)(Rand.NextDouble() * (NodeNum - i));
+                UInt32 index = 0, count = 0;
+
+                while (count <= rand)
+                {
+                    if (!FaultFlags[index++]) count++;
+                }
+                FaultFlags[index - 1] = true;
+            }
+        }
+
+
+
+
+
+
+        /************************************************************************
+         * 
+         *  実験に便利なメソッド
+         *      ランダムにノードを取得する
+         *      連結なノードを取得する
+         *      など
+         *  
+         ************************************************************************/
+
+        Node GetNodeRandom()
+        {
+            UInt32 unfaultNum = NodeNum - FaultNodeNum;
+            UInt32 rand = (UInt32)(Rand.NextDouble() * unfaultNum);
+            UInt32 index = 0, count = 0;
+            while (count <= rand)
+            {
+                if (!FaultFlags[index++])
+                {
+                    count++;
+                }
+            }
+            return new Node(index - 1);
         }
     }
 }

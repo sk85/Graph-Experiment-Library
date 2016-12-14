@@ -45,7 +45,7 @@ namespace Graph.Core
                         Console.WriteLine("d({0}, {1}) = {2}", node1.ID, node2.ID, distance[node1.ID]);
                         Console.WriteLine("  u   = {0}", Tools.UIntToBinStr(node1.Addr, Dimension, 2));
                         Console.WriteLine("  v   = {0}", Tools.UIntToBinStr(node2.Addr, Dimension, 2));
-                        Console.WriteLine("s ^ d = {0}\n", Tools.UIntToBinStr((node1 ^ node2).Addr, Dimension, 2));
+                        Console.WriteLine("s ^ d = {0}\n", Tools.UIntToBinStr(node1.Addr ^ node2.Addr, Dimension, 2));
                         Console.WriteLine(" corr = {0}", Tools.UIntToBinStr(correctPattern, Dimension, 2));
                         Console.WriteLine(" answ = {0}", Tools.UIntToBinStr(answerPattern, Dimension, 2));
                         Console.WriteLine("------------------------------");
@@ -78,7 +78,7 @@ namespace Graph.Core
                             Console.WriteLine("d({0}, {1}) = {2}", node1.ID, node2.ID, distance[node1.ID]);
                             Console.WriteLine("  u   = {0}", Tools.UIntToBinStr(node1.Addr, Dimension, 2));
                             Console.WriteLine("  v   = {0}", Tools.UIntToBinStr(node2.Addr, Dimension, 2));
-                            Console.WriteLine("s ^ d = {0}\n", Tools.UIntToBinStr((node1 ^ node2).Addr, Dimension, 2));
+                            Console.WriteLine("s ^ d = {0}\n", Tools.UIntToBinStr(node1.Addr ^ node2.Addr, Dimension, 2));
                             Console.WriteLine("  u^{0} = {1}", neighborIndex, Tools.UIntToBinStr(neighbor.Addr, Dimension, 2));
                             Console.WriteLine("------------------------------");
                             Console.ReadKey();

@@ -6,11 +6,19 @@ using System.Threading.Tasks;
 
 namespace Graph.Core
 {
-    class BinaryNode : INode
+    /// <summary>
+    /// バイナリ系のノードクラス。
+    /// バイナリ系はIDとアドレスが一致するのであまり使わないかもしれないが、
+    /// インデクサや演算子のオーバーロードは便利かもしれない。
+    /// </summary>
+    class BinaryNode : Node
     {
         private UInt32 __Addr;
         private UInt32 __ID;
 
+        /// <summary>
+        /// ノードアドレス。IDと連動
+        /// </summary>
         public UInt32 Addr
         {
             get { return __Addr; }
@@ -21,6 +29,9 @@ namespace Graph.Core
             }
         }
 
+        /// <summary>
+        /// ノードID。アドレスと連動
+        /// </summary>
         public override UInt32 ID
         {
             get { return __ID; }
@@ -32,22 +43,16 @@ namespace Graph.Core
         }
 
         public BinaryNode(UInt32 id) : base(id) { }
-
-        public static BinaryNode operator ^ (BinaryNode node1, BinaryNode node2)
-        {
-            return new BinaryNode(node1.Addr ^ node2.Addr);
-        }
-
-        public static BinaryNode operator ^ (BinaryNode node, UInt32 bin)
-        {
-            return new BinaryNode(node.Addr ^ bin);
-        }
-
-        public UInt32 this[int i]
+        
+        public int this[int i]
         {
             get
             {
-                return (Addr >> i) & 1;
+                return (int)((Addr >> i) & 1);
+            }
+            set
+            {
+                Addr ^= ((UInt32)1 << value);
             }
         }
     }

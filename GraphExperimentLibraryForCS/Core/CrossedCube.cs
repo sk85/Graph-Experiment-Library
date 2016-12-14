@@ -13,10 +13,10 @@ namespace Graph.Core
     {
         /// <summary>
         /// AGraphのコンストラクタを呼びます。
-        /// <para>現状ではRandomオブジェクトの初期化とDimensionフィールドの初期化だけ。</para>
         /// </summary>
         /// <param name="dim">次元数</param>
-        public CrossedCube(int dim) : base(dim) { }
+        /// <param name="randSeed">乱数のシード</param>
+        public CrossedCube(int dim, int randSeed) : base(dim, randSeed) { }
 
         /// <summary>
         /// 現在の次元数からノード数を計算して返します。
@@ -34,7 +34,7 @@ namespace Graph.Core
         /// </summary>
         /// <param name="node">ノードアドレス</param>
         /// <returns></returns>
-        public override int GetDegree(INode node)
+        public override int GetDegree(Node node)
         {
             return Dimension;
         }
@@ -42,16 +42,16 @@ namespace Graph.Core
         /// <summary>
         /// nodeの第indexエッジと接続する隣接ノードを返します。
         /// </summary>
-        /// <param name="node">ノードアドレス</param>
+        /// <param name="node">ノード</param>
         /// <param name="index">エッジの番号</param>
         /// <returns>隣接ノードのアドレス</returns>
-        public override INode GetNeighbor(INode node, int index)
+        public override Node GetNeighbor(Node node, int index)
         {
             BinaryNode binNode = (BinaryNode)node;
             const UInt32 mask1 = 0x55555555;            // 01010101....01
             UInt32 mask2 = ((UInt32)1 << index) - 1;    // 00...0111...11
             UInt32 mask = ((binNode.Addr & mask1 & mask2) << 1) | ((UInt32)1 << index);
-            return binNode ^ mask;
+            return new BinaryNode(binNode.Addr ^ mask);
         }
 
         public IEnumerable<int> GetFowardNeighbor(BinaryNode node1, BinaryNode node2)

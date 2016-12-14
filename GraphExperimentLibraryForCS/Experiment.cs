@@ -16,7 +16,7 @@ namespace Graph.Experiment
             Console.WriteLine("d({0}, {1}) = {2}", node1.ID, node2.ID, distance[node1.ID]);
             Console.WriteLine("  s   = {0}", Tools.UIntToBinStr(node1.Addr, graph.Dimension, 2));
             Console.WriteLine("  d   = {0}", Tools.UIntToBinStr(node2.Addr, graph.Dimension, 2));
-            Console.WriteLine("s ^ d = {0}\n", Tools.UIntToBinStr((node1 ^ node2).Addr, graph.Dimension, 2));
+            Console.WriteLine("s ^ d = {0}\n", Tools.UIntToBinStr(node1.Addr ^ node2.Addr, graph.Dimension, 2));
             for (int i = 0; i < graph.GetDegree(node1); i++)
             {
                 UInt32 neighborID = ((BinaryNode)graph.GetNeighbor(node1, i)).Addr;
@@ -39,7 +39,7 @@ namespace Graph.Experiment
                     Console.WriteLine("d({0}, {1}) = {2}", node1ID, node2ID, distance[node1ID]);
                     Console.WriteLine("  s   = {0}", Tools.UIntToBinStr(node1.Addr, graph.Dimension, 2));
                     Console.WriteLine("  d   = {0}", Tools.UIntToBinStr(node2.Addr, graph.Dimension, 2));
-                    Console.WriteLine("s ^ d = {0}\n", Tools.UIntToBinStr((node1 ^ node2).Addr, graph.Dimension, 2));
+                    Console.WriteLine("s ^ d = {0}\n", Tools.UIntToBinStr(node1.Addr ^ node2.Addr, graph.Dimension, 2));
                     for (int i = 0; i < graph.GetDegree(node1); i++)
                     {
                         UInt32 neighborID = ((BinaryNode)graph.GetNeighbor(node1, i)).Addr;
@@ -66,7 +66,7 @@ namespace Graph.Experiment
                     Console.WriteLine("d({0}, {1}) = {2}", node1ID, node2ID, distance[node1ID]);
                     Console.WriteLine("  s   = {0}", Tools.UIntToBinStr(node1.Addr, graph.Dimension, 2));
                     Console.WriteLine("  d   = {0}", Tools.UIntToBinStr(node2.Addr, graph.Dimension, 2));
-                    Console.WriteLine("s ^ d = {0}\n", Tools.UIntToBinStr((node1 ^ node2).Addr, graph.Dimension, 2));
+                    Console.WriteLine("s ^ d = {0}\n", Tools.UIntToBinStr(node1.Addr ^ node2.Addr, graph.Dimension, 2));
                     for (int i = 0; i < graph.GetDegree(node1); i++)
                     {
                         UInt32 neighborID = ((BinaryNode)graph.GetNeighbor(node1, i)).Addr;

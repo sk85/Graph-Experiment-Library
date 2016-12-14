@@ -15,7 +15,7 @@ namespace Graph.Core
         /// <para>現状ではRandomオブジェクトの初期化とDimensionフィールドの初期化だけ。</para>
         /// </summary>
         /// <param name="dim">次元数</param>
-        public MobiusCube(int dim) : base(dim) { }
+        public MobiusCube(int dim, int randSeed) : base(dim, randSeed) { }
 
         /// <summary>
         /// 現在の次元数からノード数を計算して返します。
@@ -33,7 +33,7 @@ namespace Graph.Core
         /// </summary>
         /// <param name="node">ノードアドレス</param>
         /// <returns></returns>
-        public override int GetDegree(INode node)
+        public override int GetDegree(Node node)
         {
             return Dimension;
         }
@@ -44,7 +44,7 @@ namespace Graph.Core
         /// <param name="node">ノードアドレス</param>
         /// <param name="index">エッジの番号</param>
         /// <returns>隣接ノードのアドレス</returns>
-        public override INode GetNeighbor(INode node, int index)
+        public override Node GetNeighbor(Node node, int index)
         {
             BinaryNode binNode = (BinaryNode)node;
             UInt32 mask;
@@ -60,7 +60,7 @@ namespace Graph.Core
             {
                 mask = ((UInt32)1 << (index + 1)) - 1;  // 111...111
             }
-            return binNode ^ mask;
+            return new BinaryNode(binNode.Addr ^ mask);
         }
     }
 }
