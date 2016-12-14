@@ -52,7 +52,7 @@ namespace Graph.Core
             }
             set
             {
-                Addr ^= ((UInt32)1 << value);
+                Addr |= ((UInt32)1 << value);
             }
         }
     }

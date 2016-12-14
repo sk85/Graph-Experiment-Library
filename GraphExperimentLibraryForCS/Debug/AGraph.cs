@@ -62,7 +62,7 @@ namespace Graph.Core
         /// </summary>
         /// <param name="node1">出発頂点</param>
         /// <param name="node2">目的頂点</param>
-        public void ShowFowardNeighbor(INode node1, INode node2)
+        public void ShowFowardNeighbor(Node node1, Node node2)
         {
             int[] distance = CalcAllDistanceBFS(node2);
             Console.WriteLine("d({0}, {1}) = {2}", node1.ID, node2.ID, distance[node1.ID]);
@@ -95,7 +95,7 @@ namespace Graph.Core
                     Console.WriteLine("d({0}, {1}) = {2}", node1.ID, node2.ID, distance[node1.ID]);
                     Console.WriteLine("  u   = {0}", Tools.UIntToBinStr(node1.Addr, Dimension, 4));
                     Console.WriteLine("  v   = {0}", Tools.UIntToBinStr(node2.Addr, Dimension, 4));
-                    Console.WriteLine("u ^ v = {0}\n", Tools.UIntToBinStr((node1 ^ node2).Addr, Dimension, 4));
+                    Console.WriteLine("u ^ v = {0}\n", Tools.UIntToBinStr(node1.Addr ^ node2.Addr, Dimension, 4));
                     for (int i = 0; i < GetDegree(node1); i++)
                     {
                         BinaryNode neighbor = (BinaryNode)GetNeighbor(node1, i);
@@ -134,7 +134,7 @@ namespace Graph.Core
                     Console.WriteLine("d({0}, {1}) = {2}", node1.ID, node2.ID, distance[node1.ID]);
                     Console.WriteLine("  u   = {0}", Tools.UIntToBinStr(node1.Addr, Dimension, 2));
                     Console.WriteLine("  v   = {0}", Tools.UIntToBinStr(node2.Addr, Dimension, 2));
-                    Console.WriteLine("s ^ d = {0}\n", Tools.UIntToBinStr((node1 ^ node2).Addr, Dimension, 2));
+                    Console.WriteLine("s ^ d = {0}\n", Tools.UIntToBinStr(node1.Addr ^ node2.Addr, Dimension, 2));
                     Console.WriteLine(" corr = {0}", Tools.UIntToBinStr(correctPattern, Dimension, 2));
                     Console.WriteLine("------------------------------");
                     Console.ReadKey();
@@ -158,7 +158,7 @@ namespace Graph.Core
                 Console.WriteLine("d({0}, {1}) = {2}", node1.ID, node2.ID, dist2[node1.ID]);
                 Console.WriteLine("  u   = {0}", Tools.UIntToBinStr(node1.Addr, Dimension, 2));
                 Console.WriteLine("  v   = {0}", Tools.UIntToBinStr(node2.Addr, Dimension, 2));
-                Console.WriteLine("u ^ v = {0}\n", Tools.UIntToBinStr((node1 ^ node2).Addr, Dimension, 2));
+                Console.WriteLine("u ^ v = {0}\n", Tools.UIntToBinStr(node1.Addr ^ node2.Addr, Dimension, 2));
 
                 for (int i = 0; i < GetDegree(node1); i++)
                 {

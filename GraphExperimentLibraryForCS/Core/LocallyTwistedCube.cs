@@ -11,6 +11,11 @@ namespace Graph.Core
     /// </summary>
     class LocallyTwistedCube : AGraph
     {
+        public override string Name
+        {
+            get { return "LocallyTwistedCube"; }
+        }
+
         /// <summary>
         /// AGraphのコンストラクタを呼びます。
         /// </summary>
@@ -47,14 +52,13 @@ namespace Graph.Core
         /// <returns>隣接ノードのアドレス</returns>
         public override Node GetNeighbor(Node node, int index)
         {
-            BinaryNode binNode = (BinaryNode)node;
             if (index == 0)
             {
-                return new BinaryNode(binNode.Addr ^ 0b1);
+                return new BinaryNode(node.ID ^ 0b1);
             }
             else
             {
-                return new BinaryNode(binNode.Addr ^ ((0b10 + (binNode.Addr & 0b1)) << (index - 1)));
+                return new BinaryNode(node.ID ^ ((0b10 + (node.ID & 0b1)) << (index - 1)));
             }
         }
     }

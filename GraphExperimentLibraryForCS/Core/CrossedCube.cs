@@ -11,6 +11,11 @@ namespace Graph.Core
     /// </summary>
     partial class CrossedCube : AGraph
     {
+        public override string Name
+        {
+            get { return "CrossedCube"; }
+        }
+
         /// <summary>
         /// AGraphのコンストラクタを呼びます。
         /// </summary>

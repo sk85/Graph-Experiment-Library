@@ -38,6 +38,11 @@ namespace Graph.Core
                 FaultFlags = new bool[NodeNum];
             }
         }
+
+        /// <summary>
+        /// グラフの名前です。
+        /// </summary>
+        public abstract string Name { get; }
         
         /// <summary>
         /// グラフのノード数です。
@@ -74,6 +79,8 @@ namespace Graph.Core
         /// <para>使うたびに生成するのは無駄な気がしてフィールドに含めてみたけど、まずそうなら消します。</para>
         /// </summary>
         protected Random Rand;
+
+
 
 
 
@@ -243,9 +250,7 @@ namespace Graph.Core
                 FaultFlags[index - 1] = true;
             }
         }
-
-
-
+        
 
 
 
@@ -257,8 +262,12 @@ namespace Graph.Core
          *      など
          *  
          ************************************************************************/
-
-        Node GetNodeRandom()
+        
+        /// <summary>
+        /// 非故障なノードをランダムに取得
+        /// </summary>
+        /// <returns>ノード</returns>
+        public Node GetNodeRandom()
         {
             UInt32 unfaultNum = NodeNum - FaultNodeNum;
             UInt32 rand = (UInt32)(Rand.NextDouble() * unfaultNum);
@@ -271,6 +280,105 @@ namespace Graph.Core
                 }
             }
             return new Node(index - 1);
+        }
+
+        /// <summary>
+        /// あるノードと連結かつ非故障なノードをランダムに取得。
+        /// 存在しなければ元のノードを返します。
+        /// </summary>
+        /// <param name="node">ノード</param>
+        /// <returns>連結なノード</returns>
+        public Node GetConnectedNodeRandom(Node node)
+        {
+            int[] distance = CalcAllDistanceBFSF(node);
+            UInt32 count = 0;   // nodeと連結なノードの数
+            UInt32 index = 0;
+
+            // 連結なノード数を数える
+            for (UInt32 i = 0; i < NodeNum; ++i)
+            {
+                if (distance[i] > 0) count++;
+            }
+
+            if (count > 0)
+            {
+                UInt32 rand = (UInt32)(Rand.NextDouble() * count);  // 何番目の連結ノードを選ぶか
+
+                // 選んだノードは何か
+                count = 0;
+                while (count <= rand)
+                {
+                    if (distance[index++] > 0) count++;
+                }
+            }
+            else  // 連結なノードが存在しないならば失敗
+            {
+                return node;
+            }
+
+            return new Node(index - 1);
+        }
+
+
+
+
+
+        /************************************************************************
+         * 
+         *  ルーティングメソッド
+         *  
+         ************************************************************************/
+        
+
+        public Node SimpleGetNext(Node node1, Node node2)
+        {
+            int[] distance = CalcAllDistanceBFS(node2);
+            for (int i = 0; i < GetDegree(node1); i++)
+            {
+                Node neighbor = GetNeighbor(node1, i);
+                if (!FaultFlags[neighbor.ID] && distance[neighbor.ID] < distance[node1.ID]) return neighbor;
+            }
+            return node1;
+        }
+
+        /// <summary>
+        /// ルーティングメソッドです。
+        /// node1からnode2まで、getNextに従ってルーティングを行います。
+        /// <para>
+        /// Node getNext(Node c, Node d);
+        /// cからdへのルーティングで次のノードを返してください。
+        /// 行けるノードがない場合はcを返してください。
+        /// </para>
+        /// </summary>
+        /// <param name="node1">出発ノード</param>
+        /// <param name="node2">目的ノード</param>
+        /// <param name="getNext">移動先のノードを決める関数</param>
+        /// <returns>かかったステップ数(負の数なら失敗時のステップ数)</returns>
+        public int Routing(Node node1, Node node2, Func<Node, Node, Node> getNext)
+        {
+            Node current = new Node(node1.ID);
+            Node preview = new Node(node1.ID);
+
+            int step = 0;
+
+            while (current.ID != node2.ID)
+            {
+                Node next = getNext(current, node2);
+
+                // 1つ前に戻る or 行けるノードがないなら失敗
+                if (next.ID == preview.ID || next.ID == current.ID)
+                {
+                    return -step;
+                }
+                else
+                {
+                    step++;
+                    preview = current;
+                    current = next;
+                }
+            }
+
+            return step;
         }
     }
 }

@@ -10,6 +10,11 @@ namespace Graph.Core
     {
         public int Type { get; set; }
 
+        public override string Name
+        {
+            get { return Type.ToString() + "-MobiusCube"; }
+        }
+
         /// <summary>
         /// AGraphのコンストラクタを呼びます。
         /// <para>現状ではRandomオブジェクトの初期化とDimensionフィールドの初期化だけ。</para>
