@@ -1,4 +1,4 @@
-﻿//#define DEBUG
+﻿#define DEBUG
 
 using System;
 using System.IO;
@@ -11,6 +11,168 @@ namespace Graph.Core
 {
     abstract partial class AGraph
     {
+        /************************************************************************
+        * 
+        *  各メソッドのデバッグ用メソッド
+        *  
+        ************************************************************************/
+
+        /// <summary>
+        /// void GenerateFaults(int faultRatio)
+        /// のデバッグ用メソッド．
+        /// 実際に発生させた故障の数がおかしければ!が表示される．
+        /// </summary>
+        public void Debug_GenerateFaults()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                Console.WriteLine("Fault ratio = {0,2}%", i * 10);
+                for (int j = 0; j < 50; j++)
+                {
+                    Console.WriteLine("{0,2}", j);
+                    GenerateFaults(i * 10);
+                    int count = 0;
+                    for (int k = 0; k < NodeNum; k++)
+                    {
+                        if (FaultFlags[k]) count++;
+                    }
+                    if (count != FaultNodeNum)
+                    {
+                        Console.Write("!");
+                        Console.ReadKey();
+                    }
+                }
+                Console.Write("\n");
+            }
+        }
+
+        /// <summary>
+        /// void Node GetNodeRandom()
+        /// のデバッグ用メソッド．
+        /// 返り値が故障頂点ならば!が表示される．
+        /// </summary>
+        public void Debug_GetNodeRandom()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                Console.WriteLine("Fault ratio = {0,2}%", i * 10);
+                for (int j = 0; j < 50; j++)
+                {
+                    GenerateFaults(i * 10);
+                    Node node = GetNodeRandom();
+                    Console.Write("{0}\t", node.ID);
+                    if (FaultFlags[node.ID])
+                    {
+                        Console.WriteLine("is fault!");
+                        Console.ReadKey();
+                    }
+                    else
+                    {
+                        Console.WriteLine("is ok.");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// void Node GetConnectedNodeRandom()
+        /// のデバッグ用メソッド．
+        /// 返り値が故障頂点ならば!が表示される．
+        /// </summary>
+        public void Debug_GetConnectedNodeRandom()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                Console.WriteLine("Fault ratio = {0,2}%", i * 10);
+                for (int j = 0; j < 50; j++)
+                {
+                    GenerateFaults(i*10);
+                    Node node1, node2;
+                    do
+                    {
+                        node1 = GetNodeRandom();
+                        node2 = GetConnectedNodeRandom(node1);
+                    } while (node1.ID == node2.ID);
+
+                    Console.Write("{0}\t", node2.ID);
+                    if (FaultFlags[node2.ID])
+                    {
+                        Console.WriteLine("is fault!");
+                        Console.ReadKey();
+                    }
+                    else
+                    {
+                        Console.WriteLine("is ok.");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// int CalcDistance(Node node1, Node node2)
+        /// のデバッグ用メソッド．
+        /// 幅優先探索の解と比較して間違っていたら!が表示される．
+        /// </summary>
+        public void Debug_CalcDistance()
+        {
+            for (Node node1 = new Node(0); node1.ID < NodeNum; node1.ID++)
+            {
+                int[] distance = CalcAllDistanceBFS(node1);
+                for (Node node2 = new Node(0); node2.ID < NodeNum; node2.ID++)
+                {
+                    Console.Write("d({0}, {1}) = {2}...", node1.ID, node2.ID, distance[node2.ID]);
+                    if (CalcDistance(node1, node2) != distance[node2.ID])
+                    {
+                        Console.WriteLine("NG!");
+                        Console.WriteLine("{0,4} = {1}", node1.ID, Tools.UIntToBinStr(node1.ID, Dimension, 4));
+                        Console.WriteLine("{0,4} = {1}", node2.ID, Tools.UIntToBinStr(node2.ID, Dimension, 4));
+                        Console.WriteLine(" s^d = {1}", node1.ID ^ node2.ID, Tools.UIntToBinStr(node1.ID ^ node2.ID, Dimension, 4));
+                        Console.WriteLine("wrong answer is = {0}", CalcDistance(node1, node2));
+                        Console.ReadKey();
+                    }
+                    else
+                    {
+                        Console.WriteLine("OK.");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// bool IsConnected(Node node1, Node node2)
+        /// のデバッグ用メソッド．
+        /// 間違っていたら!が表示される．
+        /// </summary>
+        public void Debug_IsConnected()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                Console.WriteLine("Fault ratio = {0,2}%", i * 10);
+                GenerateFaults(i * 10);
+                for (int j = 0; j < 50; j++)
+                {
+                    Node node1 = GetNodeRandom();
+                    Node node2 = GetNodeRandom();
+                    Console.Write("({0}, {1})", node1.ID, node2.ID);
+                    bool ans = CalcAllDistanceBFSF(node1)[node2.ID] > 0;
+                    if (IsConnected(node1, node2) != ans)
+                    {
+                        Console.WriteLine("NG!");
+                        Console.ReadKey();
+                    }
+                    else
+                    {
+                        Console.WriteLine("OK.");
+                    }
+                }
+            }
+        }
+
+
+
+
+
+
         /// <summary>
         /// グラフの各頂点の隣接頂点をコンソールに出力します。
         /// キューブ用(2進数値で出力)。

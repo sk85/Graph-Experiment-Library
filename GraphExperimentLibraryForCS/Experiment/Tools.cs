@@ -25,5 +25,14 @@ namespace Graph.Experiment
             }
             return str;
         }
+
+        public static int GetPopCount(UInt32 bin)
+        {
+            bin = (bin & 0x55555555) + (bin >> 1 & 0x55555555);
+            bin = (bin & 0x33333333) + (bin >> 2 & 0x33333333);
+            bin = (bin & 0x0f0f0f0f) + (bin >> 4 & 0x0f0f0f0f);
+            bin = (bin & 0x00ff00ff) + (bin >> 8 & 0x00ff00ff);
+            return (int)((bin & 0x0000ffff) + (bin >> 16 & 0x0000ffff));
+        }
     }
 }

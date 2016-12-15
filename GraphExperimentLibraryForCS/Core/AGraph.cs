@@ -90,7 +90,7 @@ namespace Graph.Core
         /************************************************************************
          * 
          *  基本的なメソッド
-         *      コンストラクタ、ノード数、シード値の設定、距離の計算など
+         *      コンストラクタ、グラフの状態を取得・設定するなど
          *  
          ************************************************************************/
 
@@ -134,6 +134,78 @@ namespace Graph.Core
         /// <param name="index">エッジの番号</param>
         /// <returns>隣接ノードのアドレス</returns>
         public abstract Node GetNeighbor(Node node, int index);
+
+        /// <summary>
+        /// 2頂点が連結かどうかを返します。
+        /// </summary>
+        /// <param name="node1">頂点1</param>
+        /// <param name="node2">頂点2</param>
+        /// <returns>頂点1と頂点2が連結か否か</returns>
+        public bool IsConnected(Node node1, Node node2)
+        {
+            //return CalcAllDistanceBFSF(node1)[node2.ID] > 0;
+            
+            // 深さ優先に書き直す
+            bool[] unvisited = new bool[NodeNum];
+            Stack<Node> stack = new Stack<Node>();  // 探索用のキュー
+            
+            for (UInt32 i = 0; i < NodeNum; i++) unvisited[i] = true;
+
+            // 探索本体
+            stack.Push(node1);
+            unvisited[node1.ID] = false;
+            while (stack.Count > 0)
+            {
+                Node current = stack.Pop();
+                for (int i = 0; i < GetDegree(current); i++)
+                {
+                    Node neighbor = GetNeighbor(current, i);
+                    if (unvisited[neighbor.ID] && !FaultFlags[neighbor.ID])
+                    {
+                        if (neighbor.ID == node2.ID) return true;
+                        unvisited[neighbor.ID] = false;
+                        stack.Push(neighbor);
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// FaultFlagsを指定の故障率で設定
+        /// </summary>
+        /// <param name="faultRatio">故障率(%)</param>
+        public void GenerateFaults(int faultRatio)
+        {
+            FaultRatio = faultRatio;
+
+            // 初期化
+            for (UInt32 i = 0; i < NodeNum; i++) FaultFlags[i] = false;
+
+            // ランダムに故障の生成
+            for (UInt32 i = 0; i < FaultNodeNum; i++)
+            {
+                UInt32 rand = (UInt32)(Rand.NextDouble() * (NodeNum - i));
+                UInt32 index = 0, count = 0;
+
+                while (count <= rand)
+                {
+                    if (!FaultFlags[index++]) count++;
+                }
+                FaultFlags[index - 1] = true;
+            }
+        }
+
+
+
+
+
+
+        /************************************************************************
+         * 
+         *  距離に関するメソッド
+         *  
+         ************************************************************************/
 
         /// <summary>
         /// nodeから他のノードへの距離を幅優先探索により計算して返します。
@@ -216,41 +288,21 @@ namespace Graph.Core
         }
 
         /// <summary>
-        /// 2頂点が連結かどうかを返します。
+        /// 2頂点間の距離を返します．
+        /// デフォルトでは幅優先探索メソッドのラッパなので，適宜オーバーライドしてください．
         /// </summary>
-        /// <param name="node1">頂点1</param>
-        /// <param name="node2">頂点2</param>
-        /// <returns>頂点1と頂点2が連結か否か</returns>
-        bool IsConnected(Node node1, Node node2)
+        /// <param name="node1">頂点１</param>
+        /// <param name="node2">頂点２</param>
+        /// <returns>node1とnode2の距離</returns>
+        public virtual int CalcDistance(Node node1, Node node2)
         {
-            return CalcAllDistanceBFS(node1)[node2.ID] > 0;
+            return CalcAllDistanceBFS(node1)[node2.ID];
         }
 
-        /// <summary>
-        /// FaultFlagsを指定の故障率で設定
-        /// </summary>
-        /// <param name="faultRatio">故障率(%)</param>
-        public void GenerateFaults(int faultRatio)
-        {
-            FaultRatio = faultRatio;
 
-            // 初期化
-            for (UInt32 i = 0; i < NodeNum; i++) FaultFlags[i] = false;
-
-            // ランダムに故障の生成
-            for (UInt32 i = 0; i < FaultNodeNum; i++)
-            {
-                UInt32 rand = (UInt32)(Rand.NextDouble() * (NodeNum - i));
-                UInt32 index = 0, count = 0;
-
-                while (count <= rand)
-                {
-                    if (!FaultFlags[index++]) count++;
-                }
-                FaultFlags[index - 1] = true;
-            }
-        }
         
+
+
 
 
 
@@ -290,6 +342,23 @@ namespace Graph.Core
         /// <returns>連結なノード</returns>
         public Node GetConnectedNodeRandom(Node node)
         {
+            {
+                bool f = true;
+                for (int i = 0; i < GetDegree(node); i++)
+                {
+                    if (!FaultFlags[GetNeighbor(node, i).ID]) f = false;
+                }
+                if (f) return node;
+            }
+            
+            Node node2;
+            do
+            {
+                node2 = GetNodeRandom();
+            } while (node.ID == node2.ID || !IsConnected(node, node2));
+            return node2;
+
+            /*
             int[] distance = CalcAllDistanceBFSF(node);
             UInt32 count = 0;   // nodeと連結なノードの数
             UInt32 index = 0;
@@ -300,6 +369,7 @@ namespace Graph.Core
                 if (distance[i] > 0) count++;
             }
 
+            // 先に連結なノードを列挙してから選ぶ形にすれば効率的かもかも
             if (count > 0)
             {
                 UInt32 rand = (UInt32)(Rand.NextDouble() * count);  // 何番目の連結ノードを選ぶか
@@ -317,7 +387,9 @@ namespace Graph.Core
             }
 
             return new Node(index - 1);
+            */
         }
+
 
 
 
@@ -332,11 +404,20 @@ namespace Graph.Core
 
         public Node SimpleGetNext(Node node1, Node node2)
         {
+            /*
             int[] distance = CalcAllDistanceBFS(node2);
             for (int i = 0; i < GetDegree(node1); i++)
             {
                 Node neighbor = GetNeighbor(node1, i);
                 if (!FaultFlags[neighbor.ID] && distance[neighbor.ID] < distance[node1.ID]) return neighbor;
+            }
+            */
+            int currentDistance = CalcDistance(node1, node2);
+            for (int i = 0; i < GetDegree(node1); i++)
+            {
+                Node neighbor = GetNeighbor(node1, i);
+                int nextDistance = CalcDistance(neighbor, node2);
+                if (!FaultFlags[neighbor.ID] && nextDistance < currentDistance) return neighbor;
             }
             return node1;
         }

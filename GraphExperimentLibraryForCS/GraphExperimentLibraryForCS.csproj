@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Core\AGraph.cs" />
     <Compile Include="Core\BinaryNode.cs" />
+    <Compile Include="Core\Hypercube.cs" />
     <Compile Include="Core\Node.cs" />
     <Compile Include="Core\LocallyTwistedCube.cs" />
     <Compile Include="Core\CrossedCube.cs" />

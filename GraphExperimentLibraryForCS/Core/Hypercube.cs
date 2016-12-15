@@ -1,36 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Graph.Core
 {
-    /// <summary>
-    /// ローカリーツイステッドキューブのクラスです。
-    /// </summary>
-    class LocallyTwistedCube : AGraph
+    class Hypercube : AGraph
     {
         /************************************************************************
-        * 
-        *  基底クラスのメソッドのオーバーライドなど
-        *  
-        ************************************************************************/
-
-        /// <summary>
-        /// グラフの名前
-        /// </summary>
-        public override string Name
-        {
-            get { return "LocallyTwistedCube"; }
-        }
+         * 
+         *  基底クラスのメソッドのオーバーライドなど
+         *  
+         ************************************************************************/
 
         /// <summary>
         /// AGraphのコンストラクタを呼びます。
         /// </summary>
         /// <param name="dim">次元数</param>
         /// <param name="randSeed">乱数の初期シード</param>
-        public LocallyTwistedCube(int dim, int randSeed) : base(dim, randSeed) { }
+        public Hypercube(int dim, int randSeed) : base(dim, randSeed) { }
+
+        /// <summary>
+        /// グラフの名前
+        /// </summary>
+        public override string Name
+        {
+            get { return "Hypercube"; }
+        }
 
         /// <summary>
         /// 現在の次元数からノード数を計算して返します。
@@ -61,14 +54,7 @@ namespace Graph.Core
         /// <returns>隣接ノードのアドレス</returns>
         public override Node GetNeighbor(Node node, int index)
         {
-            if (index < 2)
-            {
-                return new BinaryNode(node.ID ^ ((UInt32)0b1 << index));
-            }
-            else
-            {
-                return new BinaryNode(node.ID ^ ((0b10 + (node.ID & 0b1)) << (index - 1)));
-            }
+            return new BinaryNode(node.ID ^ ((UInt32)0b1 << index));
         }
 
         /// <summary>
@@ -79,26 +65,40 @@ namespace Graph.Core
         /// <returns>距離</returns>
         public override int CalcDistance(Node node1, Node node2)
         {
-            UInt32 c1 = node1.ID ^ node2.ID, c2 = c1, type = 0b10 + (node1.ID & 1);
-            int count1 = 0, count2 = 0;
+            return Experiment.Tools.GetPopCount(node1.ID ^ node2.ID);
+        }
 
-            for (int i = Dimension - 1; i > 1; --i)
+
+
+
+        /************************************************************************
+         * 
+         *  ルーティングに関する固有のメソッド
+         *  
+         ************************************************************************/
+        
+        public int[,] CalcCapability()
+        {
+            int[,] capability = new int[NodeNum, Dimension + 1];
+
+
+            for (UInt32 nodeID = 0; nodeID < NodeNum; nodeID++)
             {
-                if ((c1 >> i) == 1)
+                if (!FaultFlags[nodeID]) capability[nodeID, 0] = 1;
+            }
+
+            for (int k = 1; k <= Dimension; k++)
+            {
+                for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
                 {
-                    c1 ^= type << (i - 1);
-                    count1++;
-                }
-                if ((c2 >> i) == 1)
-                {
-                    c2 ^= (c2 >> (i - 1)) << (i - 1);
-                    count2++;
+                    int count = 0;
+                    for (int i = 0; i < GetDegree(node); i++)
+                        count += capability[node.ID, k - 1];
+                    if (count > Dimension - k) capability[node.ID, k] = 1;
                 }
             }
-            count1 += (int)((c1 >> 1) + ((c1 & 1) << 10));
-            count2 += 2 + (int)((c2 >> 1) - (c2 & 1));
 
-            return count1 < count2 ? count1 : count2;
+            return capability;
         }
     }
 }

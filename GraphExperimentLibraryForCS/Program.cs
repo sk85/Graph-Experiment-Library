@@ -11,10 +11,15 @@ namespace GraphExperimentLibraryForCS
     {
         static void Main(string[] args)
         {
-            LocallyTwistedCube graph = new LocallyTwistedCube(10, 0);
+            var graph = new LocallyTwistedCube(10, 0);
 
-            test(graph, 30);
+            test(graph, 10000);
 
+            //graph.Debug_GenerateFaults();
+            //graph.Debug_GetNodeRandom();
+            //graph.Debug_IsConnected();
+            //graph.Debug_GetConnectedNodeRandom();
+            //graph.Debug_CalcDistance();
         }
 
         static void test(AGraph graph, int numOfTrials)
@@ -23,9 +28,11 @@ namespace GraphExperimentLibraryForCS
 
             for (int faultRatio = 0; faultRatio < 10; faultRatio++)
             {
-                Console.Write("Fault ratio = {0,2}% ", faultRatio * 10);
+                Console.WriteLine("Fault ratio = {0,2}%", faultRatio * 10);
                 for (int count = 0; count < numOfTrials; count++)
                 {
+                    Console.CursorLeft = 0;
+                    Console.Write("{0} / {1}", count + 1 , numOfTrials);
                     graph.GenerateFaults(faultRatio * 10);
 
                     Node node1, node2;
@@ -33,8 +40,7 @@ namespace GraphExperimentLibraryForCS
                     {
                         node1 = graph.GetNodeRandom();
                         node2 = graph.GetConnectedNodeRandom(node1);
-                    }
-                    while (node2.ID == node1.ID);
+                    } while (node1.ID == node2.ID);
 
                     result.Add(faultRatio, graph.Routing(node1, node2, graph.SimpleGetNext));
                 }
