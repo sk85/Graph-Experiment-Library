@@ -43,7 +43,7 @@ namespace Graph.Core
         /// グラフの名前です。
         /// </summary>
         public abstract string Name { get; }
-        
+
         /// <summary>
         /// グラフのノード数です。
         /// </summary>
@@ -136,6 +136,17 @@ namespace Graph.Core
         public abstract Node GetNeighbor(Node node, int index);
 
         /// <summary>
+        /// nodeの隣接ノードを返します。
+        /// </summary>
+        /// <param name="node">ノード</param>
+        /// <returns>隣接ノードの列挙体</returns>
+        public virtual IEnumerable<Node> GetNeighbor(Node node)
+        {
+            for (int i = 0; i < GetDegree(node); i++)
+                yield return GetNeighbor(node, i);
+        }
+
+        /// <summary>
         /// 2頂点が連結かどうかを返します。
         /// </summary>
         /// <param name="node1">頂点1</param>
@@ -143,12 +154,10 @@ namespace Graph.Core
         /// <returns>頂点1と頂点2が連結か否か</returns>
         public bool IsConnected(Node node1, Node node2)
         {
-            //return CalcAllDistanceBFSF(node1)[node2.ID] > 0;
-            
-            // 深さ優先に書き直す
+            // 深さ優先探索
             bool[] unvisited = new bool[NodeNum];
             Stack<Node> stack = new Stack<Node>();  // 探索用のキュー
-            
+
             for (UInt32 i = 0; i < NodeNum; i++) unvisited[i] = true;
 
             // 探索本体
@@ -157,9 +166,8 @@ namespace Graph.Core
             while (stack.Count > 0)
             {
                 Node current = stack.Pop();
-                for (int i = 0; i < GetDegree(current); i++)
+                foreach (var neighbor in GetNeighbor(current))
                 {
-                    Node neighbor = GetNeighbor(current, i);
                     if (unvisited[neighbor.ID] && !FaultFlags[neighbor.ID])
                     {
                         if (neighbor.ID == node2.ID) return true;
@@ -226,12 +234,11 @@ namespace Graph.Core
             // 探索本体
             que.Enqueue(node);
             array[node.ID] = 0;
-            while(que.Count > 0)
+            while (que.Count > 0)
             {
                 Node current = que.Dequeue();
-                for (int i = 0; i < GetDegree(node); i++)
+                foreach (var neighbor in GetNeighbor(current))
                 {
-                    Node neighbor = GetNeighbor(current, i);
                     if (array[neighbor.ID] > array[current.ID])
                     {
                         array[neighbor.ID] = array[current.ID] + 1;
@@ -267,9 +274,8 @@ namespace Graph.Core
             while (que.Count > 0)
             {
                 Node current = que.Dequeue();
-                for (int i = 0; i < GetDegree(node); i++)
+                foreach (var neighbor in GetNeighbor(current))
                 {
-                    Node neighbor = GetNeighbor(current, i);
                     if (!FaultFlags[neighbor.ID] && array[neighbor.ID] > array[current.ID])
                     {
                         array[neighbor.ID] = array[current.ID] + 1;
@@ -300,7 +306,7 @@ namespace Graph.Core
         }
 
 
-        
+
 
 
 
@@ -314,7 +320,7 @@ namespace Graph.Core
          *      など
          *  
          ************************************************************************/
-        
+
         /// <summary>
         /// 非故障なノードをランダムに取得
         /// </summary>
@@ -342,52 +348,39 @@ namespace Graph.Core
         /// <returns>連結なノード</returns>
         public Node GetConnectedNodeRandom(Node node)
         {
+            // 連結なノードがなければ失敗
             {
                 bool f = true;
-                for (int i = 0; i < GetDegree(node); i++)
+                foreach (var neighbor in GetNeighbor(node))
                 {
-                    if (!FaultFlags[GetNeighbor(node, i).ID]) f = false;
+                    if (!FaultFlags[neighbor.ID]) f = false;
                 }
                 if (f) return node;
             }
-            
+
+            // 故障が少ないうちは連結なノードが出るまで試行
             Node node2;
             do
             {
                 node2 = GetNodeRandom();
             } while (node.ID == node2.ID || !IsConnected(node, node2));
             return node2;
+        }
 
-            /*
-            int[] distance = CalcAllDistanceBFSF(node);
-            UInt32 count = 0;   // nodeと連結なノードの数
-            UInt32 index = 0;
-
-            // 連結なノード数を数える
-            for (UInt32 i = 0; i < NodeNum; ++i)
+        /// <summary>
+        /// 前方隣接頂点の列挙体を返します。
+        /// デフォルトでは幅優先探索でやっているので適宜オーバーライドしないと遅いです。
+        /// </summary>
+        /// <param name="node1">出発頂点</param>
+        /// <param name="node2">目的頂点</param>
+        /// <returns>前方隣接頂点</returns>
+        public virtual IEnumerable<Node> CalcPrefferedNeighbor(Node node1, Node node2)
+        {
+            int[] distance = CalcAllDistanceBFS(node2);
+            foreach(var neighbor in GetNeighbor(node1))
             {
-                if (distance[i] > 0) count++;
+                if (distance[neighbor.ID] < distance[node1.ID]) yield return neighbor;
             }
-
-            // 先に連結なノードを列挙してから選ぶ形にすれば効率的かもかも
-            if (count > 0)
-            {
-                UInt32 rand = (UInt32)(Rand.NextDouble() * count);  // 何番目の連結ノードを選ぶか
-
-                // 選んだノードは何か
-                count = 0;
-                while (count <= rand)
-                {
-                    if (distance[index++] > 0) count++;
-                }
-            }
-            else  // 連結なノードが存在しないならば失敗
-            {
-                return node;
-            }
-
-            return new Node(index - 1);
-            */
         }
 
 
@@ -395,39 +388,38 @@ namespace Graph.Core
 
 
 
-        /************************************************************************
+        /*
+         ***********************************************************************
          * 
-         *  ルーティングメソッド
+         *  ルーティング関連
          *  
-         ************************************************************************/
-        
+         ************************************************************************
+        */
 
-        public Node SimpleGetNext(Node node1, Node node2)
+        /// <summary>
+        /// Routing用のシンプルなGetNextです。
+        /// 前方隣接頂点のうち非故障な頂点を返します。
+        /// CalcPrefferedNeighborはデフォルトでは幅優先探索なので、そちらをオーバーライドしないと遅いです。
+        /// </summary>
+        /// <param name="node1">現在の頂点</param>
+        /// <param name="node2">目的頂点</param>
+        /// <returns></returns>
+        public Node GetNext_Simple(Node node1, Node node2)
         {
-            /*
-            int[] distance = CalcAllDistanceBFS(node2);
-            for (int i = 0; i < GetDegree(node1); i++)
+            foreach(var prNeighbor in CalcPrefferedNeighbor(node1, node2))
             {
-                Node neighbor = GetNeighbor(node1, i);
-                if (!FaultFlags[neighbor.ID] && distance[neighbor.ID] < distance[node1.ID]) return neighbor;
-            }
-            */
-            int currentDistance = CalcDistance(node1, node2);
-            for (int i = 0; i < GetDegree(node1); i++)
-            {
-                Node neighbor = GetNeighbor(node1, i);
-                int nextDistance = CalcDistance(neighbor, node2);
-                if (!FaultFlags[neighbor.ID] && nextDistance < currentDistance) return neighbor;
+                if (!FaultFlags[prNeighbor.ID]) return prNeighbor;
             }
             return node1;
         }
 
         /// <summary>
-        /// ルーティングメソッドです。
-        /// node1からnode2まで、getNextに従ってルーティングを行います。
+        /// ルーティングを行います。
+        /// 指定した関数getNextが選ぶ頂点へルーティングを行います。
+        /// 成功ならば正の数でかかったステップ数、失敗ならば負の数で失敗までのステップ数を返します。
         /// <para>
         /// Node getNext(Node c, Node d);
-        /// cからdへのルーティングで次のノードを返してください。
+        /// cを現在のノード、dを目的ノードとして、次に推移するノードを返す。
         /// 行けるノードがない場合はcを返してください。
         /// </para>
         /// </summary>
@@ -437,17 +429,58 @@ namespace Graph.Core
         /// <returns>かかったステップ数(負の数なら失敗時のステップ数)</returns>
         public int Routing(Node node1, Node node2, Func<Node, Node, Node> getNext)
         {
+            bool[] visited = new bool[NodeNum];
             Node current = new Node(node1.ID);
-            Node preview = new Node(node1.ID);
-
             int step = 0;
 
             while (current.ID != node2.ID)
             {
+                visited[current.ID] = true;
                 Node next = getNext(current, node2);
 
-                // 1つ前に戻る or 行けるノードがないなら失敗
-                if (next.ID == preview.ID || next.ID == current.ID)
+                // ループしている or 行けるノードがないなら失敗
+                if (visited[next.ID] || next.ID == current.ID)
+                {
+                    return -step;
+                }
+                else
+                {
+                    step++;
+                    current = next;
+                }
+            }
+
+            return step;
+        }
+
+        /// <summary>
+        /// ルーティングを行います。
+        /// 指定した関数getNextが選ぶ頂点へルーティングを行います。
+        /// 成功ならば正の数でかかったステップ数、失敗ならば負の数で失敗までのステップ数を返します。
+        /// <para>
+        /// Node getNext(Node c, Node d, Node p);
+        /// cを現在のノード、dを目的ノード、pを1つ手前のノードとして、次に推移するノードを返す。
+        /// 行けるノードがない場合はcを返してください。
+        /// </para>
+        /// </summary>
+        /// <param name="node1">出発ノード</param>
+        /// <param name="node2">目的ノード</param>
+        /// <param name="getNext">移動先のノードを決める関数</param>
+        /// <returns>かかったステップ数(負の数なら失敗時のステップ数)</returns>
+        public int Routing(Node node1, Node node2, Func<Node, Node, Node, Node> getNext)
+        {
+            bool[] visited = new bool[NodeNum];
+            Node current = new Node(node1.ID);
+            Node preview = new Node(node1.ID);
+            int step = 0;
+
+            while (current.ID != node2.ID)
+            {
+                visited[current.ID] = true;
+                Node next = getNext(current, node2, preview);
+
+                // ループしている or 行けるノードがないなら失敗
+                if (visited[next.ID] || next.ID == current.ID)
                 {
                     return -step;
                 }

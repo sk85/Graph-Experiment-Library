@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Diagnostics;
 
 using Graph.Core;
 using Graph.Experiment;
@@ -11,9 +12,39 @@ namespace GraphExperimentLibraryForCS
     {
         static void Main(string[] args)
         {
-            var graph = new LocallyTwistedCube(10, 0);
+            var graph = new Hypercube(10, 0);
+            test(graph, 500);
+            int numOfTrials = 500;
 
-            test(graph, 10000);
+            Result result = new Result();
+
+            for (int faultRatio = 0; faultRatio < 10; faultRatio++)
+            {
+                Stopwatch sw = Stopwatch.StartNew();
+
+                Console.WriteLine("Fault ratio = {0,2}%", faultRatio * 10);
+                for (int count = 0; count < numOfTrials; count++)
+                {
+                    Console.CursorLeft = 0;
+                    Console.Write("{0} / {1}", count + 1, numOfTrials);
+                    graph.GenerateFaults(faultRatio * 10);
+
+                    Node node1, node2;
+                    do
+                    {
+                        node1 = graph.GetNodeRandom();
+                        node2 = graph.GetConnectedNodeRandom(node1);
+                    } while (node1.ID == node2.ID);
+
+                    graph.CalcCapability();
+                    result.Add(faultRatio, graph.Routing(node1, node2, graph.GetNext_Capability));
+                }
+                sw.Stop();
+                Console.Write(" ...{0}\n", sw.Elapsed);
+            }
+
+            string path = @"..\..\output\" + graph.Name + graph.Dimension.ToString("00") + "capability.csv";
+            result.SaveToCSV(path);
 
             //graph.Debug_GenerateFaults();
             //graph.Debug_GetNodeRandom();
@@ -28,6 +59,8 @@ namespace GraphExperimentLibraryForCS
 
             for (int faultRatio = 0; faultRatio < 10; faultRatio++)
             {
+                Stopwatch sw = Stopwatch.StartNew();
+
                 Console.WriteLine("Fault ratio = {0,2}%", faultRatio * 10);
                 for (int count = 0; count < numOfTrials; count++)
                 {
@@ -42,12 +75,13 @@ namespace GraphExperimentLibraryForCS
                         node2 = graph.GetConnectedNodeRandom(node1);
                     } while (node1.ID == node2.ID);
 
-                    result.Add(faultRatio, graph.Routing(node1, node2, graph.SimpleGetNext));
+                    result.Add(faultRatio, graph.Routing(node1, node2, graph.GetNext_Simple));
                 }
-                Console.Write(" ...end\n");
+                sw.Stop();
+                Console.Write(" ...{0}\n", sw.Elapsed);
             }
 
-            string path = @"..\..\output\" + graph.Name + graph.Dimension.ToString("00") + ".csv";
+            string path = @"..\..\output\" + graph.Name + graph.Dimension.ToString("00") + "capability.csv";
             result.SaveToCSV(path);
         }
     }
