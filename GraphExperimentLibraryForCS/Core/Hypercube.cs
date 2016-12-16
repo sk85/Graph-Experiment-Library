@@ -87,49 +87,101 @@ namespace Graph.Core
 
 
 
-        /************************************************************************
+        /*
+         ************************************************************************
          * 
          *  ルーティングに関する固有のメンバ
          *  
-         ************************************************************************/
+         ************************************************************************
+        */
 
         private int[,] Capability;
 
-        public void CalcCapability()
+        private void CalcCapability()
         {
-            Capability = new int[NodeNum, Dimension + 1];
+            Capability = new int[NodeNum, Dimension];
 
             for (UInt32 nodeID = 0; nodeID < NodeNum; nodeID++)
             {
-                if (!FaultFlags[nodeID]) Capability[nodeID, 0] = 1;
+                Capability[nodeID, 0] = FaultFlags[nodeID] ? 0 : 1;
             }
 
-            for (int k = 1; k <= Dimension; k++)
+            for (int k = 1; k < Dimension; k++)
             {
                 for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
                 {
                     int count = 0;
-                    foreach (var neighbor in GetNeighbor(node))
-                        count += Capability[neighbor.ID, k - 1];
-                    if (count > Dimension - k) Capability[node.ID, k] = 1;
+                    if (FaultFlags[node.ID])
+                    {
+                        Capability[node.ID, k] = 0;
+                    }
+                    else
+                    {
+                        foreach (var neighbor in GetNeighbor(node))
+                            count += Capability[neighbor.ID, k - 1];
+                        Capability[node.ID, k] = (count > Dimension - (k + 1)) ? 1 : 0;
+                    }
                 }
             }
         }
 
-        public Node GetNext_Capability(Node node1, Node node2)
+        private Node GetNext_Capability(Node node1, Node node2)
         {
             Node next = null;
             foreach (var prNeighbor in CalcPrefferedNeighbor(node1, node2))
             {
-                if (!FaultFlags[prNeighbor.ID])
+                if (prNeighbor.ID == node2.ID)
+                    return prNeighbor;
+                else if (!FaultFlags[prNeighbor.ID])
                 {
-                    if (Capability[prNeighbor.ID, CalcDistance(prNeighbor, node2)] == 1)
+                    if (Capability[prNeighbor.ID, CalcDistance(prNeighbor, node2) - 1] == 1)
                         return prNeighbor;
                     else
-                        next = prNeighbor;
+                    {
+                        if (next == null) next = prNeighbor;
+                    }
                 }
             }
-            return next != null ? next : node1;
+            return next == null ? node1 : next;
+        }
+
+        public int Routing_Capability(Node node1, Node node2)
+        {
+            CalcCapability();
+            int step = RoutingBase(node1, node2, GetNext_Capability);
+            if (Capability[node1.ID, CalcDistance(node1, node2) - 1] == 1)
+            {
+                if (step < 0)
+                {
+                    Console.Write("a");
+                    Console.ReadKey();
+                }
+            }
+            return step;
+        }
+
+        public void SaveCapability()
+        {
+            for (int faultRatio = 0; faultRatio < 100; faultRatio += 10)
+            {
+                GenerateFaults(faultRatio);
+                CalcCapability();
+                var sw = new System.IO.StreamWriter(
+                    @"..\..\output\" + faultRatio.ToString("00") + ".csv",
+                    false, 
+                    System.Text.Encoding.GetEncoding("shift_jis"));
+
+                for (UInt32 i = 0; i < NodeNum; i++)
+                {
+                    for (int j = 0; j < Dimension; j++)
+                    {
+                        sw.Write("{0},", Capability[i,j]);
+                    }
+                    sw.Write("\n");
+                }
+
+                sw.Close();
+            }
         }
     }
 }

@@ -322,7 +322,7 @@ namespace Graph.Core
          ************************************************************************/
 
         /// <summary>
-        /// 非故障なノードをランダムに取得
+        /// 非故障なノードを１つ選ぶ．
         /// </summary>
         /// <returns>ノード</returns>
         public Node GetNodeRandom()
@@ -404,7 +404,7 @@ namespace Graph.Core
         /// <param name="node1">現在の頂点</param>
         /// <param name="node2">目的頂点</param>
         /// <returns></returns>
-        public Node GetNext_Simple(Node node1, Node node2)
+        private Node GetNext_Simple(Node node1, Node node2)
         {
             foreach(var prNeighbor in CalcPrefferedNeighbor(node1, node2))
             {
@@ -413,8 +413,13 @@ namespace Graph.Core
             return node1;
         }
 
+        public int Routing_Simple(Node node1, Node node2)
+        {
+            return RoutingBase(node1, node2, GetNext_Simple);
+        }
+
         /// <summary>
-        /// ルーティングを行います。
+        /// ルーティングの本体部分です．
         /// 指定した関数getNextが選ぶ頂点へルーティングを行います。
         /// 成功ならば正の数でかかったステップ数、失敗ならば負の数で失敗までのステップ数を返します。
         /// <para>
@@ -427,7 +432,7 @@ namespace Graph.Core
         /// <param name="node2">目的ノード</param>
         /// <param name="getNext">移動先のノードを決める関数</param>
         /// <returns>かかったステップ数(負の数なら失敗時のステップ数)</returns>
-        public int Routing(Node node1, Node node2, Func<Node, Node, Node> getNext)
+        protected int RoutingBase(Node node1, Node node2, Func<Node, Node, Node> getNext)
         {
             bool[] visited = new bool[NodeNum];
             Node current = new Node(node1.ID);
@@ -454,7 +459,7 @@ namespace Graph.Core
         }
 
         /// <summary>
-        /// ルーティングを行います。
+        /// ルーティングをの本体部分です．
         /// 指定した関数getNextが選ぶ頂点へルーティングを行います。
         /// 成功ならば正の数でかかったステップ数、失敗ならば負の数で失敗までのステップ数を返します。
         /// <para>
@@ -467,7 +472,7 @@ namespace Graph.Core
         /// <param name="node2">目的ノード</param>
         /// <param name="getNext">移動先のノードを決める関数</param>
         /// <returns>かかったステップ数(負の数なら失敗時のステップ数)</returns>
-        public int Routing(Node node1, Node node2, Func<Node, Node, Node, Node> getNext)
+        protected int RoutingBase(Node node1, Node node2, Func<Node, Node, Node, Node> getNext)
         {
             bool[] visited = new bool[NodeNum];
             Node current = new Node(node1.ID);

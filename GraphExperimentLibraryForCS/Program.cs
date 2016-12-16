@@ -13,38 +13,11 @@ namespace GraphExperimentLibraryForCS
         static void Main(string[] args)
         {
             var graph = new Hypercube(10, 0);
-            test(graph, 500);
-            int numOfTrials = 500;
 
-            Result result = new Result();
+            //graph.SaveCapability();
 
-            for (int faultRatio = 0; faultRatio < 10; faultRatio++)
-            {
-                Stopwatch sw = Stopwatch.StartNew();
-
-                Console.WriteLine("Fault ratio = {0,2}%", faultRatio * 10);
-                for (int count = 0; count < numOfTrials; count++)
-                {
-                    Console.CursorLeft = 0;
-                    Console.Write("{0} / {1}", count + 1, numOfTrials);
-                    graph.GenerateFaults(faultRatio * 10);
-
-                    Node node1, node2;
-                    do
-                    {
-                        node1 = graph.GetNodeRandom();
-                        node2 = graph.GetConnectedNodeRandom(node1);
-                    } while (node1.ID == node2.ID);
-
-                    graph.CalcCapability();
-                    result.Add(faultRatio, graph.Routing(node1, node2, graph.GetNext_Capability));
-                }
-                sw.Stop();
-                Console.Write(" ...{0}\n", sw.Elapsed);
-            }
-
-            string path = @"..\..\output\" + graph.Name + graph.Dimension.ToString("00") + "capability.csv";
-            result.SaveToCSV(path);
+            Experiment(graph, 500, new Func<Node, Node, int>[] { graph.Routing_Simple, graph.Routing_Capability });
+            
 
             //graph.Debug_GenerateFaults();
             //graph.Debug_GetNodeRandom();
@@ -53,21 +26,25 @@ namespace GraphExperimentLibraryForCS
             //graph.Debug_CalcDistance();
         }
 
-        static void test(AGraph graph, int numOfTrials)
+        static void Experiment(AGraph graph, int numOfTrials, Func<Node,Node,int>[] RoutingMethods)
         {
-            Result result = new Result();
+            Result[] result = new Result[RoutingMethods.Length];
+            for (int i = 0; i < RoutingMethods.Length; i++)
+                result[i] = new Result();
 
             for (int faultRatio = 0; faultRatio < 10; faultRatio++)
             {
-                Stopwatch sw = Stopwatch.StartNew();
-
                 Console.WriteLine("Fault ratio = {0,2}%", faultRatio * 10);
-                for (int count = 0; count < numOfTrials; count++)
+                Stopwatch sw = Stopwatch.StartNew();
+                for (int trialCount = 0; trialCount < numOfTrials; trialCount++)
                 {
+                    // 進捗状況の表示
                     Console.CursorLeft = 0;
-                    Console.Write("{0} / {1}", count + 1 , numOfTrials);
-                    graph.GenerateFaults(faultRatio * 10);
+                    Console.Write("{0} / {1}", trialCount + 1, numOfTrials);
 
+                    // 故障・出発頂点・目的頂点の設定
+                    graph.GenerateFaults(faultRatio * 10);
+                    // 故障の形的に，連結な頂点ペアが一切存在しないことがあり得るので，なんとかしないといけない
                     Node node1, node2;
                     do
                     {
@@ -75,14 +52,24 @@ namespace GraphExperimentLibraryForCS
                         node2 = graph.GetConnectedNodeRandom(node1);
                     } while (node1.ID == node2.ID);
 
-                    result.Add(faultRatio, graph.Routing(node1, node2, graph.GetNext_Simple));
+                    // それぞれのルーティング結果を保存
+                    int[] a = new int[2];
+                    for (int i = 0; i < RoutingMethods.Length; i++)
+                    {
+                        a[i] = RoutingMethods[i](node1, node2);
+                        result[i].Add(faultRatio, a[i]);
+                    }
                 }
+
                 sw.Stop();
-                Console.Write(" ...{0}\n", sw.Elapsed);
+                Console.Write(" \t[{0}]\n", sw.Elapsed);
             }
 
-            string path = @"..\..\output\" + graph.Name + graph.Dimension.ToString("00") + "capability.csv";
-            result.SaveToCSV(path);
+            for (int i = 0; i < RoutingMethods.Length; i++)
+            {
+                string path = @"..\..\output\" + graph.Name + graph.Dimension.ToString("00") + "-" + i.ToString() + ".csv";
+                result[i].SaveToCSV(path);
+            }
         }
     }
 
