@@ -12,11 +12,20 @@ namespace GraphExperimentLibraryForCS
     {
         static void Main(string[] args)
         {
-            var graph = new Hypercube(10, 0);
+            var graph = new CrossedCube(10, 0);
 
             //graph.SaveCapability();
 
-            Experiment(graph, 500, new Func<Node, Node, int>[] { graph.Routing_Simple, graph.Routing_Capability });
+            Experiment(
+                graph,
+                1000,
+                new Func<Node, Node, int>[]
+                {
+                    graph.Routing_Simple,
+                    graph.Routing_Capability,
+                    graph.Routing_Probability,
+                }
+            );
             
 
             //graph.Debug_GenerateFaults();
@@ -53,7 +62,7 @@ namespace GraphExperimentLibraryForCS
                     } while (node1.ID == node2.ID);
 
                     // それぞれのルーティング結果を保存
-                    int[] a = new int[2];
+                    int[] a = new int[RoutingMethods.Length];
                     for (int i = 0; i < RoutingMethods.Length; i++)
                     {
                         a[i] = RoutingMethods[i](node1, node2);
@@ -125,5 +134,8 @@ namespace GraphExperimentLibraryForCS
                 for (int i = 0; i < 10; i++) sw.Write("{0},", (double)SuccessSteps[i] / SuccessCount[i]);
             }
         }
+
+
+
     }
 }

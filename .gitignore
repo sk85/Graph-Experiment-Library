@@ -245,3 +245,6 @@ ModelManifest.xml
 .fake/
 /GraphExperimentLibrary/result.csv
 *.csv
+/GraphExperimentLibraryForCS/output/test.xlsx
+/GraphExperimentLibraryForCS/output/test.xlsx
+/GraphExperimentLibraryForCS/output

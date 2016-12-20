@@ -374,7 +374,7 @@ namespace Graph.Core
         /// <param name="node1">出発頂点</param>
         /// <param name="node2">目的頂点</param>
         /// <returns>前方隣接頂点</returns>
-        public virtual IEnumerable<Node> CalcPrefferedNeighbor(Node node1, Node node2)
+        public virtual IEnumerable<Node> CalcForwardNeighbor(Node node1, Node node2)
         {
             int[] distance = CalcAllDistanceBFS(node2);
             foreach(var neighbor in GetNeighbor(node1))
@@ -396,26 +396,92 @@ namespace Graph.Core
          ************************************************************************
         */
 
-        /// <summary>
-        /// Routing用のシンプルなGetNextです。
-        /// 前方隣接頂点のうち非故障な頂点を返します。
-        /// CalcPrefferedNeighborはデフォルトでは幅優先探索なので、そちらをオーバーライドしないと遅いです。
-        /// </summary>
-        /// <param name="node1">現在の頂点</param>
-        /// <param name="node2">目的頂点</param>
-        /// <returns></returns>
-        private Node GetNext_Simple(Node node1, Node node2)
+        private Node GetNext(Node node1, Node node2)
         {
-            foreach(var prNeighbor in CalcPrefferedNeighbor(node1, node2))
-            {
-                if (!FaultFlags[prNeighbor.ID]) return prNeighbor;
-            }
-            return node1;
+            return CalcForwardNeighbor(node1, node2).FirstOrDefault(n => !FaultFlags[n.ID]);
         }
 
+        protected Node GetNext(Node node1, Node node2, bool[,] score)
+        {
+            int distance = CalcDistance(node1, node2);
+            if (distance == 1)
+                return node2;
+
+            Node next = null;
+            foreach (var n in CalcForwardNeighbor(node1, node2))
+            {
+                if (score[n.ID, distance - 2])
+                    return n;
+                else if (next == null && !FaultFlags[n.ID])
+                    next = n;
+            }
+
+            return next;
+        }
+
+        protected Node GetNext(Node node1, Node node2, double[,] score)
+        {
+            int distance = CalcDistance(node1, node2);
+            if (distance == 1) return node2;
+
+            Node maxNode = null;
+            double maxScore = -1.0;
+            foreach (var node in CalcForwardNeighbor(node1, node2).Where(n => !FaultFlags[n.ID]))
+            {
+                if (score[node.ID, distance - 2] > maxScore)
+                {
+                    maxNode = node;
+                    maxScore = score[node.ID, distance - 2];
+                }
+            }
+
+            return maxNode;
+        }
+
+        /// <summary>
+        /// シンプルルーティングです。
+        /// 前方隣接かつ非故障な頂点へのルーティングを行い、候補頂点がなくなった時点で失敗とします。
+        /// 成功ならば正の数でかかったステップ数、失敗ならば負の数で失敗までのステップ数を返します。
+        /// </summary>
+        /// <param name="node1">出発ノード</param>
+        /// <param name="node2">目的ノード</param>
+        /// <returns>かかったステップ数(負の数なら失敗時のステップ数)</returns>
         public int Routing_Simple(Node node1, Node node2)
         {
-            return RoutingBase(node1, node2, GetNext_Simple);
+            return RoutingBase(node1, node2);
+        }
+
+        /// <summary>
+        /// ルーティングの本体部分です．
+        /// 成功ならば正の数でかかったステップ数、失敗ならば負の数で失敗までのステップ数を返します。
+        /// </summary>
+        /// <param name="node1">出発ノード</param>
+        /// <param name="node2">目的ノード</param>
+        /// <returns>かかったステップ数(負の数なら失敗時のステップ数)</returns>
+        protected int RoutingBase(Node node1, Node node2)
+        {
+            bool[] visited = new bool[NodeNum];
+            Node current = new Node(node1.ID);
+            int step = 0;
+
+            while (current.ID != node2.ID)
+            {
+                visited[current.ID] = true;
+                Node next = GetNext(current, node2);
+
+                // ループしている or 行けるノードがないなら失敗
+                if (next == null || visited[next.ID])
+                {
+                    return -step;
+                }
+                else
+                {
+                    step++;
+                    current = next;
+                }
+            }
+
+            return step;
         }
 
         /// <summary>
@@ -425,14 +491,14 @@ namespace Graph.Core
         /// <para>
         /// Node getNext(Node c, Node d);
         /// cを現在のノード、dを目的ノードとして、次に推移するノードを返す。
-        /// 行けるノードがない場合はcを返してください。
+        /// 行けるノードがない場合はnullを返してください。
         /// </para>
         /// </summary>
         /// <param name="node1">出発ノード</param>
         /// <param name="node2">目的ノード</param>
         /// <param name="getNext">移動先のノードを決める関数</param>
         /// <returns>かかったステップ数(負の数なら失敗時のステップ数)</returns>
-        protected int RoutingBase(Node node1, Node node2, Func<Node, Node, Node> getNext)
+        protected int RoutingBase<T>(Node node1, Node node2, Func<Node, Node, T, Node> getNext, T score)
         {
             bool[] visited = new bool[NodeNum];
             Node current = new Node(node1.ID);
@@ -441,10 +507,10 @@ namespace Graph.Core
             while (current.ID != node2.ID)
             {
                 visited[current.ID] = true;
-                Node next = getNext(current, node2);
+                Node next = getNext(current, node2, score);
 
                 // ループしている or 行けるノードがないなら失敗
-                if (visited[next.ID] || next.ID == current.ID)
+                if (next == null || visited[next.ID])
                 {
                     return -step;
                 }
@@ -458,46 +524,6 @@ namespace Graph.Core
             return step;
         }
 
-        /// <summary>
-        /// ルーティングをの本体部分です．
-        /// 指定した関数getNextが選ぶ頂点へルーティングを行います。
-        /// 成功ならば正の数でかかったステップ数、失敗ならば負の数で失敗までのステップ数を返します。
-        /// <para>
-        /// Node getNext(Node c, Node d, Node p);
-        /// cを現在のノード、dを目的ノード、pを1つ手前のノードとして、次に推移するノードを返す。
-        /// 行けるノードがない場合はcを返してください。
-        /// </para>
-        /// </summary>
-        /// <param name="node1">出発ノード</param>
-        /// <param name="node2">目的ノード</param>
-        /// <param name="getNext">移動先のノードを決める関数</param>
-        /// <returns>かかったステップ数(負の数なら失敗時のステップ数)</returns>
-        protected int RoutingBase(Node node1, Node node2, Func<Node, Node, Node, Node> getNext)
-        {
-            bool[] visited = new bool[NodeNum];
-            Node current = new Node(node1.ID);
-            Node preview = new Node(node1.ID);
-            int step = 0;
 
-            while (current.ID != node2.ID)
-            {
-                visited[current.ID] = true;
-                Node next = getNext(current, node2, preview);
-
-                // ループしている or 行けるノードがないなら失敗
-                if (visited[next.ID] || next.ID == current.ID)
-                {
-                    return -step;
-                }
-                else
-                {
-                    step++;
-                    preview = current;
-                    current = next;
-                }
-            }
-
-            return step;
-        }
     }
 }

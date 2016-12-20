@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Graph.Core
 {
@@ -75,7 +76,7 @@ namespace Graph.Core
         /// <param name="node1">出発頂点</param>
         /// <param name="node2">目的頂点</param>
         /// <returns>前方隣接頂点</returns>
-        public override IEnumerable<Node> CalcPrefferedNeighbor(Node node1, Node node2)
+        public override IEnumerable<Node> CalcForwardNeighbor(Node node1, Node node2)
         {
             UInt32 c = node1.ID ^ node2.ID;
             for (int i = Dimension - 1; i >= 0; i--)
@@ -94,73 +95,105 @@ namespace Graph.Core
          *  
          ************************************************************************
         */
-
-        private int[,] Capability;
-
-        private void CalcCapability()
+        
+        /// <summary>
+        /// Routing Capablilityを計算します
+        /// </summary>
+        /// <returns>Routing Capablility</returns>
+        private bool[,] CalcCapability()
         {
-            Capability = new int[NodeNum, Dimension];
+            bool[,] capability = new bool[NodeNum, Dimension];
 
             for (UInt32 nodeID = 0; nodeID < NodeNum; nodeID++)
             {
-                Capability[nodeID, 0] = FaultFlags[nodeID] ? 0 : 1;
+                capability[nodeID, 0] = !FaultFlags[nodeID];
             }
 
             for (int k = 1; k < Dimension; k++)
             {
                 for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
                 {
-                    int count = 0;
-                    if (FaultFlags[node.ID])
-                    {
-                        Capability[node.ID, k] = 0;
-                    }
-                    else
-                    {
-                        foreach (var neighbor in GetNeighbor(node))
-                            count += Capability[neighbor.ID, k - 1];
-                        Capability[node.ID, k] = (count > Dimension - (k + 1)) ? 1 : 0;
-                    }
+                    capability[node.ID, k] = GetNeighbor(node).Count(n => capability[n.ID, k - 1]) > Dimension - (k + 1);
                 }
             }
+
+            return capability;
         }
 
-        private Node GetNext_Capability(Node node1, Node node2)
+        /// <summary>
+        /// Routing Probabilityを計算します
+        /// </summary>
+        /// <returns>Routing Probability</returns>
+        private double[,] CalcProbability()
         {
-            Node next = null;
-            foreach (var prNeighbor in CalcPrefferedNeighbor(node1, node2))
+            double[,] probability = new double[NodeNum, Dimension];
+
+            // k = 1のときは故障頂点の割合
+            for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
             {
-                if (prNeighbor.ID == node2.ID)
-                    return prNeighbor;
-                else if (!FaultFlags[prNeighbor.ID])
+                int count = 0;
+                foreach (var neighbor in GetNeighbor(node))
                 {
-                    if (Capability[prNeighbor.ID, CalcDistance(prNeighbor, node2) - 1] == 1)
-                        return prNeighbor;
-                    else
+                    if (FaultFlags[neighbor.ID]) count++;
+                }
+                probability[node.ID, 0] = (double)count / Dimension;
+            }
+
+            // k >= 2のとき
+            for (int k = 1; k < Dimension; k++)
+            {
+                for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
+                {
+                    probability[node.ID, k] = 1.0;
+                    foreach (var neighbor in GetNeighbor(node))
                     {
-                        if (next == null) next = prNeighbor;
+                        if (!FaultFlags[neighbor.ID])
+                        {
+                            probability[node.ID, k] *= (1 - (1 - probability[neighbor.ID, k - 1]) * k / Dimension);
+                        }
                     }
                 }
             }
-            return next == null ? node1 : next;
-        }
 
-        public int Routing_Capability(Node node1, Node node2)
-        {
-            CalcCapability();
-            int step = RoutingBase(node1, node2, GetNext_Capability);
-            if (Capability[node1.ID, CalcDistance(node1, node2) - 1] == 1)
+            for (int k = 0; k < Dimension; k++)
             {
-                if (step < 0)
+                for (UInt32 nodeID = 0; nodeID < NodeNum; nodeID++)
                 {
-                    Console.Write("a");
-                    Console.ReadKey();
+                    probability[nodeID, k] = 1 - probability[nodeID, k];
                 }
             }
-            return step;
+
+            return probability;
         }
 
-        public void SaveCapability()
+        // 実験中
+        private double[,] CalcCapability2()
+        {
+            double[,] capability2 = new double[NodeNum, Dimension];
+
+            for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
+            {
+                capability2[node.ID, 0] =
+                    (double)(GetNeighbor(node).Count(n => !FaultFlags[n.ID])) / Dimension;
+            }
+
+            for (int k = 1; k < Dimension; k++)
+            {
+                for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
+                {
+                    double tmp = 1.0;
+                    foreach (var neighbor in GetNeighbor(node))
+                    {
+                        tmp *= (1 - capability2[neighbor.ID, k - 1]) * k / Dimension;
+                    }
+                    capability2[node.ID, k] = 1 - tmp;
+                }
+            }
+
+            return capability2;
+        }
+
+        public void SaveCapability(int[,] capability)
         {
             for (int faultRatio = 0; faultRatio < 100; faultRatio += 10)
             {
@@ -175,13 +208,53 @@ namespace Graph.Core
                 {
                     for (int j = 0; j < Dimension; j++)
                     {
-                        sw.Write("{0},", Capability[i,j]);
+                        sw.Write("{0},", capability[i,j]);
                     }
                     sw.Write("\n");
                 }
 
                 sw.Close();
             }
+        }
+
+        /// <summary>
+        /// Capabilityを用いたルーティングです。
+        /// 成功ならば正の数でかかったステップ数、失敗ならば負の数で失敗までのステップ数を返します。
+        /// </summary>
+        /// <param name="node1">出発ノード</param>
+        /// <param name="node2">目的ノード</param>
+        /// <returns>かかったステップ数(負の数なら失敗時のステップ数)</returns>
+        public int Routing_Capability(Node node1, Node node2)
+        {
+            bool[,] capability = CalcCapability();
+            return RoutingBase(node1, node2, GetNext, capability);
+        }
+
+        /// <summary>
+        /// Probabilityを用いたルーティングです。
+        /// 成功ならば正の数でかかったステップ数、失敗ならば負の数で失敗までのステップ数を返します。
+        /// </summary>
+        /// <param name="node1">出発ノード</param>
+        /// <param name="node2">目的ノード</param>
+        /// <returns>かかったステップ数(負の数なら失敗時のステップ数)</returns>
+        public int Routing_Probability(Node node1, Node node2)
+        {
+            double[,] probability = CalcProbability();
+            return RoutingBase(node1, node2, GetNext, probability);
+        }
+
+        /// <summary>
+        /// Capability2を用いたルーティングです。
+        /// 成功ならば正の数でかかったステップ数、失敗ならば負の数で失敗までのステップ数を返します。
+        /// </summary>
+        /// <param name="node1">出発ノード</param>
+        /// <param name="node2">目的ノード</param>
+        /// <param name="getNext">移動先のノードを決める関数</param>
+        /// <returns>かかったステップ数(負の数なら失敗時のステップ数)</returns>
+        public int Routing_Capability2(Node node1, Node node2)
+        {
+            double[,] capability2 = CalcCapability2();
+            return RoutingBase(node1, node2, GetNext, capability2);
         }
     }
 }
