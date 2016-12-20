@@ -52,11 +52,10 @@ namespace Graph.Core
         /// <returns>隣接ノードのアドレス</returns>
         public override Node GetNeighbor(Node node, int index)
         {
-            BinaryNode binNode = (BinaryNode)node;
             const UInt32 mask1 = 0x55555555;            // 01010101....01
             UInt32 mask2 = ((UInt32)1 << index) - 1;    // 00...0111...11
-            UInt32 mask = ((binNode.Addr & mask1 & mask2) << 1) | ((UInt32)1 << index);
-            return new BinaryNode(binNode.Addr ^ mask);
+            UInt32 mask = ((node.ID & mask1 & mask2) << 1) | ((UInt32)1 << index);
+            return new BinaryNode(node.ID ^ mask);
         }
 
         public IEnumerable<int> GetFowardNeighbor(BinaryNode node1, BinaryNode node2)
@@ -430,6 +429,127 @@ namespace Graph.Core
                 }
             }
 
+        }
+
+
+
+
+
+        private bool[,,] CalcCapability()
+        {
+            bool[,,] capability = new bool[NodeNum, Dimension, Dimension];
+
+            for (UInt32 nodeID = 0; nodeID < NodeNum; nodeID++)
+            {
+                for (int i = 0; i < Dimension; i++)
+                {
+                    capability[nodeID, i, 0] = !FaultFlags[nodeID];
+                }
+            }
+
+            for (int d = 1; d < Dimension; d++)
+            {
+                for (int k = 0; k < Dimension; k++)
+                {
+                    for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
+                    {
+                        int min = 1000;
+                        for (int i = 0; i < Dimension; i++)
+                        {
+                            int count = GetNeighbor(node).Count(n => capability[n.ID, i, d - 1]);
+                            if (count < min) min = count;
+                        }
+                        capability[node.ID, k, d] = min > Dimension - (k + 1);
+                    }
+                }
+            }
+            return capability;
+        }
+
+        private double[,,] CalcProbability()
+        {
+            double[,,] probability = new double[NodeNum, Dimension, Dimension];
+
+            // k = 1のときは故障頂点の割合
+            for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
+            {
+                double prob = (double)(GetNeighbor(node).Count(n => FaultFlags[n.ID])) / Dimension;
+                for (int k = 0; k < Dimension; k++)
+                    probability[node.ID, k, 0] = prob;
+            }
+
+            // k >= 2のとき
+            for (int d = 1; d < Dimension; d++)
+            {
+                for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
+                {
+                    for (int k = 0; k < Dimension; k++)
+                    {
+                        probability[node.ID, k, d] = 1.0;
+                        foreach (var neighbor in GetNeighbor(node).Where(n => !FaultFlags[n.ID]))
+                        {
+                            double ave = 0;
+                            for (int i = 0; i < Dimension; i++)
+                            {
+                                ave += (1 - probability[neighbor.ID, i, d - 1]) * k / Dimension;
+                            }
+                            probability[node.ID, k, d] = 1 - ave / Dimension;
+                        }
+                    }
+                }
+            }
+
+            return probability;
+        }
+
+        private Node GetNext(Node node1, Node node2, bool[,,] score)
+        {
+            int distance = CalcDistance(node1, node2);
+            if (distance == 1) return node2;
+
+            Node next = null;
+            var fn = CalcForwardNeighbor(node1, node2);
+            int fnCount = fn.Count();
+            foreach (var n in fn)
+            {
+                if (score[n.ID, fnCount - 1, distance - 2])
+                    return n;
+                else if (next == null && !FaultFlags[n.ID])
+                    next = n;
+            }
+            return next;
+        }
+
+        private Node GetNext(Node node1, Node node2, double[,,] score)
+        {
+            int distance = CalcDistance(node1, node2);
+            if (distance == 1) return node2;
+
+            Node minNode = null;
+            double minScore = 2.0;
+            var fn = CalcForwardNeighbor(node1, node2);
+            int fnCount = fn.Count();
+            foreach (var node in fn.Where(n => !FaultFlags[n.ID]))
+            {
+                if (score[node.ID, fnCount - 1, distance - 2] < minScore)
+                {
+                    minNode = node;
+                    minScore = score[node.ID, fnCount - 1, distance - 2];
+                }
+            }
+            return minNode;
+        }
+
+        public int Routing_Capability(Node node1, Node node2)
+        {
+            bool[,,] capability = CalcCapability();
+            return RoutingBase(node1, node2, GetNext, capability);
+        }
+
+        public int Routing_Probability(Node node1, Node node2)
+        {
+            var probability = CalcProbability();
+            return RoutingBase(node1, node2, GetNext, probability);
         }
     }
 }
