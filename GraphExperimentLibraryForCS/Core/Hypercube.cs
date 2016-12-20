@@ -167,40 +167,48 @@ namespace Graph.Core
         }
 
         // 実験中
-        private double[,] CalcCapability2()
+        public double[,] CalcCapability2()
         {
             double[,] capability2 = new double[NodeNum, Dimension];
 
             for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
             {
-                capability2[node.ID, 0] =
-                    (double)(GetNeighbor(node).Count(n => !FaultFlags[n.ID])) / Dimension;
+                capability2[node.ID, 0] = FaultFlags[node.ID] ? 0 : 1;
+                    // (double)(GetNeighbor(node).Count(n => !FaultFlags[n.ID])) / Dimension;
             }
 
             for (int k = 1; k < Dimension; k++)
             {
                 for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
                 {
-                    double tmp = 1.0;
-                    foreach (var neighbor in GetNeighbor(node))
+                    double exp = GetNeighbor(node).Sum(n => capability2[n.ID, k - 1]);
+                    if (exp > Dimension - (k + 1))
                     {
-                        tmp *= (1 - capability2[neighbor.ID, k - 1]) * k / Dimension;
+                        capability2[node.ID, k] = 1.0;
                     }
-                    capability2[node.ID, k] = 1 - tmp;
+                    else
+                    {
+                        double tmp = 1.0;
+                        for (int i = 0; i < k; i++)
+                        {
+                            tmp *= (Dimension - exp - i) / (Dimension - i);
+                        }
+                        capability2[node.ID, k] = 1 - (tmp > 0 ? tmp : 0);
+                    }
                 }
             }
 
             return capability2;
         }
 
-        public void SaveCapability(int[,] capability)
+        public void SaveScore(string name)
         {
             for (int faultRatio = 0; faultRatio < 100; faultRatio += 10)
             {
                 GenerateFaults(faultRatio);
-                CalcCapability();
+                double[,] sd = CalcCapability2();
                 var sw = new System.IO.StreamWriter(
-                    @"..\..\output\" + faultRatio.ToString("00") + ".csv",
+                    @"..\..\output\" + name + faultRatio.ToString("00") + ".csv",
                     false, 
                     System.Text.Encoding.GetEncoding("shift_jis"));
 
@@ -208,7 +216,7 @@ namespace Graph.Core
                 {
                     for (int j = 0; j < Dimension; j++)
                     {
-                        sw.Write("{0},", capability[i,j]);
+                        sw.Write("{0},", sd[i, j]);
                     }
                     sw.Write("\n");
                 }
@@ -255,6 +263,25 @@ namespace Graph.Core
         {
             double[,] capability2 = CalcCapability2();
             return RoutingBase(node1, node2, GetNext, capability2);
+        }
+
+        public int Routing_Greedy(Node node1, Node node2)
+        {
+            Node current = node1;
+            Stack<Node> stack = new Stack<Node>();
+
+            stack.Push(current);
+            while(stack.Count > 0)
+            {
+                current = stack.Pop();
+                if (current.ID == node2.ID) return 1;
+
+                foreach (var node in CalcForwardNeighbor(current, node2).Where(n => !FaultFlags[n.ID]))
+                {
+                    stack.Push(node);
+                }
+            }
+            return -1;
         }
     }
 }

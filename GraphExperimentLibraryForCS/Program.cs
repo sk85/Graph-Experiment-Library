@@ -12,18 +12,20 @@ namespace GraphExperimentLibraryForCS
     {
         static void Main(string[] args)
         {
-            var graph = new CrossedCube(10, 0);
+            var graph = new Hypercube(10, 0);
 
-            //graph.SaveCapability();
+            //graph.SaveScore("C2");
 
             Experiment(
                 graph,
                 1000,
                 new Func<Node, Node, int>[]
                 {
-                    graph.Routing_Simple,
-                    graph.Routing_Capability,
-                    graph.Routing_Probability,
+                    //graph.Routing_Simple,
+                    //graph.Routing_Capability,
+                    //graph.Routing_Probability,
+                    graph.Routing_Capability2,
+                    //graph.Routing_Greedy
                 }
             );
             
