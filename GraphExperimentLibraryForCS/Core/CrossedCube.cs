@@ -58,6 +58,79 @@ namespace Graph.Core
             return new BinaryNode(node.ID ^ mask);
         }
 
+        public override int CalcDistance(Node node1, Node node2)
+        {
+            BinaryNode u = new BinaryNode(node1.ID), v = new BinaryNode(node2.ID);
+
+            if (node1.ID == node2.ID) return 0;
+            
+            int score;
+            int i = Dimension - 1;
+
+            while (i >= 0 && u[i] == v[i]) { i--; }  // MSBを探す
+
+            i -= i & 1; // double bitの右側に合わせる
+
+            // j = i^* のとき
+            score = (u[i + 1] ^ v[i + 1]) + (u[i] ^ v[i]);
+
+            i -= 2;
+
+            // j < i^* のとき
+            while (i >= 0)
+            {
+                if (!((u[i + 1] == v[i + 1] && u[i] == 1 && v[i] == 1 && (score & 1) == 0) ||
+                      (u[i + 1] != v[i + 1] && u[i] == 1 && v[i] == 1 && (score & 1) == 1) ||
+                      (u[i + 1] == v[i + 1] && u[i] == 0 && v[i] == 0)))
+                {
+                    score += 1;
+                }
+                i -= 2;
+            }
+            return score;
+        }
+
+        public int test(BinaryNode node1, BinaryNode node2)
+        {
+            if (node1.ID == node2.ID) return 0;
+
+            int[] score = new int[Dimension / 2];
+            int total;
+            int i = Dimension - 1;
+
+            while (i >= 0 && node1[i] == node2[i]) { i--; }  // MSBを探す
+
+            i -= i & 1; // double bitの右側に合わせる
+
+            // j = i^* のとき
+            if (node1[i + 1] != node2[i + 1] && node1[i] != node2[i])
+            {
+                score[i >> 1] = 2;
+                total = 2;
+            }
+            else
+            {
+                score[i >> 1] = 1;
+                total = 1;
+            }
+
+            i -= 2;
+
+            // j < i^* のとき
+            while (i >= 0)
+            {
+                if (!((node1[i + 1] == node2[i + 1] && node1[i] == 1 && node2[i] == 1 && (total & 1) == 0) ||
+                      (node1[i + 1] != node2[i + 1] && node1[i] == 1 && node2[i] == 1 && (total & 1) == 1) ||
+                      (node1[i + 1] == node2[i + 1] && node1[i] == 0 && node2[i] == 0)) )
+                {
+                    score[i >> 1] = 1;
+                    total += 1;
+                }
+                i -= 2;
+            }
+            return total;
+        }
+
         public IEnumerable<int> GetFowardNeighbor(BinaryNode node1, BinaryNode node2)
         {
             UInt32 u = node1.Addr, v = node2.Addr, diff = u ^ v;

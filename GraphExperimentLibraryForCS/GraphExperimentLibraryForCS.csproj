@@ -50,6 +50,8 @@
     <Compile Include="Core\LocallyTwistedCube.cs" />
     <Compile Include="Core\CrossedCube.cs" />
     <Compile Include="Core\MobiusCube.cs" />
+    <Compile Include="Core\SpinedCube.cs" />
+    <Compile Include="Core\SpinedCube.ShortestPathRouting.cs" />
     <Compile Include="Debug\CrossedCube.cs" />
     <Compile Include="Debug\AGraph.cs" />
     <Compile Include="Experiment\Tools.cs" />

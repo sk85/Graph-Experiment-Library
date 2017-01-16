@@ -6,11 +6,13 @@ namespace Graph.Core
 {
     class Hypercube : AGraph
     {
-        /************************************************************************
+        /*
+         ************************************************************************
          * 
          *  基底クラスのメソッドのオーバーライドなど
          *  
-         ************************************************************************/
+         ************************************************************************
+        */
 
         /// <summary>
         /// AGraphのコンストラクタを呼びます。
@@ -113,7 +115,11 @@ namespace Graph.Core
             {
                 for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
                 {
-                    capability[node.ID, k] = GetNeighbor(node).Count(n => capability[n.ID, k - 1]) > Dimension - (k + 1);
+                    if (FaultFlags[node.ID])
+                        capability[node.ID, k] = false;
+                    else
+                        capability[node.ID, k] =
+                            GetNeighbor(node).Count(n => capability[n.ID, k - 1]) > Dimension - (k + 1);
                 }
             }
 
@@ -166,6 +172,41 @@ namespace Graph.Core
             return probability;
         }
 
+#if true
+        /// <summary>
+        /// Routing Probability風のProbability
+        /// 結果は良くない
+        /// 2016/12/20
+        /// </summary>
+        /// <returns>Routing Probability</returns>
+        private double[,] CalcProbability2()
+        {
+            double[,] probability = new double[NodeNum, Dimension];
+
+            // k = 1のときは非故障頂点の割合
+            for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
+            {
+                probability[node.ID, 0] = 
+                    (double)(GetNeighbor(node).Count(n => !FaultFlags[n.ID])) / Dimension;
+            }
+
+            // k >= 2のとき
+            for (int k = 1; k < Dimension; k++)
+            {
+                for (Node node = new Node(0); node.ID < NodeNum; node.ID++)
+                {
+                    double tmp = 1.0;
+                    foreach (var neighbor in GetNeighbor(node).Where(n => !FaultFlags[n.ID]))
+                    {
+                        tmp *= (1 - probability[neighbor.ID, k - 1]) * k / Dimension;
+                    }
+                    probability[node.ID, k] = 1.0 - tmp;
+                }
+            }
+
+            return probability;
+        }
+#endif
         // 実験中
         public double[,] CalcCapability2()
         {
@@ -206,7 +247,7 @@ namespace Graph.Core
             for (int faultRatio = 0; faultRatio < 100; faultRatio += 10)
             {
                 GenerateFaults(faultRatio);
-                double[,] sd = CalcCapability2();
+                bool[,] sd = CalcCapability();
                 var sw = new System.IO.StreamWriter(
                     @"..\..\output\" + name + faultRatio.ToString("00") + ".csv",
                     false, 
@@ -216,7 +257,7 @@ namespace Graph.Core
                 {
                     for (int j = 0; j < Dimension; j++)
                     {
-                        sw.Write("{0},", sd[i, j]);
+                        sw.Write("{0},", sd[i, j] ? 1 : 0);
                     }
                     sw.Write("\n");
                 }
@@ -261,7 +302,7 @@ namespace Graph.Core
         /// <returns>かかったステップ数(負の数なら失敗時のステップ数)</returns>
         public int Routing_Capability2(Node node1, Node node2)
         {
-            double[,] capability2 = CalcCapability2();
+            double[,] capability2 = CalcProbability2();
             return RoutingBase(node1, node2, GetNext, capability2);
         }
 

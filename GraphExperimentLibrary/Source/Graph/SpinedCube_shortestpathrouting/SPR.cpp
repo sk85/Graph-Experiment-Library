@@ -299,7 +299,7 @@ Node SPR::DoubleType_0111_Sub1(Node c, int index, Expansion expA, Expansion expB
 						else {
 							Expansion expX = expB + GetBin(0b11, index + 1) + GetBin(0b01, index);
 							Expansion expY = expA + GetBin(0b11, index) + GetBin(0b01, index - 3);
-							Expansion expZ = expA + GetBin(0b11, index) + GetBin(0b01, index - 3);
+							Expansion expZ = expA + GetBin(0b11, index) + GetBin(0b01, index - 3);///////////
 							c.Pop(0b11, index - 1);
 							c = DoubleType_0111_Sub2(c, index - 5, expX, expY, expZ, exp);
 						}

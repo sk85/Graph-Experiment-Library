@@ -223,12 +223,13 @@ namespace Graph.Core
         public int[] CalcAllDistanceBFS(Node node)
         {
             int[] array = new int[NodeNum];         // 距離の表
+            const int inf = 100000;
             Queue<Node> que = new Queue<Node>();  // 探索用のキュー
 
             // 距離の初期値は∞
             for (UInt32 i = 0; i < NodeNum; i++)
             {
-                array[i] = 100000;
+                array[i] = inf;
             }
 
             // 探索本体
@@ -245,6 +246,12 @@ namespace Graph.Core
                         que.Enqueue(neighbor);
                     }
                 }
+            }
+
+            // ∞を-1に
+            for (UInt32 i = 0; i < NodeNum; i++)
+            {
+                if (array[i] == inf) array[i] = -1;
             }
 
             return array;

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Diagnostics;
+using System.Linq;
 
 using Graph.Core;
 using Graph.Experiment;
@@ -12,23 +13,25 @@ namespace GraphExperimentLibraryForCS
     {
         static void Main(string[] args)
         {
-            var graph = new Hypercube(10, 0);
+            
+            var graph = new CrossedCube(10, 0);
+            graph.Debug_CalcDistance();
+            //graph.test();
 
-            //graph.SaveScore("C2");
-
+            /*
             Experiment(
                 graph,
                 1000,
                 new Func<Node, Node, int>[]
                 {
-                    //graph.Routing_Simple,
-                    //graph.Routing_Capability,
-                    //graph.Routing_Probability,
+                    graph.Routing_Simple,
+                    graph.Routing_Capability,
+                    graph.Routing_Probability,
                     graph.Routing_Capability2,
                     //graph.Routing_Greedy
                 }
-            );
-            
+            );*/
+
 
             //graph.Debug_GenerateFaults();
             //graph.Debug_GetNodeRandom();
