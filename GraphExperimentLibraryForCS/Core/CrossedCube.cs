@@ -92,43 +92,60 @@ namespace Graph.Core
 
         public int test(BinaryNode node1, BinaryNode node2)
         {
-            if (node1.ID == node2.ID) return 0;
-
-            int[] score = new int[Dimension / 2];
-            int total;
-            int i = Dimension - 1;
-
-            while (i >= 0 && node1[i] == node2[i]) { i--; }  // MSBを探す
-
-            i -= i & 1; // double bitの右側に合わせる
-
-            // j = i^* のとき
-            if (node1[i + 1] != node2[i + 1] && node1[i] != node2[i])
+            int[] CalcScore(BinaryNode n1, BinaryNode n2)
             {
-                score[i >> 1] = 2;
-                total = 2;
-            }
-            else
-            {
-                score[i >> 1] = 1;
-                total = 1;
-            }
+                int[] score = new int[Dimension / 2];
+                int i = Dimension - 1;
+                int total;
 
-            i -= 2;
+                while (i >= 0 && node1[i] == node2[i]) { i--; }  // MSBを探す
+                i -= i & 1; // double bitの右側に合わせる
 
-            // j < i^* のとき
-            while (i >= 0)
-            {
-                if (!((node1[i + 1] == node2[i + 1] && node1[i] == 1 && node2[i] == 1 && (total & 1) == 0) ||
-                      (node1[i + 1] != node2[i + 1] && node1[i] == 1 && node2[i] == 1 && (total & 1) == 1) ||
-                      (node1[i + 1] == node2[i + 1] && node1[i] == 0 && node2[i] == 0)) )
+                // j = i^* のとき
+                if (node1[i + 1] != node2[i + 1] && node1[i] != node2[i])
+                {
+                    score[i >> 1] = 2;
+                    total = 2;
+                }
+                else
                 {
                     score[i >> 1] = 1;
-                    total += 1;
+                    total = 1;
                 }
+
                 i -= 2;
+
+                // j < i^* のとき
+                while (i >= 0)
+                {
+                    if (!((node1[i + 1] == node2[i + 1] && node1[i] == 1 && node2[i] == 1 && (total & 1) == 0) ||
+                          (node1[i + 1] != node2[i + 1] && node1[i] == 1 && node2[i] == 1 && (total & 1) == 1) ||
+                          (node1[i + 1] == node2[i + 1] && node1[i] == 0 && node2[i] == 0)))
+                    {
+                        score[i >> 1] = 1;
+                        total += 1;
+                    }
+                    i -= 2;
+                }
+
+                return score;
+
             }
-            return total;
+
+            if (node1.ID == node2.ID) return 0;
+
+            int[] currentScore = CalcScore(node1, node2);
+            int MSB = Dimension - 1;
+
+            while (MSB >= 0 && node1[MSB] == node2[MSB]) { MSB--; }  // MSBを探す
+
+            for (int index = 0; index < GetDegree(node1); index++)
+            {
+                BinaryNode neighbor = new BinaryNode(GetNeighbor(node1, index).ID);
+                int[] neighborScore = CalcScore(neighbor, node2);
+
+                
+            }
         }
 
         public IEnumerable<int> GetFowardNeighbor(BinaryNode node1, BinaryNode node2)
