@@ -15,8 +15,7 @@ namespace GraphExperimentLibraryForCS
         {
             
             var graph = new CrossedCube(10, 0);
-            graph.Debug_CalcDistance();
-            //graph.test();
+            graph.test();
 
             /*
             Experiment(

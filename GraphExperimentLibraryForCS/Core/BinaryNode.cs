@@ -43,7 +43,12 @@ namespace Graph.Core
         }
 
         public BinaryNode(UInt32 id) : base(id) { }
-        
+
+        public static BinaryNode operator ^(BinaryNode b1, BinaryNode b2)
+        {
+            return new BinaryNode(b1.Addr ^ b2.Addr);
+        }
+
         public int this[int i]
         {
             get
@@ -55,5 +60,15 @@ namespace Graph.Core
                 Addr |= ((UInt32)1 << value);
             }
         }
-    }
+
+        public override string ToString()
+        {
+            return Graph.Experiment.Tools.UIntToBinStr(Addr, 32, 4);
+        }
+
+        public string ToString(int interval)
+        {
+            return Graph.Experiment.Tools.UIntToBinStr(Addr, 32, interval);
+        }
+}
 }

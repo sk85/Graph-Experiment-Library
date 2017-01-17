@@ -90,62 +90,59 @@ namespace Graph.Core
             return score;
         }
 
-        public int test(BinaryNode node1, BinaryNode node2)
+        public int test()
         {
-            int[] CalcScore(BinaryNode n1, BinaryNode n2)
+            for (BinaryNode node1 = new BinaryNode(0); node1.ID < NodeNum; node1.ID++)
             {
-                int[] score = new int[Dimension / 2];
-                int i = Dimension - 1;
-                int total;
-
-                while (i >= 0 && node1[i] == node2[i]) { i--; }  // MSBを探す
-                i -= i & 1; // double bitの右側に合わせる
-
-                // j = i^* のとき
-                if (node1[i + 1] != node2[i + 1] && node1[i] != node2[i])
+                for (BinaryNode node2 = new BinaryNode(0); node2.ID < NodeNum; node2.ID++)
                 {
-                    score[i >> 1] = 2;
-                    total = 2;
-                }
-                else
-                {
-                    score[i >> 1] = 1;
-                    total = 1;
-                }
+                    // 距離
+                    int distance = CalcDistance(node1, node2);
 
-                i -= 2;
+                    Console.WriteLine("d({0}, {1}) = {2}", node1.ID, node2.ID, distance);
+                    Console.WriteLine("  u = {0,5} = {1}", node1.ID, node1.ToString(2));
+                    Console.WriteLine("  v = {0,5} = {1}", node2.ID, node2.ToString(2));
+                    Console.WriteLine(" u^v=       = {1}\n",node1.ID ^  node2.ID, (node1 ^ node2).ToString(2));
 
-                // j < i^* のとき
-                while (i >= 0)
-                {
-                    if (!((node1[i + 1] == node2[i + 1] && node1[i] == 1 && node2[i] == 1 && (total & 1) == 0) ||
-                          (node1[i + 1] != node2[i + 1] && node1[i] == 1 && node2[i] == 1 && (total & 1) == 1) ||
-                          (node1[i + 1] == node2[i + 1] && node1[i] == 0 && node2[i] == 0)))
+                    // 最左ビットからMSBまでループ
+                    bool f = false;
+                    for (int i = Dimension - 1; i >= 0 && node1[i] == node2[i]; i--)
                     {
-                        score[i >> 1] = 1;
-                        total += 1;
+                        BinaryNode neighbor = new BinaryNode(GetNeighbor(node1, i).ID);
+                        if (CalcDistance(neighbor, node2) < distance)
+                        {
+                            Console.WriteLine(" {0,2} = {1,5} = {2}", i, neighbor.ID, neighbor.ToString(2));
+                            f = true;
+                        }
                     }
-                    i -= 2;
+                    if (f) Console.ReadKey();
+                    Console.WriteLine("------------------------------");
                 }
-
-                return score;
-
             }
-
-            if (node1.ID == node2.ID) return 0;
-
-            int[] currentScore = CalcScore(node1, node2);
-            int MSB = Dimension - 1;
-
-            while (MSB >= 0 && node1[MSB] == node2[MSB]) { MSB--; }  // MSBを探す
-
-            for (int index = 0; index < GetDegree(node1); index++)
+            /*
+            for (BinaryNode node2 = new BinaryNode(0); node2.ID < NodeNum; node2.ID = node2.ID + 1)
             {
-                BinaryNode neighbor = new BinaryNode(GetNeighbor(node1, index).ID);
-                int[] neighborScore = CalcScore(neighbor, node2);
+                Console.WriteLine(node2.ID);
 
-                
+                for (BinaryNode node1 = new BinaryNode(0); node1.ID < NodeNum; node1.ID = node1.ID + 1)
+                {
+                    Console.WriteLine("d({0}, {1}) = {2}", node1.ID, node2.ID, distance[node1.ID]);
+                    Console.WriteLine("  u   = {0}", Tools.UIntToBinStr(node1.Addr, Dimension, 4));
+                    Console.WriteLine("  v   = {0}", Tools.UIntToBinStr(node2.Addr, Dimension, 4));
+                    Console.WriteLine("u ^ v = {0}\n", Tools.UIntToBinStr(node1.Addr ^ node2.Addr, Dimension, 4));
+                    for (int i = 0; i < GetDegree(node1); i++)
+                    {
+                        BinaryNode neighbor = (BinaryNode)GetNeighbor(node1, i);
+                        if (distance[neighbor.ID] < distance[node1.ID])
+                            Console.WriteLine("  u^{1} = {0}", Tools.UIntToBinStr(neighbor.Addr, Dimension, 4), i);
+                    }
+                    Console.WriteLine("------------------------------");
+                    Console.ReadKey();
+                }
             }
+            */
+
+            return 0;
         }
 
         public IEnumerable<int> GetFowardNeighbor(BinaryNode node1, BinaryNode node2)
