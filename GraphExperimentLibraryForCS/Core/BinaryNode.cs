@@ -70,5 +70,10 @@ namespace Graph.Core
         {
             return Graph.Experiment.Tools.UIntToBinStr(Addr, 32, interval);
         }
-}
+
+        public UInt32 Sub(int index, int length)
+        {
+            return (Addr >> index) & (UInt32)((1 << length) - 1);
+        }
+    }
 }
