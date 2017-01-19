@@ -90,6 +90,42 @@ namespace Graph.Core
             return score;
         }
 
+        public int[] RhoSum(Node node1, Node node2)
+        {
+            BinaryNode u = new BinaryNode(node1.ID), v = new BinaryNode(node2.ID);
+
+            if (node1.ID == node2.ID) return null;
+
+            int[] sum = new int[Dimension >> 1];
+            int i = Dimension - 1;
+
+            while (i >= 0 && u[i] == v[i]) { i--; }  // MSBを探す
+
+            i -= i & 1; // double bitの右側に合わせる
+
+            // j = k のとき
+            sum[i >> 1] = (u[i + 1] ^ v[i + 1]) + (u[i] ^ v[i]);
+
+            i -= 2;
+
+            // j < k のとき
+            while (i >= 0)
+            {
+                bool f = u[i] == 1 && v[i] == 1 && !(u[i + 1] == v[i + 1] ^ (sum[(i >> 1) + 1] & 1) == 0)
+                        || u[i + 1] == v[i + 1] && u[i] == 0 && v[i] == 0;
+                if (!f)
+                {
+                    sum[i >> 1] = sum[(i >> 1) + 1] + 1;
+                }
+                else
+                {
+                    sum[i >> 1] = sum[(i >> 1) + 1];
+                }
+                i -= 2;
+            }
+            return sum;
+        }
+
         public void a(BinaryNode node1, BinaryNode node2)
         {
             int[] d = new int[Dimension];   // d[i] = d(node1, node2) - d(第i隣接頂点, node2)
@@ -140,27 +176,53 @@ namespace Graph.Core
 
         public int CalcFowardNeighbor(BinaryNode node1, BinaryNode node2)
         {
-            int[] d = new int[Dimension];
+            if (node1.ID == node2.ID) return 0;
+
             int MSP;    // Most Significant Pair
+            int pairCount = Dimension >> 1;
+            int[] d = new int[Dimension];   // Diff from "distance(node1, node2) - 2"
+            int[] rhoSum = new int[pairCount];   // rhoSum[i] = sum of rho from i to pairCount
             bool flag;
             
-            // MSPの計算
+            // Calculate MSP
             MSP = Dimension - 1;
-            while (MSP >= 0 && node1[MSP] == node2[MSP])
-            {
-                MSP--;
-            }
+            while (MSP >= 0 && node1[MSP] == node2[MSP]) MSP--;
             MSP = MSP >> 1;
+
+            // Calculate rhoSum
+            rhoSum[MSP] = (node1[MSP << 1] != node2[MSP << 1] && node1[(MSP << 1) + 1] != node2[(MSP << 1) + 1])
+                ? 2 : 1;
+            int sum = 0;
+            for (int i = (MSP << 1) - 2; i >= 0; i -= 2)
+            {
+                bool f =
+                    !(  (node1[i] == 1 && node2[i] == 1) && !(node1[i + 1] == node2[i + 1] ^ (sum & 1) == 0)
+                        || (node1[i] == 0 && node2[i] == 0) && node1[i + 1] == node2[i + 1]);
+                if (f)
+                {
+                    rhoSum[i >> 1] = ++sum;
+                }
+            }
+
+            Console.WriteLine("-------------------------------");
+            Console.WriteLine(node1.ToString(2));
+            Console.WriteLine(node2.ToString(2));
+            Console.Write("{0,33}", ":");
+            for (int i = pairCount - 1; i >= 0; i--)
+            {
+                Console.Write(" {0} ", rhoSum[i]);
+            }
+            Console.WriteLine("\n-------------------------------");
 
             // MSPが両ビット異なるか否か
             flag = 
                 node1[MSP << 1] != node2[MSP << 1] && 
                 node1[(MSP << 1) + 1] != node2[(MSP << 1) + 1];
-
+            
             // 
             // (01,11),(11,01)かつ奇数・・・タイプ0
             // (01,01),(11,11)かつ偶数・・・タイプ1
-            int k = -1;
+            bool k = false;
             int total = 2;
             for (int i = (MSP << 1) - 2; i >= 0; i -= 2)
             {
@@ -168,17 +230,21 @@ namespace Graph.Core
                 {
                     if (node1[i + 1] != node2[i + 1])
                     {
-                        k = 0;
+                        if ((rhoSum[i >> 1] & 1) == 0)
+                            k = true;
                     }
                     else
                     {
-                        k = 1;
+                        if ((total & 1) == 1)
+                            k = true;
                     }
                     break;
                 }
-                total++;
+                if (!(node1[i + 1] == node2[i + 1] && (node1[i] == 0 && node2[i] == 0)))
+                {
+                    total++;
+                }
             }
-            Console.WriteLine("k = {0}", k);
 
             for (int i = Dimension - 1; i >= 0; i--)
             {
@@ -189,7 +255,7 @@ namespace Graph.Core
                     {
                         d[i]--;
                     }
-                    if (k == 0)
+                    if (k)
                     {
                         d[i]--;
                     }
@@ -210,12 +276,21 @@ namespace Graph.Core
 
         public int test()
         {
+
             for (BinaryNode node1 = new BinaryNode(0); node1.ID < NodeNum; node1.ID++)
             {
                 for (BinaryNode node2 = new BinaryNode(0); node2.ID < NodeNum; node2.ID++)
                 {
                     // 距離
                     int distance = CalcDistance(node1, node2);
+                    var rr = RhoSum(node1, node2);
+                    Console.WriteLine("d({0}, {1}) = {2}", node1.ID, node2.ID, CalcDistance(node1, node2));
+
+                    if (rr != null && distance != rr[0])
+                    {
+                        Console.ReadKey();
+                    }
+                    /*
 
                     Console.WriteLine("d({0}, {1}) = {2}", node1.ID, node2.ID, distance);
 
@@ -230,16 +305,18 @@ namespace Graph.Core
                         }
                     }
 
-                    if (bin != CalcFowardNeighbor(node1, node2))
+                    int tmp = CalcFowardNeighbor(node1, node2);
+                    if (bin != tmp)
                     {
+                        Console.WriteLine("------------------------------");
                         Console.WriteLine("  u = {0,5} = {1}", node1.ID, node1.ToString(2));
                         Console.WriteLine("  v = {0,5} = {1}", node2.ID, node2.ToString(2));
                         Console.WriteLine(" u^v=       = {1}\n", node1.ID ^ node2.ID, (node1 ^ node2).ToString(2));
                         Console.WriteLine(" 実 =       = {0}", Experiment.Tools.UIntToBinStr((uint)bin, 32, 2));
-                        Console.WriteLine(" 誤 =       = {0}", Experiment.Tools.UIntToBinStr((uint)CalcFowardNeighbor(node1, node2), 32, 2));
+                        Console.WriteLine(" 誤 =       = {0}", Experiment.Tools.UIntToBinStr((uint)tmp, 32, 2));
                         Console.ReadKey();
                     }
-                    Console.WriteLine("------------------------------");
+                    */
                 }
             }
             return 0;
