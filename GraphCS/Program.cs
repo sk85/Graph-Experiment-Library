@@ -12,7 +12,7 @@ namespace GraphCS
     {
         static void Main(string[] args)
         {
-            Console.Write(new Hypercube(5, 0).ToString());
+            Debug.Check_CalcDistance(new LocallyTwistedCube(10, 0));
         }
     }
 }

@@ -50,6 +50,28 @@ static class Debug
         }
     }
 
+    /// <summary>
+    /// ２ノード間の距離を列挙
+    /// </summary>
+    /// <param name="g">グラフ</param>
+    /// <param name="dim">次元数</param>
+    public static void ShowDistance(AGraph g, int dim)
+    {
+        for (uint node1 = 0; node1 < g.NodeNum; node1++)
+        {
+            for (uint node2 = 0; node2 < g.NodeNum; node2++)
+            {
+                Console.WriteLine(
+                    "d({0},{1}) = {2,3}",
+                    UintToBinaryString(node1, dim, dim),
+                    UintToBinaryString(node2, dim, dim),
+                    g.CalcDistanceBFS(node1, node2)
+                );
+                //Console.ReadKey();
+            }
+        }
+    }
+
     // 隣接頂点を列挙
     public static void test1(AGraph g)
     {
@@ -68,18 +90,5 @@ static class Debug
     // 2頂点間の距離を列挙
     public static void test2(AGraph g)
     {
-        for (uint node1 = 0; node1 < g.NodeNum; node1++)
-        {
-            for (uint node2 = 0; node2 < g.NodeNum; node2++)
-            {
-                Console.WriteLine(
-                    "{0} {1} {2,3}",
-                    UintToBinaryString(node1, 16, 4),
-                    UintToBinaryString(node2, 16, 4),
-                    g.CalcDistanceBFS(node1, node2)
-                );
-                Console.ReadKey();
-            }
-        }
     }
 }
