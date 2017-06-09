@@ -287,26 +287,28 @@ namespace Graph.Core
                             while (j >= 0 && node1[j] == node2[j]) j--; // 次に異なるビットを探す
                             if (j >= 0)
                             {
+                                if (node1.ID == 4 && node2.ID == 23)
+                                {
+                                    sum = 0;
+                                }
                                 j ^= j & 1;
                                 // 変化が起こる場合
-                                // １．0手で済むところが1手に : (01, 11), (11, 01)  sumが奇数は確定
                                 // ２．1手で済むところが2手に : (00, 11), (10, 01), (01, 00), (11, 10)
-                                if (node1[j] == 1 && node2[j] == 1 && node1[j + 1] == node2[j + 1] ||
-                                    node1[j] == 0 && node2[j] == 1 && node1[j + 1] != node2[j + 1] ||
+                                if (node1[j] == 0 && node2[j] == 1 && node1[j + 1] != node2[j + 1] ||
                                     node1[j] == 1 && node2[j] == 0 && node1[j + 1] == node2[j + 1])
                                 {
                                     if (j > 1 && r[(j >> 1) - 1] == 2)
                                     {
-                                        d[i] = 0;
+                                        d[i] = -1;
                                     }
                                     else
                                     {
-                                        d[i] = -1;
+                                        d[i] = 0;
                                     }
                                 }
                                 else
                                 {
-                                    d[i] = 0;
+                                    d[i] = -1;
                                 }
                             }
                             else
