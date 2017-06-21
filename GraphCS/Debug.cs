@@ -27,6 +27,50 @@ static class Debug
     }
 
     /// <summary>
+    /// GetForwardNeighborの動作確認。
+    /// すべての頂点ペアをチェック
+    /// </summary>
+    /// <param name="g"></param>
+    public static void Check_GetForwardNeighbor1(AGraph g)
+    {
+        for (uint node1 = 0; node1 < g.NodeNum; node1++)
+        {
+            for (uint node2 = 0; node2 < g.NodeNum; node2++)
+            {
+                // 基準距離を計算
+                var distance = g.CalcDistance(node1, node2);
+
+                // 正しい解を計算
+                var ary1 = new int[g.Dimension];
+                for (int i = 0; i < g.Dimension; i++)
+                {
+                    ary1[i] = g.CalcDistance(g.GetNeighbor(node1, i), node2) < distance ? 1 : 0;
+                }
+
+                // GetForwardNeighbor
+                var ary2 = g.GetForwardNeighbor(node1, node2);
+
+                // 間違っていたら情報を表示して停止
+                if (ary1.SequenceEqual(ary2))
+                {
+                    Console.WriteLine($"({UintToBinaryString(node1, g.Dimension, 32)},{UintToBinaryString(node2, g.Dimension, 32)})...ok");
+                }
+                else
+                {
+                    Console.WriteLine($"d(u, v) = {distance}");
+                    Console.WriteLine($" u  : {UintToBinaryString(node1, g.Dimension, 32)}");
+                    Console.WriteLine($" v  : {UintToBinaryString(node2, g.Dimension, 32)}");
+                    Console.WriteLine($"u^v : {UintToBinaryString(node1 ^ node2, g.Dimension, 32)}");
+                    Console.Write("ans :");
+                    for (int i = g.Dimension - 1; i >= 0; i--) Console.Write(ary1[i]);
+                    Console.Write("\n    :");
+                    for (int i = g.Dimension - 1; i >= 0; i--) Console.Write(ary2[i]);
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// CalcDistanceの動作確認
     /// </summary>
     /// <param name="g">グラフ</param>

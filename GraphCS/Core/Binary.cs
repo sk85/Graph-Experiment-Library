@@ -41,45 +41,6 @@ namespace GraphCS.Core
         }
 
         /// <summary>
-        /// サブストリングを取得/設定。
-        /// 第jビットから第iビットまで。
-        /// </summary>
-        /// <param name="i">サブストリングの左端</param>
-        /// <param name="j">サブストリングの右端</param>
-        /// <returns>サブストリング</returns>
-        public uint this[int i, int j]
-        {
-            get
-            {
-                if (j >= i)
-                {
-                    throw new IndexOutOfRangeException("jはi未満の値でなくてはいけません。");
-                }
-                if (j > 31 || j < 0 || i > 31 || i < 0)
-                {
-                    throw new IndexOutOfRangeException("i, jは0～31で指定してください。");
-                }
-                return (Bin << (31 - i)) >> (31 - i + j);
-            }
-            set
-            {
-                if (j >= i)
-                {
-                    throw new IndexOutOfRangeException("jはi未満の値でなくてはいけません。");
-                }
-                if (j > 31 || j < 0 || i > 31 || i < 0)
-                {
-                    throw new IndexOutOfRangeException("i, jは0～31で指定してください。");
-                }
-                if (value >= (1 << (i - j + 1)))
-                {
-                    throw new ArgumentOutOfRangeException("設定する値はiとjの間におさめてください。");
-                }
-                Bin = (Bin & ((0xFFFFFFFF << (i + 1)) | (0xFFFFFFFF >> (31 - j))) | (value << j));
-            }
-        }
-
-        /// <summary>
         /// 長さを指定して文字列で返す
         /// </summary>
         /// <param name="length">長さ</param>

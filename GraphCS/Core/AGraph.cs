@@ -94,15 +94,21 @@ namespace GraphCS.Core
         public abstract uint GetNeighbor(uint node, int index);
 
         /// <summary>
-        /// 前方隣接ノードを返す
+        /// 第i隣接ノードが前方かどうか
+        /// ary[i] = 前方なら1、そうでないなら0
         /// </summary>
         /// <param name="node1">現在のノード</param>
         /// <param name="node2">目的ノード</param>
-        /// <returns>前方離接ノードを列挙</returns>
-        public virtual IEnumerable<uint> GetForwardNeighbor(uint node1, uint node2)
+        /// <returns>第i隣接ノードが前方かどうかを示す配列</returns>
+        public virtual int[] GetForwardNeighbor(uint node1, uint node2)
         {
             int distance = CalcDistance(node1, node2);
-            return GetNeighbor(node1).Where(x => CalcDistance(x, node2) < distance);
+            var ary = new int[Dimension];
+            for (int i = 0; i < Dimension; i++)
+            {
+                ary[i] = CalcDistance(GetNeighbor(node1, i), node2) < distance ? 1 : 0;
+            }
+            return ary;
         }
 
         /// <summary>

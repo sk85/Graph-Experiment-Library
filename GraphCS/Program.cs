@@ -13,25 +13,84 @@ namespace GraphCS
     {
         static void Main(string[] args)
         {
-            //Debug.Check_CalcDistance(new LocallyTwistedCube(10, 0));
-            int dim = 5;
-            var g = new LocallyTwistedCube(dim, 0);
-            for (uint node1 = 0; node1 < g.NodeNum; node1++)
+            //ShowBitAndReldis(new LocallyTwistedCube(10, 0));
+            for (int dim = 3; dim < 15; dim++)
             {
-                for (uint node2 = 0; node2 < g.NodeNum; node2++)
-                {
-                    var distance = g.CalcDistance(node1, node2);
-                    if (distance <= 1) continue;
-                    foreach (var n in g.Test(node1, node2))
-                    {
-                        if (g.CalcDistance(node1, n) >= distance)
-                        {
-                            Console.WriteLine($"({Debug.UintToBinaryString(node1, dim, dim)}, {Debug.UintToBinaryString(node2, dim, dim)})");
-                            Console.WriteLine($"{Debug.UintToBinaryString(n, dim, dim)}");
-                        }
-                    }
-                }
+                Debug.Check_GetForwardNeighbor1(new LocallyTwistedCube(dim, 0));
             }
+
+        }
+
+        static void ShowBitAndReldis(AGraph g)
+        {
+            var rand = new Random();
+            do
+            {
+                uint node1 = (uint)rand.Next((int)g.NodeNum);
+                uint node2 = (uint)rand.Next((int)g.NodeNum);
+                var distance = g.CalcDistance(node1, node2);
+                Console.WriteLine(Debug.UintToBinaryString(node1, g.Dimension, 32));
+                Console.WriteLine(Debug.UintToBinaryString(node2, g.Dimension, 32));
+                Console.WriteLine(Debug.UintToBinaryString(node1 ^ node2, g.Dimension, 32));
+                for (int i = g.Dimension - 1; i >= 0; i--)
+                {
+                    Console.Write(g.CalcDistance(g.GetNeighbor(node1, i), node2) - distance + 1);
+                }
+                Console.WriteLine("\n-----------------");
+                Console.ReadKey();
+
+            } while (true);
+        }
+        
+
+        static void T1(AGraph g)
+        {
+            var rand = new Random();
+            do
+            {
+                // ノードをランダムに設定して表示
+                uint node1 = 0b0000101;
+                uint node2 = 0b1001101;
+                //uint node1 = (uint)rand.Next((int)g.NodeNum);
+                //uint node2 = (uint)rand.Next((int)g.NodeNum);
+                Console.WriteLine(Debug.UintToBinaryString(node1, g.Dimension, 32));
+                Console.WriteLine(Debug.UintToBinaryString(node2, g.Dimension, 32));
+                Console.WriteLine(Debug.UintToBinaryString(node1 ^ node2, g.Dimension, 32));
+
+                // 基準距離を計算
+                var distance = g.CalcDistance(node1, node2);
+                Console.WriteLine(distance);
+
+                // 相対距離ベクトルを計算して表示
+                var relVec1 = new int[g.Dimension];
+                for (int i = g.Dimension - 1; i >= 0; i--)
+                {
+                    relVec1[i] = g.CalcDistance(g.GetNeighbor(node1, i), node2) - distance + 1;
+                    Console.Write(relVec1[i]);
+                }
+                Console.WriteLine();
+
+                // テスト
+                var relVec2 = ((LocallyTwistedCube)g).Test(node1, node2);
+
+                // 結果の表示
+                if (relVec2 == null)
+                {
+                    Console.WriteLine("\n-----------------");
+                    continue;
+                }
+                for (int i = g.Dimension - 1; i >= 0; i--)
+                {
+                    Console.Write(relVec2[i]);
+                }
+                Console.WriteLine("\n-----------------");
+
+                // 結果が間違っていたら停止
+                if (!relVec1.SequenceEqual(relVec2))
+                {
+                    Console.ReadKey();
+                }
+            } while (true);
         }
     }
 }
