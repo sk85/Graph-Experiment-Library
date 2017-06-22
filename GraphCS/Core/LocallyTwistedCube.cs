@@ -189,15 +189,15 @@ namespace GraphCS.Core
 #endif
         }
 
-        public override int[] GetForwardNeighbor (uint node1, uint node2)
+        public override int[] GetForwardNeighbor(uint node1, uint node2)
         {
             var x1 = new Binary(node1 ^ node2);
-            var x2 = new Binary(node1 ^ node2);
-            var x3 = new Binary(node1 ^ node2);
-            var x4 = new Binary(node1 ^ node2);
-            var s1 = new Stack<int>();
-            var s4 = new Stack<int>();
-            var _s4 = new Stack<int>();
+            var x2 = new Binary(x1.Bin);
+            var x3 = new Binary(x1.Bin);
+            var x4 = new Binary(x1.Bin);
+            var s1 = new Binary(0);
+            var s4 = new Binary(0);
+            var _s4 = new Binary(0);
             int c1 = 0;
             int c2 = 0;
             int c3 = 0;
@@ -208,7 +208,7 @@ namespace GraphCS.Core
             {
                 if (x1[k] == 1)
                 {
-                    s1.Push(k);
+                    s1[k] = 1;
                     x1.Bin ^= ADB[type, k];
                     c1++;
                 }
@@ -225,24 +225,25 @@ namespace GraphCS.Core
             }
 
             int j = Dimension - 1;
-            while ( j > 1)
+            while (j > 1)
             {
                 if (x4[j] == 1)
                 {
+
                     if (x4[j - 1] == 0)
                     {
-                        while (_s4.Count > 0) s4.Push(_s4.Pop());
+                        s4.Bin |= _s4.Bin;
 
                         if (type == 0)
                         {
-                            s4.Push(j);
+                            s4[j] = 1;
                         }
                         else
                         {
-                            _s4.Push(j);
+                            _s4[j] = 1;
                             if (flag)
                             {
-                                s4.Push(j + 1);
+                                s4[j + 1] = 1;
                             }
                         }
                     }
@@ -250,14 +251,14 @@ namespace GraphCS.Core
                     {
                         if (type == 0)
                         {
-                            _s4.Push(j);
+                            _s4[j] = 1;
                         }
                         else
                         {
-                            s4.Push(j);
+                            s4[j] = 1;
                             if (flag)
                             {
-                                _s4.Push(j + 1);
+                                _s4[j + 1] = 1;
                             }
                         }
 
@@ -268,18 +269,18 @@ namespace GraphCS.Core
                 }
                 else
                 {
-                    _s4.Clear();
+                    _s4.Bin = 0;
                     flag = false;
                     j--;
                 }
             }
             if (j == 1 && x4[1] == 1)
             {
-                while (_s4.Count > 0) s4.Push(_s4.Pop());
-                s4.Push(1);
+                s4.Bin |= _s4.Bin;
+                s4[1] = 1;
                 if (flag && type == 1)
                 {
-                    s4.Push(2);
+                    s4[2] = 1;
                 }
             }
 
@@ -290,27 +291,149 @@ namespace GraphCS.Core
 
                 if (c1 < c3)    // 移動しないほうが早い場合
                 {
-                    foreach (var k in s1) a[k] = 1;
+                    for (int i = 0; i < Dimension; i++)
+                    {
+                        a[i] = (int)s1[i];
+                    }
                 }
                 else if (c1 == c3)  // 移動してもしなくても同じ場合
                 {
-                    foreach (var k in s1) a[k] = 1;
-                    foreach (var k in s4) a[k] = 1;
+                    s1.Bin |= s4.Bin;
+                    for (int i = 0; i < Dimension; i++)
+                    {
+                        a[i] = (int)s1[i];
+                    }
                     a[0] = 1;
                 }
                 else // 移動したほうが早い場合
                 {
-                    foreach (var k in s4) a[k] = 1;
+                    for (int i = 0; i < Dimension; i++)
+                    {
+                        a[i] = (int)s4[i];
+                    }
                     a[0] = 1;
                 }
             }
             else // 違うサブグラフの場合
             {
+                for (int i = 0; i < Dimension; i++)
+                {
+                    a[i] = (int)s4[i];
+                }
                 if (c2 == c3)
                 {
                     a[0] = 1;
                 }
-                foreach (var k in s4) a[k] = 1;
+            }
+            return a;
+        }
+
+        public int[] GetForwardNeighbor2(uint node1, uint node2)
+        {
+            var x1 = new Binary(node1 ^ node2);
+            var x2 = new Binary(x1.Bin);
+            var x3 = new Binary(x1.Bin);
+            var x4 = new Binary(x1.Bin);
+            var s1 = new Binary(0);
+            var s4 = new Binary[] { new Binary(0), new Binary(0) };
+            int c1 = 0;
+            int c2 = 0;
+            int c3 = 0;
+            int type = (int)node1 & 1;
+            var flag = false;
+
+            for (int k = Dimension - 1; k >= 1; k--)
+            {
+                if (x1[k] == 1)
+                {
+                    s1[k] = 1;
+                    x1.Bin ^= ADB[type, k];
+                    c1++;
+                }
+                if (x2[k] == 1)
+                {
+                    x2.Bin ^= ADB[type ^ 1, k];
+                    c2++;
+                }
+                if (x3[k] == 1)
+                {
+                    x3.Bin ^= ADB[x3[k - 1], k];
+                    c3++;
+                }
+            }
+
+            int j = Dimension - 1;
+            while (j > 1)
+            {
+                if (x4[j] == 1)
+                {
+                    if (x4[j - 1] == 0) s4[0].Bin |= s4[1].Bin;
+
+                    if (type == 1 && flag) s4[x4[j - 1]][j + 1] = 1;
+
+                    s4[x4[j - 1] ^ type][j] = 1;
+
+                    x4.Bin ^= ADB[x4[j - 1], j];
+                    flag = true;
+                    j -= 2;
+                }
+                else
+                {
+                    s4[1].Bin = 0;
+                    flag = false;
+                    j--;
+                }
+            }
+            if (j == 1 && x4[1] == 1)
+            {
+                s4[0].Bin |= s4[1].Bin;
+                s4[0][1] = 1;
+                if (flag && type == 1)
+                {
+                    s4[0][2] = 1;
+                }
+            }
+
+            var a = new int[Dimension];
+            if (((node1 ^ node2) & 1) == 0) // 同じサブグラフの場合
+            {
+                c3 += 2;    // サブグラフの移動分
+
+                if (c1 < c3)    // 移動しないほうが早い場合
+                {
+                    for (int i = 0; i < Dimension; i++)
+                    {
+                        a[i] = (int)s1[i];
+                    }
+                }
+                else if (c1 == c3)  // 移動してもしなくても同じ場合
+                {
+                    s1.Bin |= s4[0].Bin;
+                    for (int i = 0; i < Dimension; i++)
+                    {
+                        a[i] = (int)s1[i];
+                    }
+                    a[0] = 1;
+                }
+                else // 移動したほうが早い場合
+                {
+                    for (int i = 0; i < Dimension; i++)
+                    {
+                        a[i] = (int)s4[0][i];
+                    }
+                    a[0] = 1;
+                }
+            }
+            else // 違うサブグラフの場合
+            {
+                for (int i = 0; i < Dimension; i++)
+                {
+                    a[i] = (int)s4[0][i];
+                }
+                if (c2 == c3)
+                {
+                    a[0] = 1;
+                }
             }
             return a;
         }
@@ -499,3 +622,5 @@ namespace GraphCS.Core
         }
     }
 }
+
+

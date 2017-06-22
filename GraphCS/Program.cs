@@ -13,12 +13,8 @@ namespace GraphCS
     {
         static void Main(string[] args)
         {
-            //ShowBitAndReldis(new LocallyTwistedCube(10, 0));
-            for (int dim = 3; dim < 15; dim++)
-            {
-                Debug.Check_GetForwardNeighbor1(new LocallyTwistedCube(dim, 0));
-            }
-
+            var g = new LocallyTwistedCube(2, 0);
+            Debug.Check_GetForwardNeighbor2(g, g.GetForwardNeighbor2);
         }
 
         static void ShowBitAndReldis(AGraph g)

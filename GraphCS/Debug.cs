@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 using GraphCS.Core;
 
@@ -70,6 +71,52 @@ static class Debug
         }
     }
 
+    public static void Check_GetForwardNeighbor2(AGraph g, Func<uint, uint, int[]> f)
+    {
+        var sw1 = new Stopwatch();
+        var sw2 = new Stopwatch();
+        for (int dim = 2; dim <= 13; dim++)
+        {
+            g.Dimension = dim;
+            for (uint node1 = 0; node1 < g.NodeNum; node1++)
+            {
+                Console.WriteLine($"n = {dim}, node1 = {UintToBinaryString(node1, dim, dim)}");
+                for (uint node2 = 0; node2 < g.NodeNum; node2++)
+                {
+                    // GetForwardNeighbor
+                    f(node1, node2);
+
+                    sw1.Start();
+                    var ary1 = g.GetForwardNeighbor(node1, node2);
+                    sw1.Stop();
+
+                    sw2.Start();
+                    var ary2 = f(node1, node2);
+                    sw2.Stop();
+
+                    // 間違っていたら情報を表示して停止
+                    if (!ary1.SequenceEqual(ary2))
+                    {
+                        Console.WriteLine($"d(u, v) = {g.CalcDistance(node1, node2)}");
+                        Console.WriteLine($" u  : {UintToBinaryString(node1, g.Dimension, 32)}");
+                        Console.WriteLine($" v  : {UintToBinaryString(node2, g.Dimension, 32)}");
+                        Console.WriteLine($"u^v : {UintToBinaryString(node1 ^ node2, g.Dimension, 32)}");
+                        Console.Write("ans :");
+                        for (int i = g.Dimension - 1; i >= 0; i--) Console.Write(ary1[i]);
+                        Console.Write("\n    :");
+                        for (int i = g.Dimension - 1; i >= 0; i--) Console.Write(ary2[i]);
+                        Console.WriteLine("\n");
+                    }
+                }
+            }
+        }
+
+        Console.WriteLine($"元々の : {sw1.Elapsed}");
+        Console.WriteLine($"新しい : {sw2.Elapsed}");
+
+        Console.WriteLine($"　差　 : {sw1.Elapsed - sw2.Elapsed}");
+    }
+
     /// <summary>
     /// CalcDistanceの動作確認
     /// </summary>
@@ -129,10 +176,5 @@ static class Debug
             Console.WriteLine("-------------------------------");
             Console.ReadKey();
         }
-    }
-
-    // 2頂点間の距離を列挙
-    public static void test2(AGraph g)
-    {
     }
 }
