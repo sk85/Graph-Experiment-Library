@@ -121,23 +121,31 @@ static class Debug
     /// CalcDistanceの動作確認
     /// </summary>
     /// <param name="g">グラフ</param>
-    public static void Check_CalcDistance(AGraph g)
+    public static void Check_CalcDistance(AGraph g, int minDim, int maxDim)
     {
-        for (uint node1 = 0; node1 < g.NodeNum; node1++)
+        for (int dim = minDim; dim < maxDim ; dim++)
         {
-            for (uint node2 = 0; node2 < g.NodeNum; node2++)
+            g.Dimension = dim;
+            Console.Write($"n = {dim}");
+            for (uint node1 = 0; node1 < g.NodeNum; node1++)
             {
-                int d1 = g.CalcDistanceBFS(node1, node2);
-                int d2 = g.CalcDistance(node1, node2);
-                Console.WriteLine(
-                    "d({0},{1}) = {2,2} / {3,2}",
-                    UintToBinaryString(node1, 16, 4),
-                    UintToBinaryString(node2, 16, 4),
-                    d1,
-                    d2
-                );
-                if (d1 != d2) Console.ReadKey();
+                for (uint node2 = 0; node2 < g.NodeNum; node2++)
+                {
+                    int d1 = g.CalcDistanceBFS(node1, node2);
+                    int d2 = g.CalcDistance(node1, node2);
+                    if (d1 != d2)
+                    {
+                        Console.WriteLine(
+                            "\nd({0},{1}) = {2,2} / {3,2}",
+                            UintToBinaryString(node1, 16, 4),
+                            UintToBinaryString(node2, 16, 4),
+                            d1,
+                            d2
+                        );
+                    }
+                }
             }
+            Console.WriteLine("...ok");
         }
     }
 
@@ -161,6 +169,15 @@ static class Debug
                 //Console.ReadKey();
             }
         }
+    }
+
+    public static int PopCount(uint bits)
+    {
+        bits = (bits & 0x55555555) + (bits >> 1 & 0x55555555);
+        bits = (bits & 0x33333333) + (bits >> 2 & 0x33333333);
+        bits = (bits & 0x0f0f0f0f) + (bits >> 4 & 0x0f0f0f0f);
+        bits = (bits & 0x00ff00ff) + (bits >> 8 & 0x00ff00ff);
+        return (int)((bits & 0x0000ffff) + (bits >> 16 & 0x0000ffff));
     }
 
     // 隣接頂点を列挙

@@ -13,26 +13,31 @@ namespace GraphCS
     {
         static void Main(string[] args)
         {
-            var g = new LocallyTwistedCube(2, 0);
-            Debug.Check_GetForwardNeighbor2(g, g.GetForwardNeighbor2);
+            test(new CrossedCube(10, 0));
         }
 
-        static void ShowBitAndReldis(AGraph g)
+        static void test(AGraph g)
         {
             var rand = new Random();
             do
             {
                 uint node1 = (uint)rand.Next((int)g.NodeNum);
                 uint node2 = (uint)rand.Next((int)g.NodeNum);
-                var distance = g.CalcDistance(node1, node2);
-                Console.WriteLine(Debug.UintToBinaryString(node1, g.Dimension, 32));
-                Console.WriteLine(Debug.UintToBinaryString(node2, g.Dimension, 32));
-                Console.WriteLine(Debug.UintToBinaryString(node1 ^ node2, g.Dimension, 32));
+                int[] forward = g.GetForwardNeighbor(node1, node2);
+                Console.WriteLine(" u  = {0}", Debug.UintToBinaryString(node1, g.Dimension, 32));
+                Console.WriteLine(" v  = {0}", Debug.UintToBinaryString(node2, g.Dimension, 32));
+                Console.WriteLine("u^v = {0}", Debug.UintToBinaryString(node1 ^ node2, g.Dimension, 32));
+                Console.Write(" fn = ");
                 for (int i = g.Dimension - 1; i >= 0; i--)
                 {
-                    Console.Write(g.CalcDistance(g.GetNeighbor(node1, i), node2) - distance + 1);
+                    Console.Write(forward[i]);
+                    //if ((i & 1) == 0) Console.Write(' ');
                 }
-                Console.WriteLine("\n-----------------");
+                Console.WriteLine();
+                Console.WriteLine("  距離  = {0}", g.CalcDistance(node1, node2));
+                Console.WriteLine(" ﾊﾐﾝｸﾞ  = {0}", (uint)Debug.PopCount(node1^node2));
+                Console.WriteLine(" 前方数 = {0}", forward.Count(x => x == 1));
+                Console.WriteLine("---------------------------------------------------");
                 Console.ReadKey();
 
             } while (true);

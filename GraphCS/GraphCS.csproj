@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Core\AGraph.cs" />
     <Compile Include="Core\Binary.cs" />
+    <Compile Include="Core\CrossedCube.cs" />
     <Compile Include="Core\Hypecube.cs" />
     <Compile Include="Core\LocallyTwistedCube.cs" />
     <Compile Include="Debug.cs" />
