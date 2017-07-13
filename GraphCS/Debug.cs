@@ -126,9 +126,14 @@ static class Debug
         for (int dim = minDim; dim < maxDim ; dim++)
         {
             g.Dimension = dim;
-            Console.Write($"n = {dim}");
+            Console.Write($"n = {dim,2}");
             for (uint node1 = 0; node1 < g.NodeNum; node1++)
             {
+                if (node1 % 10 == 0)
+                {
+                    Console.CursorLeft = 7;
+                    Console.Write($"{(double)(node1 + 1) / g.NodeNum:###%}");
+                }
                 for (uint node2 = 0; node2 < g.NodeNum; node2++)
                 {
                     int d1 = g.CalcDistanceBFS(node1, node2);
@@ -145,7 +150,8 @@ static class Debug
                     }
                 }
             }
-            Console.WriteLine("...ok");
+            Console.CursorLeft = 7;
+            Console.WriteLine($"100%");
         }
     }
 
