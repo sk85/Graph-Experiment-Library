@@ -14,8 +14,20 @@ namespace GraphCS
         static void Main(string[] args)
         {
             // test(new CrossedCube(10, 0), true);
-            var g = new CrossedCube(1, 0);
-            Debug.Check_CalcDistance(g, 2, 16);
+            //Debug.Check_CalcDistance(g, 2, 16);
+            //Debug.Check_GetForwardNeighbor1(g, 2, 16);
+
+
+            var rand = new Random();
+            var g = new CrossedCube(10, 0);
+            while (true)
+            {
+                uint node1 = (uint)rand.Next((int)g.NodeNum / 10);
+                uint node2 = (uint)rand.Next((int)g.NodeNum / 10);
+                Console.Clear();
+                g.CalcRelativeDistance(node1, node2);
+                Console.ReadKey();
+            }
         }
 
         // クロスとキューブの色々を表示

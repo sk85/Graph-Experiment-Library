@@ -32,35 +32,85 @@ namespace GraphCS.Core
 
         public override int CalcDistance(uint node1, uint node2)
         {
-            if (node1 == node2) return 0;
-
-            var u = new Binary(node1);
-            var v = new Binary(node2);
-
-            int score;
-            int i = Dimension - 1;
-
-            while (i >= 0 && u[i] == v[i]) { i--; }  // MSBを探す
-
-            i -= i & 1; // double bitの右側に合わせる
-
-            // j = i^* のとき
-            score = (int)(u[i + 1] ^ v[i + 1]) + (int)(u[i] ^ v[i]);
-
-            i -= 2;
-
-            // j < i^* のとき
-            while (i >= 0)
+            Binary u = new Binary(node1), v = new Binary(node2);
+            int score = 0;
+            for (int i = Dimension - (Dimension & 1); i >= 0; i -= 2) // iをdouble bit の右側に合わせる
             {
-                if (!((u[i + 1] == v[i + 1] && u[i] == 1 && v[i] == 1 && (score & 1) == 0) ||
-                      (u[i + 1] != v[i + 1] && u[i] == 1 && v[i] == 1 && (score & 1) == 1) ||
-                      (u[i + 1] == v[i + 1] && u[i] == 0 && v[i] == 0)))
+                if (score == 0)
                 {
-                    score += 1;
+                    score = (int)((u[i + 1] ^ v[i + 1]) + (u[i] ^ v[i]));
                 }
-                i -= 2;
+                else
+                {
+                    if (!(u[i] == 1 && v[i] == 1 && (u[i + 1] == v[i + 1] ^ (score & 1) == 1)
+                            || u[i] == 0 && v[i] == 0 && u[i + 1] == v[i + 1]))
+                    {
+                        score += 1;
+                    }
+                }
             }
             return score;
+        }
+
+        public void CalcRelativeDistance(uint node1, uint node2)
+        {
+            Binary u = new Binary(node1), v = new Binary(node2);
+            int k = Dimension;
+            while (k-- > 0 && u[k] == v[k]) ;
+
+            var p1 = Rho(node1, node2);
+            Console.WriteLine(" u  = {0}", Debug.UintToBinaryString(node1, Dimension, 2));
+            Console.WriteLine(" v  = {0}", Debug.UintToBinaryString(node2, Dimension, 2));
+            Console.WriteLine("u^v = {0}", Debug.UintToBinaryString(node1 ^ node2, Dimension, 2));
+            Console.WriteLine($" k  = {k}");
+            Console.WriteLine("------------------------------");
+            Console.Write(" p  =");
+            for (int i = (Dimension - 1) >> 1; i >= 0; i--)
+            {
+                Console.Write($"  {p1[i]}");
+            }
+            Console.WriteLine();
+            Console.WriteLine("------------------------------");
+
+            for (int i = 0; i < GetDegree(node1); i++)
+            {
+                var neighbor = GetNeighbor(node1, i);
+                var p2 = Rho(neighbor, node2);
+                Console.WriteLine("u^{0} = {1}", i, Debug.UintToBinaryString(neighbor, Dimension, 2));
+                Console.Write(" p{0} =",i);
+                for (int j = (Dimension - 1) >> 1; j >= 0; j--)
+                {
+                    Console.Write($"  {p2[j]}");
+                }
+                Console.WriteLine();
+                Console.WriteLine("------------------------------");
+            }
+        }
+
+        public int[] Rho(uint node1, uint node2)
+        {
+            Binary u = new Binary(node1), v = new Binary(node2);
+            int[] p = new int[Dimension >> 1];
+            int sum = 0;
+
+            for (int i = Dimension - ((Dimension & 1) == 1 ? 1 : 2); i >= 0; i -= 2) // iをdouble bit の右側に合わせる
+            {
+                if (sum == 0)
+                {
+                    p[i / 2] = (int)((u[i + 1] ^ v[i + 1]) + (u[i] ^ v[i]));
+                    sum = p[i / 2];
+                }
+                else
+                {
+                    if (!(u[i] == 1 && v[i] == 1 && (u[i + 1] == v[i + 1] ^ (sum & 1) == 1)
+                            || u[i] == 0 && v[i] == 0 && u[i + 1] == v[i + 1]))
+                    {
+                        p[i / 2] = 1;
+                        sum += 1;
+                    }
+                }
+            }
+            return p;
         }
     }
 }
