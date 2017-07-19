@@ -10,7 +10,7 @@ namespace GraphCS.Core
     /// グラフを表す抽象クラス
     /// since 2017/06/01
     /// </summary>
-    abstract class AGraph
+    abstract partial class AGraph
     {
         private int __Dimension;
         /// <summary>
@@ -100,7 +100,7 @@ namespace GraphCS.Core
         /// <param name="node1">現在のノード</param>
         /// <param name="node2">目的ノード</param>
         /// <returns>第i隣接ノードが前方かどうかを示す配列</returns>
-        public virtual int[] GetForwardNeighbor(uint node1, uint node2)
+        public virtual int[] CalcForwardNeighbor(uint node1, uint node2)
         {
             int distance = CalcDistance(node1, node2);
             var ary = new int[Dimension];
@@ -172,28 +172,21 @@ namespace GraphCS.Core
             return CalcDistanceBFS(node1, node2);
         }
 
-        /// <summary>
-        /// デバッグ用ToString
-        /// </summary>
-        /// <returns>デバッグ用テキスト</returns>
-        public override string ToString()
+
+        // Returns rerative distances
+        public int[] CalcRelativeDistance(uint node1, uint node2)
         {
-            string str = string.Format(
-                    "{0,5}|{1,16}|{2,5}|\n",
-                    "ID",
-                    "Addr",
-                    "IsFault"
-                );
-            for (uint i = 0; i < NodeNum; i++)
+            var ary = new int[GetDegree(node1)];
+            var d = CalcDistance(node1, node2);
+            for (int i = 0; i < GetDegree(node1); i++)
             {
-                str += string.Format(
-                    "{0,5}|{1,16}|{2,7}|\n",
-                    i,
-                    Debug.UintToBinaryString(i, 16, 16),
-                    FaultFlags[i]
-                );
+                ary[i] = CalcDistance(GetNeighbor(node1, i), node2) - d;
             }
-            return str;
+            return ary;
         }
+        
+
+
+
     }
 }

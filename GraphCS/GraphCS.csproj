@@ -42,6 +42,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\AGraph.Experiment.cs" />
+    <Compile Include="Core\AGraph.Routing.cs" />
     <Compile Include="Core\AGraph.cs" />
     <Compile Include="Core\Binary.cs" />
     <Compile Include="Core\CrossedCube.cs" />

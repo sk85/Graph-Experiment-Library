@@ -58,7 +58,7 @@ static class Debug
                     }
 
                     // GetForwardNeighbor
-                    var ary2 = g.GetForwardNeighbor(node1, node2);
+                    var ary2 = g.CalcForwardNeighbor(node1, node2);
 
                     // 間違っていたら情報を表示して停止
                     if (!ary1.SequenceEqual(ary2))
@@ -95,7 +95,7 @@ static class Debug
                     f(node1, node2);
 
                     sw1.Start();
-                    var ary1 = g.GetForwardNeighbor(node1, node2);
+                    var ary1 = g.CalcForwardNeighbor(node1, node2);
                     sw1.Stop();
 
                     sw2.Start();

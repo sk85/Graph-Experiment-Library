@@ -8,10 +8,13 @@ namespace GraphCS.Core
 {
     class CrossedCube : AGraph
     {
+        // Constructor
         public CrossedCube(int dim, int randSeed) : base(dim, randSeed)
         {
         }
 
+
+        // Abstract members
         public override int GetDegree(uint Node)
         {
             return Dimension;
@@ -52,7 +55,9 @@ namespace GraphCS.Core
             return score;
         }
 
-        public void CalcRelativeDistance(uint node1, uint node2)
+
+        // 色々表示
+        public void Show(uint node1, uint node2)
         {
             Binary u = new Binary(node1), v = new Binary(node2);
             int k = Dimension;

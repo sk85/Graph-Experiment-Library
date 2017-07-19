@@ -10,6 +10,7 @@ namespace GraphCS.Core
 {
     class LocallyTwistedCube : AGraph
     {
+        // Adjacent decided binary
         static readonly uint[,] ADB =
             {
                 {
@@ -81,10 +82,13 @@ namespace GraphCS.Core
                     0b11000000000000000000000000000000,
                 }
             };
+
+        // Constructor
         public LocallyTwistedCube(int dim, int randSeed) : base(dim, randSeed)
         {
         }
 
+        // Abstract menbers
         public override int GetDegree(uint Node)
         {
             return Dimension;
@@ -189,7 +193,7 @@ namespace GraphCS.Core
 #endif
         }
 
-        public override int[] GetForwardNeighbor(uint node1, uint node2)
+        public override int[] CalcForwardNeighbor(uint node1, uint node2)
         {
             var x1 = new Binary(node1 ^ node2);
             var x2 = new Binary(x1.Bin);

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 using GraphCS.Core;
 
@@ -13,21 +14,66 @@ namespace GraphCS
     {
         static void Main(string[] args)
         {
-            // test(new CrossedCube(10, 0), true);
-            //Debug.Check_CalcDistance(g, 2, 16);
-            //Debug.Check_GetForwardNeighbor1(g, 2, 16);
-
-
-            var rand = new Random();
-            var g = new CrossedCube(10, 0);
-            while (true)
+            var g = new CrossedCube(0, 0);
+            for (int dim = 10; dim <= 15; dim++)
             {
-                uint node1 = (uint)rand.Next((int)g.NodeNum / 10);
-                uint node2 = (uint)rand.Next((int)g.NodeNum / 10);
-                Console.Clear();
-                g.CalcRelativeDistance(node1, node2);
-                Console.ReadKey();
+                Console.WriteLine($"n = {dim}%");
+                g.Dimension = dim;
+                Experiment(g, 10000, $@"..\..\{dim}.csv");
+                Console.WriteLine($"-----------------------------");
             }
+        }
+
+        // 実験
+        static void Experiment(AGraph g, int trials, string path)
+        {
+            var successCount = new int[10];
+            var totalPathLength = new int[10];
+
+            for (int faultRatio = 0; faultRatio < 10; faultRatio++)
+            {
+                Console.Write($"Fault ratio = {faultRatio + 1,2}% ...");
+                for (int i = 0; i < trials; i++)
+                {
+                    if ((i * 100) % trials == 0)
+                    {
+                        Console.CursorLeft = 21;
+                        Console.Write($"{(double)(i + 1) / trials:###%}");
+                    }
+                    // 故障率に従って故障をランダムに発生
+                    g.GenerateFaults((double)(faultRatio + 1) / 100);
+
+                    // 連結な2ノードを取得
+                    var p = g.GetExperimentParam();
+
+                    // ルーティングを実行
+                    var step = g.Routing(p.Node1, p.Node2, g.GetNext_Simple);
+
+                    if (step > 0)
+                    {
+                        successCount[faultRatio]++;
+                        totalPathLength[faultRatio] += step;
+                    }
+                }
+                Console.CursorLeft = 21;
+                Console.WriteLine("100%");
+            }
+
+            // csv形式の文字列を作成
+            var str = ",1%,2%,3%,4%,5%,6%,7%,8%,9%,10%,";
+            str += "\n到達率,";
+            for (int i = 0; i < 10; i++)
+            {
+                str += $"{(double)successCount[i] / trials},";
+            }
+            str += "\n平均経路長,";
+            for (int i = 0; i < 10; i++)
+            {
+                str += $"{(double)totalPathLength[i] / trials},";
+            }
+
+            // テキストファイルに書き出し
+            File.WriteAllText(path, str, Encoding.GetEncoding("shift_jis"));
         }
 
         // クロスとキューブの色々を表示
@@ -39,7 +85,7 @@ namespace GraphCS
             {
                 uint node1 = (uint)rand.Next((int)g.NodeNum);
                 uint node2 = (uint)rand.Next((int)g.NodeNum);
-                int[] forward = g.GetForwardNeighbor(node1, node2);
+                int[] forward = g.CalcForwardNeighbor(node1, node2);
                 Console.WriteLine(" u  = {0}", Debug.UintToBinaryString(node1, g.Dimension, f ? 2 : 32));
                 Console.WriteLine(" v  = {0}", Debug.UintToBinaryString(node2, g.Dimension, f ? 2 : 32));
                 Console.WriteLine("u^v = {0}", Debug.UintToBinaryString(node1 ^ node2, g.Dimension, f ? 2 : 32));
@@ -59,55 +105,5 @@ namespace GraphCS
             } while (true);
         }
         
-
-        static void T1(AGraph g)
-        {
-            var rand = new Random();
-            do
-            {
-                // ノードをランダムに設定して表示
-                uint node1 = 0b0000101;
-                uint node2 = 0b1001101;
-                //uint node1 = (uint)rand.Next((int)g.NodeNum);
-                //uint node2 = (uint)rand.Next((int)g.NodeNum);
-                Console.WriteLine(Debug.UintToBinaryString(node1, g.Dimension, 32));
-                Console.WriteLine(Debug.UintToBinaryString(node2, g.Dimension, 32));
-                Console.WriteLine(Debug.UintToBinaryString(node1 ^ node2, g.Dimension, 32));
-
-                // 基準距離を計算
-                var distance = g.CalcDistance(node1, node2);
-                Console.WriteLine(distance);
-
-                // 相対距離ベクトルを計算して表示
-                var relVec1 = new int[g.Dimension];
-                for (int i = g.Dimension - 1; i >= 0; i--)
-                {
-                    relVec1[i] = g.CalcDistance(g.GetNeighbor(node1, i), node2) - distance + 1;
-                    Console.Write(relVec1[i]);
-                }
-                Console.WriteLine();
-
-                // テスト
-                var relVec2 = ((LocallyTwistedCube)g).Test(node1, node2);
-
-                // 結果の表示
-                if (relVec2 == null)
-                {
-                    Console.WriteLine("\n-----------------");
-                    continue;
-                }
-                for (int i = g.Dimension - 1; i >= 0; i--)
-                {
-                    Console.Write(relVec2[i]);
-                }
-                Console.WriteLine("\n-----------------");
-
-                // 結果が間違っていたら停止
-                if (!relVec1.SequenceEqual(relVec2))
-                {
-                    Console.ReadKey();
-                }
-            } while (true);
-        }
     }
 }
