@@ -174,7 +174,7 @@ namespace GraphCS.Core
 
 
         // Returns rerative distances
-        public int[] CalcRelativeDistance(uint node1, uint node2)
+        public virtual int[] CalcRelativeDistance(uint node1, uint node2)
         {
             var ary = new int[GetDegree(node1)];
             var d = CalcDistance(node1, node2);

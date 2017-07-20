@@ -68,5 +68,28 @@ namespace GraphCS.Core
             }
             return current;
         }
+
+        // Normal routing
+        public uint GetNext_Normal(uint current, uint destination)
+        {
+            var r = CalcRelativeDistance(current, destination);
+            var side = current;
+            for (int i = 0; i < GetDegree(current); i++)
+            {
+                var neighbor = GetNeighbor(current, i);
+                if (!FaultFlags[neighbor])
+                {
+                    if (r[i] < 0)
+                    {
+                        return neighbor;
+                    }
+                    else if (r[i] == 0)
+                    {
+                        side = neighbor;
+                    }
+                }
+            }
+            return side;
+        }
     }
 }
