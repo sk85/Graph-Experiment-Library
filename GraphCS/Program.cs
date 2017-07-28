@@ -15,7 +15,8 @@ namespace GraphCS
         static void Main(string[] args)
         {
             var rand = new Random(0);
-            var g = new CrossedCube(10, 0);
+            var g = new CrossedCube(11, 0);
+
             bool f = false;
             do
             {
@@ -33,6 +34,41 @@ namespace GraphCS
                 Console.WriteLine($"-----------------------------");
 
             } while (true);
+
+            return;
+
+            var sw1 = new System.Diagnostics.Stopwatch();
+            var sw2 = new System.Diagnostics.Stopwatch();
+
+            for (uint node1 = 0; node1 < g.NodeNum; node1++)
+            {
+                if (node1 % 10 == 0)
+                {
+                    Console.CursorLeft = 7;
+                    Console.Write($"{(double)(node1 + 1) / g.NodeNum:###%}");
+                }
+                for (uint node2 = 0; node2 < g.NodeNum; node2++)
+                {
+                    sw1.Start();
+                    // 正解を計算
+                    var r1 = new int[g.Dimension];
+                    var d = g.CalcDistance(node1, node2);
+                    for (int i = 0; i < g.Dimension; i++)
+                        r1[i] = g.CalcDistance(g.GetNeighbor(node1, i), node2) - d;
+                    sw1.Stop();
+
+                    sw2.Start();
+                    // 計算
+                    var r2 = g.R(node1, node2);
+                    sw2.Stop();
+                }
+            }
+            Console.WriteLine();
+
+            Console.WriteLine(sw1.ElapsedMilliseconds);
+            Console.WriteLine(sw2.ElapsedMilliseconds);
+
+            //Check_CalcRelativeDistance(g, 10, 11);
 
             return;
             var trials = 100000;
@@ -136,6 +172,49 @@ namespace GraphCS
 
             // テキストファイルに書き出し
             File.WriteAllText(path, str, Encoding.GetEncoding("shift_jis"));
+        }
+
+        static void Check_CalcRelativeDistance(AGraph g, int minDim, int maxDim)
+        {
+            for (int dim = minDim; dim <= maxDim; dim++)
+            {
+                g.Dimension = dim;
+                for (uint node1 = 0; node1 < g.NodeNum; node1++)
+                {
+                    if (node1 % 10 == 0)
+                    {
+                        Console.CursorLeft = 7;
+                        Console.Write($"{(double)(node1 + 1) / g.NodeNum:###%}");
+                    }
+                    for (uint node2 = 0; node2 < g.NodeNum; node2++)
+                    {
+                        // 正解を計算
+                        var r1 = new int[dim];
+                        var d = g.CalcDistance(node1, node2);
+                        for (int i = 0; i < dim; i++)
+                            r1[i] = g.CalcDistance(g.GetNeighbor(node1, i), node2) - d;
+
+                        // 計算
+                        var r2 = g.CalcRelativeDistance(node1, node2);
+
+                        // 比較して異なっていたら表示
+                        if (!r1.SequenceEqual(r2))
+                        {
+                            Console.WriteLine($"-----------------------------");
+                            Console.WriteLine(" u  = {0}", Debug.UintToBinaryString(node1, g.Dimension, 2));
+                            Console.WriteLine(" v  = {0}", Debug.UintToBinaryString(node2, g.Dimension, 2));
+
+                            Console.Write(" r1 = ");
+                            for (int i = dim - 1; i >= 0; i--) Console.Write($" {r1[i],2}");
+                            Console.WriteLine();
+
+                            Console.Write(" r2 = ");
+                            for (int i = dim - 1; i >= 0; i--) Console.Write($" {r2[i],2}");
+                            Console.WriteLine();
+                        }
+                    }
+                }
+            }
         }
 
         // クロスとキューブの色々を表示
