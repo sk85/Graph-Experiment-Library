@@ -67,11 +67,13 @@ namespace GraphCS.Core
             var d = CalcDistance(node1, node2);
             int k = Dimension;
             while (k-- > 0 && u[k] == v[k]) ;
-            int flag = 0;
+            var flag_exist = false;
+            var flag_good = false;
+            var flag_second = false;
 
             var r = new int[Dimension];
             for (int i = 0; i < Dimension; i++) r[i] = 9;
-            for (int i = 0; i < 3/*TODO*/; i += 2)
+            for (int i = 0; i < Dimension/*TODO*/; i += 2)
             {
                 Binary n0 = new Binary(GetNeighbor(node1, i));
                 Binary n1 = new Binary(GetNeighbor(node1, i + 1));
@@ -89,19 +91,50 @@ namespace GraphCS.Core
                                || n0[i] == 0 && v[i] == 0 && n0[i + 1] == v[i + 1])
                     {
                         r[i] = -1;
-                        r[i + 1] = 0;
+                        r[i + 1] = flag_exist ? (flag_good ? 1 : -1) : 0;
                     }
                     else if (n1[i] == 1 && v[i] == 1 && (n1[i + 1] == v[i + 1] ^ (pSum[i >> 1] & 1) == 1)
                               || n1[i] == 0 && v[i] == 0 && n1[i + 1] == v[i + 1])
                     {
-                        r[i] = 0;
+                        r[i] = flag_exist ? (flag_good ? 1 : -1) : 0;
                         r[i + 1] = -1;
                     }
                     else
                     {
-                        r[i] = 0;
-                        r[i + 1] = 0;
+                        r[i] = flag_exist ? (flag_good ? 1 : -1) : 0;
+                        r[i + 1] = r[i];
                     }
+                }
+                else if (k / 2 == i / 2)
+                {
+                    if (p[i / 2] == 1)
+                    {
+                        if (flag_second)
+                        {
+                            r[k] = 9; //TODO
+                        }
+                        else
+                        {
+                            r[k] = -1;
+                        }
+                        r[k ^ 1] = 1;
+                    }
+                    else
+                    {
+                        r[i] = -1;
+                        r[i + 1] = -1;
+                    }
+                }
+
+                // フラグの更新
+                if (u[i] == 1 && v[i] == 1)
+                {
+                    flag_exist = true;
+                    flag_good = u[i + 1] == v[i + 1] ^ (pSum[i >> 1] & 1) == 1;
+                }
+                if (p[i / 2] > 0)
+                {
+                    flag_second = u[i] != v[i] && u[i + 1] != v[i + 1];
                 }
             }
             return r;
@@ -128,8 +161,9 @@ namespace GraphCS.Core
             Console.WriteLine();
 
             // 今見ているpの表示
-            p = Rho(GetNeighbor(node1, 2), node2);
-            Console.Write(" p2 =");
+            int now = k;
+            p = Rho(GetNeighbor(node1, now), node2);
+            Console.Write($" p{now} =");
             for (int i = (Dimension - 1) >> 1; i >= 0; i--)
             {
                 Console.Write($"  {p[i]}");
