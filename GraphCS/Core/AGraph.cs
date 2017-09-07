@@ -12,6 +12,8 @@ namespace GraphCS.Core
     /// </summary>
     abstract partial class AGraph
     {
+        public abstract string Name { get; }
+
         private int __Dimension;
         /// <summary>
         /// グラフの次元数
@@ -184,9 +186,31 @@ namespace GraphCS.Core
             }
             return ary;
         }
-        
 
+        /// <summary>
+        /// Calculate distance average and diameter.
+        /// </summary>
+        /// <param name="distance">variable to receive distance</param>
+        /// <param name="diameter">variable to receive diameter</param>
+        public void CalcDistanceaverageAndDiameter(out double distance, out int diameter)
+        {
+            int diam = 0;
+            double sum = 0;
+            double num = 0;
 
+            for (uint node1 = 0; node1 < NodeNum; node1++)
+            {
+                for (uint node2 = node1 + 1; node2 < NodeNum; node2++)
+                {
+                    int d = CalcDistance(node1, node2);
+                    if (diam < d) diam = d;
+                    sum += d;
+                    num++;
+                }
+            }
 
+            distance = sum / num;
+            diameter = diam;
+        }
     }
 }

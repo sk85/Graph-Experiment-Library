@@ -14,73 +14,56 @@ namespace GraphCS
     {
         static void Main(string[] args)
         {
-            var rand = new Random(0);
-            var g = new CrossedCube(11, 0);
+            var g = new MobiusCube(14, 0);
+            Debug.Check_CalcDistance(g, 2, 15, true);
 
-            bool f = false;
-            do
+            var graphs = new AGraph[] {
+                new Hypercube(0, 0),
+                new CrossedCube(0, 0) };
+
+            E平均経路長と直径(graphs, 1, 15);
+            
+            
+        }
+
+        // 17/09/06
+        // 色々なグラフの平均経路長と直径を計算
+        // 各グラフはCalcDistanceをオーバーライドしておかないと計算量が大きい
+        static void E平均経路長と直径(AGraph[] gs, int minDim, int maxDim)
+        {
+            // 出力先フォルダを作成
+            string date = System.Text.RegularExpressions.Regex.Replace(
+                DateTime.Now.ToString(),
+                @"(?:\d\d)?(?<year>\d\d)/(?<month>\d\d?)/(?<day>\d\d?)\s(?<hour>\d\d?):(?<minute>\d\d?):(?<second>\d\d?)",
+               "${year}${month}${day}_${hour}_${minute}_${second}");
+            string path = $"../../Output/DistanseaverageAndDiameter_{date}";
+            if (!Directory.Exists(path))
             {
-                uint node1 = (uint)rand.Next((int)g.NodeNum);
-                uint node2 = (uint)rand.Next((int)g.NodeNum);
-                var ff = g.Show2(node1, node2);
-                if (f)
-                {
-                    Console.ReadKey();
-                }
-                else
-                {
-                    if (!ff) Console.ReadKey();
-                }
-                Console.WriteLine($"-----------------------------");
-
-            } while (true);
-
-            return;
-
-            var sw1 = new System.Diagnostics.Stopwatch();
-            var sw2 = new System.Diagnostics.Stopwatch();
-
-            for (uint node1 = 0; node1 < g.NodeNum; node1++)
-            {
-                if (node1 % 10 == 0)
-                {
-                    Console.CursorLeft = 7;
-                    Console.Write($"{(double)(node1 + 1) / g.NodeNum:###%}");
-                }
-                for (uint node2 = 0; node2 < g.NodeNum; node2++)
-                {
-                    sw1.Start();
-                    // 正解を計算
-                    var r1 = new int[g.Dimension];
-                    var d = g.CalcDistance(node1, node2);
-                    for (int i = 0; i < g.Dimension; i++)
-                        r1[i] = g.CalcDistance(g.GetNeighbor(node1, i), node2) - d;
-                    sw1.Stop();
-
-                    sw2.Start();
-                    // 計算
-                    var r2 = g.R(node1, node2);
-                    sw2.Stop();
-                }
+                Directory.CreateDirectory(path);
             }
-            Console.WriteLine();
 
-            Console.WriteLine(sw1.ElapsedMilliseconds);
-            Console.WriteLine(sw2.ElapsedMilliseconds);
-
-            //Check_CalcRelativeDistance(g, 10, 11);
-
-            return;
-            var trials = 100000;
-            for (int dim = 10; dim <= 10; dim++)
+            // 計算と出力
+            for (int i = 0; i < gs.Length; i++)
             {
-                var sw = System.Diagnostics.Stopwatch.StartNew();
-                Console.WriteLine($"n = {dim}%");
-                g.Dimension = dim;
-                Experiment(g, trials, $@"..\..\{dim}_{trials}.csv");
-                sw.Stop();
-                Console.WriteLine($"{sw.ElapsedMilliseconds}ms");
-                Console.WriteLine($"-----------------------------");
+                Console.WriteLine(gs[i].Name);
+                for (int dim = minDim; dim <= maxDim; dim++)
+                {
+                    var start = DateTime.Now;
+                    Console.Write($"  n = {dim,2}   {DateTime.Now}");
+                    // 計算
+                    gs[i].Dimension = dim;
+                    gs[i].CalcDistanceaverageAndDiameter(out var distance, out var diameter);
+
+                    // ファイルに出力
+                    var sw = new StreamWriter(
+                        $"{path}/{gs[i].Name}.csv",
+                        true,
+                        Encoding.GetEncoding("shift_jis"));
+                    sw.WriteLine($"{dim},{distance},{diameter}");
+                    sw.Close();
+
+                    Console.WriteLine($"   {(DateTime.Now - start).TotalMilliseconds}msec.");
+                }
             }
         }
 

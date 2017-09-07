@@ -129,7 +129,7 @@ static class Debug
     /// CalcDistanceの動作確認
     /// </summary>
     /// <param name="g">グラフ</param>
-    public static void Check_CalcDistance(AGraph g, int minDim, int maxDim)
+    public static void Check_CalcDistance(AGraph g, int minDim, int maxDim, bool stop)
     {
         for (int dim = minDim; dim < maxDim ; dim++)
         {
@@ -142,7 +142,7 @@ static class Debug
                     Console.CursorLeft = 7;
                     Console.Write($"{(double)(node1 + 1) / g.NodeNum:###%}");
                 }
-                for (uint node2 = 0; node2 < g.NodeNum; node2++)
+                for (uint node2 = node1 + 1; node2 < g.NodeNum; node2++)
                 {
                     int d1 = g.CalcDistanceBFS(node1, node2);
                     int d2 = g.CalcDistance(node1, node2);
@@ -150,11 +150,16 @@ static class Debug
                     {
                         Console.WriteLine(
                             "\nd({0},{1}) = {2,2} / {3,2}",
-                            UintToBinaryString(node1, 16, 4),
-                            UintToBinaryString(node2, 16, 4),
+                            UintToBinaryString(node1, dim, 4),
+                            UintToBinaryString(node2, dim, 4),
                             d1,
                             d2
                         );
+
+                        if (stop)
+                        {
+                            Console.ReadKey();
+                        }
                     }
                 }
             }

@@ -89,6 +89,11 @@ namespace GraphCS.Core
         }
 
         // Abstract menbers
+        public override string Name
+        {
+            get { return "LocallyTwistedCube"; }
+        }
+
         public override int GetDegree(uint Node)
         {
             return Dimension;
