@@ -31,7 +31,7 @@ static class Debug
     /// GetForwardNeighborの動作確認。
     /// すべての頂点ペアをチェック
     /// </summary>
-    /// <param name="g"></param>
+    /// <param name="g">グラフ</param>
     public static void Check_GetForwardNeighbor1(AGraph g, int minDim, int maxDim)
     {
         for (int dim = minDim; dim < maxDim; dim++)
@@ -45,7 +45,7 @@ static class Debug
                     Console.CursorLeft = 7;
                     Console.Write($"{(double)(node1 + 1) / g.NodeNum:###%}");
                 }
-                for (uint node2 = 0; node2 < g.NodeNum; node2++)
+                for (uint node2 = node1 + 1; node2 < g.NodeNum; node2++)
                 {
                     // 基準距離を計算
                     var distance = g.CalcDistance(node1, node2);
@@ -126,6 +126,60 @@ static class Debug
     }
 
     /// <summary>
+    /// CalcRelativeDistanceの動作確認。
+    /// すべての頂点ペアをチェック
+    /// </summary>
+    /// <param name="g">グラフ</param>
+    public static void Check_CalcRelativeDistance(AGraph g, int minDim, int maxDim)
+    {
+        for (int dim = minDim; dim < maxDim; dim++)
+        {
+            g.Dimension = dim;
+            Console.Write($"n = {dim,2}");
+            for (uint node1 = 0; node1 < g.NodeNum; node1++)
+            {
+                if (node1 % 10 == 0)
+                {
+                    Console.CursorLeft = 7;
+                    Console.Write($"{(double)(node1 + 1) / g.NodeNum:###%}");
+                }
+                for (uint node2 = node1 + 1; node2 < g.NodeNum; node2++)
+                {
+                    // 基準距離を計算
+                    var distance = g.CalcDistance(node1, node2);
+
+                    // 正しい解を計算
+                    var ary1 = new int[g.Dimension];
+                    for (int i = 0; i < g.Dimension; i++)
+                    {
+                        ary1[i] = g.CalcDistance(g.GetNeighbor(node1, i), node2) - distance;
+                    }
+
+                    // GetForwardNeighbor
+                    var ary2 = g.CalcRelativeDistance(node1, node2);
+
+                    // 間違っていたら情報を表示して停止
+                    if (!ary1.SequenceEqual(ary2))
+                    {
+                        Console.WriteLine($"d(u, v) = {distance}");
+                        Console.WriteLine($" u  : {UintToBinaryString(node1, g.Dimension, 32)}");
+                        Console.WriteLine($" v  : {UintToBinaryString(node2, g.Dimension, 32)}");
+                        Console.WriteLine($"u^v : {UintToBinaryString(node1 ^ node2, g.Dimension, 32)}");
+                        Console.Write("ans :");
+                        for (int i = g.Dimension - 1; i >= 0; i--) Console.Write($"{ary1[i],2} ");
+                        Console.Write("\n    :");
+                        for (int i = g.Dimension - 1; i >= 0; i--) Console.Write($"{ary2[i],2} ");
+                        Console.WriteLine("\n--------------------------------");
+                        Console.ReadKey();
+                    }
+                }
+            }
+            Console.CursorLeft = 7;
+            Console.WriteLine($"100%");
+        }
+    }
+
+    /// <summary>
     /// CalcDistanceの動作確認
     /// </summary>
     /// <param name="g">グラフ</param>
@@ -164,15 +218,16 @@ static class Debug
     }
 
     /// <summary>
-    /// ２ノード間の距離を列挙
+    /// 全ノードペア間の距離を幅優先探索で計算して表示。
+    /// GetNeighborの確認などに用いる(非連結なら停止しない)
     /// </summary>
     /// <param name="g">グラフ</param>
     /// <param name="dim">次元数</param>
-    public static void ShowDistance(AGraph g, int dim)
+    public static void ShowAllPairDistance(AGraph g, int dim)
     {
         for (uint node1 = 0; node1 < g.NodeNum; node1++)
         {
-            for (uint node2 = 0; node2 < g.NodeNum; node2++)
+            for (uint node2 = node1 + 1; node2 < g.NodeNum; node2++)
             {
                 Console.WriteLine(
                     "d({0},{1}) = {2,3}",
@@ -185,6 +240,11 @@ static class Debug
         }
     }
 
+    /// <summary>
+    /// bitsの1が立つビットを数える
+    /// </summary>
+    /// <param name="bits">ビット列</param>
+    /// <returns>ビット数</returns>
     public static int PopCount(uint bits)
     {
         bits = (bits & 0x55555555) + (bits >> 1 & 0x55555555);
@@ -192,20 +252,5 @@ static class Debug
         bits = (bits & 0x0f0f0f0f) + (bits >> 4 & 0x0f0f0f0f);
         bits = (bits & 0x00ff00ff) + (bits >> 8 & 0x00ff00ff);
         return (int)((bits & 0x0000ffff) + (bits >> 16 & 0x0000ffff));
-    }
-
-    // 隣接頂点を列挙
-    public static void test1(AGraph g)
-    {
-        for (uint node = 0; node < g.NodeNum; node++)
-        {
-            Console.WriteLine($" u  = {UintToBinaryString(node, 16, 4)}");
-            for (int i = 0; i < g.GetDegree(node); i++)
-            {
-                Console.WriteLine($"u^{i} = {UintToBinaryString(g.GetNeighbor(node, i), 16, 4)}");
-            }
-            Console.WriteLine("-------------------------------");
-            Console.ReadKey();
-        }
     }
 }

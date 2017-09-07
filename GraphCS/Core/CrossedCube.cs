@@ -79,7 +79,7 @@ namespace GraphCS.Core
             return p;
         }
 
-        public int[] R2(uint node1, uint node2)
+        public override int[] CalcRelativeDistance(uint node1, uint node2)
         {
             Binary u = new Binary(node1), v = new Binary(node2);
             var r = new int[Dimension + 1];
@@ -198,7 +198,8 @@ namespace GraphCS.Core
                     mark_index = i;
                 }
             }
-            return r;
+
+            return r.Take(Dimension).ToArray();
         }
 
         public int[] R(uint node1, uint node2)
@@ -331,97 +332,6 @@ namespace GraphCS.Core
                 }
             }
             return r;
-        }
-
-        public bool Show2(uint node1, uint node2)
-        {
-            Binary u = new Binary(node1), v = new Binary(node2);
-            int k = Dimension;
-            while (k-- > 0 && u[k] == v[k]) ;
-
-            // u, vの表示
-            Console.WriteLine(" u  = {0}", Debug.UintToBinaryString(node1, Dimension, 2));
-            Console.WriteLine(" v  = {0}", Debug.UintToBinaryString(node2, Dimension, 2));
-            Console.WriteLine("u^v = {0}", Debug.UintToBinaryString(node1 ^ node2, Dimension, 2));
-
-            // もとのpの表示
-            var p = Rho(node1, node2);
-            Console.Write(" p  =");
-            for (int i = (Dimension - 1) >> 1; i >= 0; i--)
-            {
-                Console.Write($"  {p[i]}");
-            }
-            Console.WriteLine();
-
-            // 今見ているpの表示
-            int now = 9;
-            p = Rho(GetNeighbor(node1, now), node2);
-            Console.Write($" p{now} =");
-            for (int i = (Dimension - 1) >> 1; i >= 0; i--)
-            {
-                Console.Write($"  {p[i]}");
-            }
-            Console.WriteLine();
-
-            // kの表示
-            Console.WriteLine($" k  = {k}");
-            Console.WriteLine("------------------------------");
-
-            for (int i = Dimension - 1; i >= 0; i--) Console.Write($" {i,2}");
-            Console.WriteLine();
-
-            var p1 = CalcRelativeDistance(node1, node2);
-            for (int i = Dimension - 1; i >= 0; i--) Console.Write($" {p1[i],2}");
-            Console.WriteLine();
-
-            var p2 = R2(node1, node2);
-            for (int i = Dimension - 1; i >= 0; i--) Console.Write($" {p2[i],2}");
-            Console.WriteLine();
-
-            Console.WriteLine("------------------------------");
-
-            for (int i = Dimension - 1; i >= 0; i--)
-            {
-                if (p2[i] != 9 && p1[i] != p2[i]) return false;
-            }
-            return true;
-        }
-
-
-        // 色々表示
-        public void Show(uint node1, uint node2)
-        {
-            Binary u = new Binary(node1), v = new Binary(node2);
-            int k = Dimension;
-            while (k-- > 0 && u[k] == v[k]) ;
-
-            var p1 = Rho(node1, node2);
-            Console.WriteLine(" u  = {0}", Debug.UintToBinaryString(node1, Dimension, 2));
-            Console.WriteLine(" v  = {0}", Debug.UintToBinaryString(node2, Dimension, 2));
-            Console.WriteLine("u^v = {0}", Debug.UintToBinaryString(node1 ^ node2, Dimension, 2));
-            Console.WriteLine($" k  = {k}");
-            Console.WriteLine("------------------------------");
-            Console.Write(" p  =");
-            for (int i = (Dimension - 1) >> 1; i >= 0; i--)
-            {
-                Console.Write($"  {p1[i]}");
-            }
-            Console.WriteLine();
-            Console.WriteLine("------------------------------");
-
-            for (int i = 0; i < GetDegree(node1); i++)
-            {
-                var neighbor = GetNeighbor(node1, i);
-                var p2 = Rho(neighbor, node2);
-                Console.WriteLine("u^{0} = {1}", i, Debug.UintToBinaryString(neighbor, Dimension, 2));
-                Console.Write(" p{0} =",i);
-                for (int j = (Dimension - 1) >> 1; j >= 0; j--)
-                {
-                    Console.Write($"  {p2[j]}");
-                }
-                Console.WriteLine();
-                Console.WriteLine("------------------------------");
-            }
         }
 
         public int[] Rho(uint node1, uint node2)

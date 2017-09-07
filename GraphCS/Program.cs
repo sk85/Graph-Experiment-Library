@@ -14,74 +14,24 @@ namespace GraphCS
     {
         static void Main(string[] args)
         {
-            var rand = new Random(0);
             var g = new CrossedCube(11, 0);
 
-            bool f = false;
-            do
+            int minDim = 2, maxDim = 15;
+
+            for (int dim = minDim; dim <= maxDim; dim++)
             {
-                uint node1 = (uint)rand.Next((int)g.NodeNum);
-                uint node2 = (uint)rand.Next((int)g.NodeNum);
-                var ff = g.Show2(node1, node2);
-                if (f)
-                {
-                    Console.ReadKey();
-                }
-                else
-                {
-                    if (!ff) Console.ReadKey();
-                }
-                Console.WriteLine($"-----------------------------");
-
-            } while (true);
-
-            return;
-
-            var sw1 = new System.Diagnostics.Stopwatch();
-            var sw2 = new System.Diagnostics.Stopwatch();
-
-            for (uint node1 = 0; node1 < g.NodeNum; node1++)
-            {
-                if (node1 % 10 == 0)
-                {
-                    Console.CursorLeft = 7;
-                    Console.Write($"{(double)(node1 + 1) / g.NodeNum:###%}");
-                }
-                for (uint node2 = 0; node2 < g.NodeNum; node2++)
-                {
-                    sw1.Start();
-                    // 正解を計算
-                    var r1 = new int[g.Dimension];
-                    var d = g.CalcDistance(node1, node2);
-                    for (int i = 0; i < g.Dimension; i++)
-                        r1[i] = g.CalcDistance(g.GetNeighbor(node1, i), node2) - d;
-                    sw1.Stop();
-
-                    sw2.Start();
-                    // 計算
-                    var r2 = g.R(node1, node2);
-                    sw2.Stop();
-                }
-            }
-            Console.WriteLine();
-
-            Console.WriteLine(sw1.ElapsedMilliseconds);
-            Console.WriteLine(sw2.ElapsedMilliseconds);
-
-            //Check_CalcRelativeDistance(g, 10, 11);
-
-            return;
-            var trials = 100000;
-            for (int dim = 10; dim <= 10; dim++)
-            {
-                var sw = System.Diagnostics.Stopwatch.StartNew();
-                Console.WriteLine($"n = {dim}%");
                 g.Dimension = dim;
-                Experiment(g, trials, $@"..\..\{dim}_{trials}.csv");
-                sw.Stop();
-                Console.WriteLine($"{sw.ElapsedMilliseconds}ms");
-                Console.WriteLine($"-----------------------------");
+                for (uint node1 = 0; node1 < g.NodeNum; node1++)
+                {
+                    for (uint node2 = node1 + 1; node2 < g.NodeNum; node2++)
+                    {
+                        
+                    }
+                }
             }
+
+            return;
+            
         }
 
         // 実験
