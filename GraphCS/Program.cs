@@ -15,6 +15,54 @@ namespace GraphCS
         static void Main(string[] args)
         {
             var g = new MobiusCube(14, 0);
+            var rand = new Random(0);
+
+            while (true)
+            {
+                // ランダムに頂点ペアを取得
+                Binary n1 = new Binary((uint)rand.Next((int)(g.NodeNum / 100)));
+                Binary n2 = new Binary((uint)rand.Next((int)(g.NodeNum / 100)));
+
+                // MSBを探す
+                int k = g.Dimension - 1;
+                while (n1[k] == n2[k]) k--;
+
+                // 頂点ペアの表示
+                for (int i = g.Dimension - 1; i >= 0; i--) Console.Write($" {n1[i]} ");
+                Console.WriteLine();
+                for (int i = g.Dimension - 1; i >= 0; i--) Console.Write($" {n2[i]} ");
+                Console.WriteLine();
+
+                // MSBの表示
+                for (int i = g.Dimension - 1; i >= 0; i--)
+                {
+                    if (n1[i] != n2[i])
+                    {
+                        Console.Write(" ! ");
+                        break;
+                    }
+                    else
+                    {
+                        Console.Write(" . ");
+                    }
+                }
+                Console.WriteLine();
+
+
+                var distance = g.CalcDistanceBFS(n1.Bin, n2.Bin);
+                for (int i = g.Dimension - 1; i >= 0; i--)
+                {
+                    Console.Write($"{g.CalcDistanceBFS(g.GetNeighbor(n1.Bin, i), n2.Bin) - distance,2} ");                    
+                }
+                Console.WriteLine("\n--------------------------------------------");
+                Console.ReadKey();
+
+            }
+
+
+
+
+
             Debug.Check_CalcDistance(g, 2, 15, true);
 
             var graphs = new AGraph[] {
