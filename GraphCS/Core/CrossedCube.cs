@@ -13,6 +13,11 @@ namespace GraphCS.Core
 
 
         // Abstract members
+        public override string Name
+        {
+            get { return "CrossedCube"; }
+        }
+
         public override int GetDegree(uint Node)
         {
             return Dimension;

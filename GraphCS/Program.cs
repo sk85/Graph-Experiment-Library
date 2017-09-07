@@ -14,24 +14,57 @@ namespace GraphCS
     {
         static void Main(string[] args)
         {
-            var g = new CrossedCube(11, 0);
+            var g = new MobiusCube(14, 0);
+            Debug.Check_CalcDistance(g, 2, 15, true);
 
-            int minDim = 2, maxDim = 15;
+            var graphs = new AGraph[] {
+                new Hypercube(0, 0),
+                new CrossedCube(0, 0) };
 
-            for (int dim = minDim; dim <= maxDim; dim++)
+            E平均経路長と直径(graphs, 1, 15);
+            
+            
+        }
+
+        // 17/09/06
+        // 色々なグラフの平均経路長と直径を計算
+        // 各グラフはCalcDistanceをオーバーライドしておかないと計算量が大きい
+        static void E平均経路長と直径(AGraph[] gs, int minDim, int maxDim)
+        {
+            // 出力先フォルダを作成
+            string date = System.Text.RegularExpressions.Regex.Replace(
+                DateTime.Now.ToString(),
+                @"(?:\d\d)?(?<year>\d\d)/(?<month>\d\d?)/(?<day>\d\d?)\s(?<hour>\d\d?):(?<minute>\d\d?):(?<second>\d\d?)",
+               "${year}${month}${day}_${hour}_${minute}_${second}");
+            string path = $"../../Output/DistanseaverageAndDiameter_{date}";
+            if (!Directory.Exists(path))
             {
-                g.Dimension = dim;
-                for (uint node1 = 0; node1 < g.NodeNum; node1++)
-                {
-                    for (uint node2 = node1 + 1; node2 < g.NodeNum; node2++)
-                    {
-                        
-                    }
-                }
+                Directory.CreateDirectory(path);
             }
 
-            return;
-            
+            // 計算と出力
+            for (int i = 0; i < gs.Length; i++)
+            {
+                Console.WriteLine(gs[i].Name);
+                for (int dim = minDim; dim <= maxDim; dim++)
+                {
+                    var start = DateTime.Now;
+                    Console.Write($"  n = {dim,2}   {DateTime.Now}");
+                    // 計算
+                    gs[i].Dimension = dim;
+                    gs[i].CalcDistanceaverageAndDiameter(out var distance, out var diameter);
+
+                    // ファイルに出力
+                    var sw = new StreamWriter(
+                        $"{path}/{gs[i].Name}.csv",
+                        true,
+                        Encoding.GetEncoding("shift_jis"));
+                    sw.WriteLine($"{dim},{distance},{diameter}");
+                    sw.Close();
+
+                    Console.WriteLine($"   {(DateTime.Now - start).TotalMilliseconds}msec.");
+                }
+            }
         }
 
         // 実験

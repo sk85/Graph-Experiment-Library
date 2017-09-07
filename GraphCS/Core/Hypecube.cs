@@ -12,6 +12,11 @@ namespace GraphCS.Core
         {
         }
 
+        public override string Name
+        {
+            get { return "Hypercube"; }
+        }
+
         public override int GetDegree(uint Node)
         {
             return Dimension;
