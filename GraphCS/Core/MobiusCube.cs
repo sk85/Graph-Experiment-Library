@@ -52,21 +52,23 @@ namespace GraphCS.Core
 
         public override int CalcDistance(uint node1, uint node2)
         {
+        
             // とりあえずminimal expansionの要素数を数える？
             Binary c = new Binary(node1 ^ node2);
             Binary n1 = new Binary(node1);
             int i = Dimension - 1;
             int count = 0;
             bool bad = false;
-
+            
             while (i > 0)
             {
                 if (c[i] == 1)
                 {
-                    if (n1[i + 1] != c[i - 1])
+                    if (count == 0 && n1[i + 1] != c[i - 1])
                     {
-                        bad = true;
+                        count++;
                     }
+
                     if (c[i - 1] == 1)
                     {
                         c.Bin = ~c.Bin;
@@ -79,30 +81,10 @@ namespace GraphCS.Core
                     i--;
                 }
             }
-            if (c[0] == 1)
-            {
-                count++;
-            }
+            
+            return c[0] == 1 ? count + 1 : count;
 
-            return count + (bad ? 1 : 0);
-
-            /*
-            // →動かない
-            Binary c = new Binary(node1);
-            Binary d = new Binary(node2);
-            int i = Dimension - 1;
-            int count = 0;
-
-            while (i >= 0)
-            {
-                if (c[i] != d[i])
-                {
-                    c.Bin = GetNeighbor(c.Bin, i);
-                    count++;
-                }
-                i--;
-            }
-            return count;*/
+            
         }
     }
 }

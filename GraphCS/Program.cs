@@ -23,6 +23,10 @@ namespace GraphCS
                 Binary n1 = new Binary((uint)rand.Next((int)(g.NodeNum / 100)));
                 Binary n2 = new Binary((uint)rand.Next((int)(g.NodeNum / 100)));
 
+                // 距離を表示
+                int d1 = g.CalcDistanceBFS(n1.Bin, n2.Bin), d2 = g.CalcDistance(n1.Bin, n2.Bin);
+                Console.WriteLine($"{d1} / {d2}");
+
                 // MSBを探す
                 int k = g.Dimension - 1;
                 while (n1[k] == n2[k]) k--;
@@ -55,7 +59,10 @@ namespace GraphCS
                     Console.Write($"{g.CalcDistanceBFS(g.GetNeighbor(n1.Bin, i), n2.Bin) - distance,2} ");                    
                 }
                 Console.WriteLine("\n--------------------------------------------");
-                Console.ReadKey();
+                if (d1 != d2)
+                {
+                    Console.ReadKey();
+                }
 
             }
 
