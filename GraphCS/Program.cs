@@ -14,116 +14,20 @@ namespace GraphCS
     {
         static void Main(string[] args)
         {
-            var g = new MobiusCube(14, 0);
-            var rand = new Random(0);
-
-            while (true)
-            {
-                // ランダムに頂点ペアを取得
-                Binary n1 = new Binary((uint)rand.Next((int)(g.NodeNum / 100)));
-                Binary n2 = new Binary((uint)rand.Next((int)(g.NodeNum / 100)));
-
-                // 距離を表示
-                int d1 = g.CalcDistanceBFS(n1.Bin, n2.Bin), d2 = g.CalcDistance(n1.Bin, n2.Bin);
-                Console.WriteLine($"{d1} / {d2}");
-
-                // MSBを探す
-                int k = g.Dimension - 1;
-                while (n1[k] == n2[k]) k--;
-
-                // 頂点ペアの表示
-                for (int i = g.Dimension - 1; i >= 0; i--) Console.Write($" {n1[i]} ");
-                Console.WriteLine();
-                for (int i = g.Dimension - 1; i >= 0; i--) Console.Write($" {n2[i]} ");
-                Console.WriteLine();
-
-                // MSBの表示
-                for (int i = g.Dimension - 1; i >= 0; i--)
-                {
-                    if (n1[i] != n2[i])
-                    {
-                        Console.Write(" ! ");
-                        break;
-                    }
-                    else
-                    {
-                        Console.Write(" . ");
-                    }
-                }
-                Console.WriteLine();
-
-
-                var distance = g.CalcDistanceBFS(n1.Bin, n2.Bin);
-                for (int i = g.Dimension - 1; i >= 0; i--)
-                {
-                    Console.Write($"{g.CalcDistanceBFS(g.GetNeighbor(n1.Bin, i), n2.Bin) - distance,2} ");                    
-                }
-                Console.WriteLine("\n--------------------------------------------");
-                if (d1 != d2)
-                {
-                    Console.ReadKey();
-                }
-
-            }
-
-
-
-
-
-            Debug.Check_CalcDistance(g, 2, 15, true);
-
             var graphs = new AGraph[] {
-                new Hypercube(0, 0),
-                new CrossedCube(0, 0) };
-
-            E平均経路長と直径(graphs, 1, 15);
+                // new Hypercube(0, 0),
+                // new CrossedCube(0, 0),
+                new LocallyTwistedCube(0, 0),
+                new MobiusCube(0, 0, 0),
+                new MobiusCube(0, 0, 1),
+                new SpinedCube(0, 0), };
             
-            
-        }
 
-        // 17/09/06
-        // 色々なグラフの平均経路長と直径を計算
-        // 各グラフはCalcDistanceをオーバーライドしておかないと計算量が大きい
-        static void E平均経路長と直径(AGraph[] gs, int minDim, int maxDim)
-        {
-            // 出力先フォルダを作成
-            string date = System.Text.RegularExpressions.Regex.Replace(
-                DateTime.Now.ToString(),
-                @"(?:\d\d)?(?<year>\d\d)/(?<month>\d\d?)/(?<day>\d\d?)\s(?<hour>\d\d?):(?<minute>\d\d?):(?<second>\d\d?)",
-               "${year}${month}${day}_${hour}_${minute}_${second}");
-            string path = $"../../Output/DistanseaverageAndDiameter_{date}";
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-
-            // 計算と出力
-            for (int i = 0; i < gs.Length; i++)
-            {
-                Console.WriteLine(gs[i].Name);
-                for (int dim = minDim; dim <= maxDim; dim++)
-                {
-                    var start = DateTime.Now;
-                    Console.Write($"  n = {dim,2}   {DateTime.Now}");
-                    // 計算
-                    gs[i].Dimension = dim;
-                    gs[i].CalcDistanceaverageAndDiameter(out var distance, out var diameter);
-
-                    // ファイルに出力
-                    var sw = new StreamWriter(
-                        $"{path}/{gs[i].Name}.csv",
-                        true,
-                        Encoding.GetEncoding("shift_jis"));
-                    sw.WriteLine($"{dim},{distance},{diameter}");
-                    sw.Close();
-
-                    Console.WriteLine($"   {(DateTime.Now - start).TotalMilliseconds}msec.");
-                }
-            }
+            Experiment.E平均経路長と直径(graphs, 1, 15);
         }
 
         // 実験
-        static void Experiment(AGraph g, int trials, string path)
+        static void Experimentt(AGraph g, int trials, string path)
         {
             var pattern = 2;
             var successCount = new int[pattern, 10];

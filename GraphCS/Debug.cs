@@ -228,7 +228,7 @@ static class Debug
     /// </summary>
     /// <param name="g">グラフ</param>
     /// <param name="dim">次元数</param>
-    public static void ShowAllPairDistance(AGraph g, int dim)
+    public static void ShowAllPairDistance(AGraph g)
     {
         for (uint node1 = 0; node1 < g.NodeNum; node1++)
         {
@@ -236,8 +236,8 @@ static class Debug
             {
                 Console.WriteLine(
                     "d({0},{1}) = {2,3}",
-                    UintToBinaryString(node1, dim, dim),
-                    UintToBinaryString(node2, dim, dim),
+                    UintToBinaryString(node1, g.Dimension, g.Dimension),
+                    UintToBinaryString(node2, g.Dimension, g.Dimension),
                     g.CalcDistanceBFS(node1, node2)
                 );
                 //Console.ReadKey();

@@ -13,6 +13,12 @@ namespace GraphCS.Core
             Type = 0;
         }
 
+        public MobiusCube(int dim, int randSeed, int type) : base(dim, randSeed)
+        {
+            Type = type;
+        }
+
+
         /// <summary>
         /// Type of MobiusCube.
         /// Defalt type is 0;
@@ -21,7 +27,7 @@ namespace GraphCS.Core
 
         public override string Name
         {
-            get { return "MobiusCube"; }
+            get { return $"{Type}-MobiusCube"; }
         }
 
         public override int GetDegree(uint Node)
@@ -48,43 +54,6 @@ namespace GraphCS.Core
         protected override uint CalcNodeNum()
         {
             return (uint)1 << Dimension;
-        }
-
-        public override int CalcDistance(uint node1, uint node2)
-        {
-        
-            // とりあえずminimal expansionの要素数を数える？
-            Binary c = new Binary(node1 ^ node2);
-            Binary n1 = new Binary(node1);
-            int i = Dimension - 1;
-            int count = 0;
-            bool bad = false;
-            
-            while (i > 0)
-            {
-                if (c[i] == 1)
-                {
-                    if (count == 0 && n1[i + 1] != c[i - 1])
-                    {
-                        count++;
-                    }
-
-                    if (c[i - 1] == 1)
-                    {
-                        c.Bin = ~c.Bin;
-                    }
-                    i -= 2;
-                    count++;
-                }
-                else
-                {
-                    i--;
-                }
-            }
-            
-            return c[0] == 1 ? count + 1 : count;
-
-            
         }
     }
 }

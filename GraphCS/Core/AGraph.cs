@@ -212,5 +212,10 @@ namespace GraphCS.Core
             distance = sum / num;
             diameter = diam;
         }
+
+
+        // ルーティング
+
+
     }
 }

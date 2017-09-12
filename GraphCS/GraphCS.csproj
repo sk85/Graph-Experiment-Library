@@ -50,7 +50,9 @@
     <Compile Include="Core\Hypecube.cs" />
     <Compile Include="Core\LocallyTwistedCube.cs" />
     <Compile Include="Core\MobiusCube.cs" />
+    <Compile Include="Core\SpinedCube.cs" />
     <Compile Include="Debug.cs" />
+    <Compile Include="Experiment.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

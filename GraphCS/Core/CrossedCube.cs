@@ -365,5 +365,123 @@ namespace GraphCS.Core
             }
             return p;
         }
+        
+
+        // Changらのルーティング風
+        // 選択肢1つ
+        // 迂回なし
+        public int ChangRouting1(uint node1, uint node2)
+        {
+            uint current = node1;
+            int step = 0;
+
+            while (current != node2)
+            {
+                // 一個前方を見つける
+                var distance = CalcDistance(current, node2);
+                foreach (var neighbor in GetNeighbor(node1))
+                {
+                    if (CalcDistance(neighbor, node2) < distance)
+                    {
+                        current = neighbor;
+                        break;
+                    }
+                }
+
+                // 故障していたら失敗
+                if (FaultFlags[current])
+                {
+                    step = -step;
+                    break;
+                }
+                // 故障していなければ続行
+                else
+                {
+                    step++;
+                }
+            }
+
+            return step;
+        }
+
+        // 選択肢1つ
+        // 迂回あり
+        public int ChangRouting2(uint node1, uint node2)
+        {
+            uint current = node1;
+            int step = 0;
+
+            while (current != node2)
+            {
+                // 一個前方を見つける
+                var distance = CalcDistance(current, node2);
+                foreach (var neighbor in GetNeighbor(node1))
+                {
+                    if (CalcDistance(neighbor, node2) < distance)
+                    {
+                        current = neighbor;
+                        break;
+                    }
+                }
+
+                // 故障していたら適当に迂回
+                if (FaultFlags[current])
+                {
+                    var r = new Random(1);
+
+                    step = -step;
+                    break;
+                }
+                // 故障していなければ続行
+                else
+                {
+                    // TODO
+                    
+                    step++;
+                }
+            }
+
+            return step;
+        }
+
+        // 提案手法(仮)1
+        // とりあえず前方を選ぶ
+        public int ProposedRouting1(uint node1, uint node2)
+        {
+            uint current = node1;
+            int step = 0;
+
+            while (current != node2)
+            {
+                // 相対距離を計算
+                var rel = CalcRelativeDistance(current, node2);
+
+                // 前方のうち，非故障を探す
+                var next = current;
+                for (int i = 0; i < Dimension; i++)
+                {
+                    var neighbor = GetNeighbor(current, i);
+                    if (rel[i] == -1 && FaultFlags[neighbor])
+                    {
+                        next = neighbor;
+                        break;
+                    }
+                }
+
+                // 見つからなかったら失敗
+                if (next == current)
+                {
+                    step = -step;
+                    break;
+                }
+                // 見つかれば続行
+                else
+                {
+                    step++;
+                }
+            }
+
+            return step;
+        }
     }
 }
