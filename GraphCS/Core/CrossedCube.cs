@@ -367,120 +367,134 @@ namespace GraphCS.Core
         }
         
 
-        // Changらのルーティング風
-        // 選択肢1つ
-        // 迂回なし
-        public int ChangRouting1(uint node1, uint node2)
+        public int ChangRouting(uint node1, uint node2, int timeoutLimit, bool detour)
         {
-            uint current = node1;
-            int step = 0;
+            var current = node1;
+            var preview = node1;
+            var step = 0;
 
             while (current != node2)
             {
+                // タイムアウト判定
+                if (step >= timeoutLimit) return -2;
+
                 // 一個前方を見つける
-                var distance = CalcDistance(current, node2);
-                foreach (var neighbor in GetNeighbor(node1))
+                var rel = CalcRelativeDistance(current, node2);
+                uint next = current;
+                for (int i = 0; i < Dimension; i++)
                 {
-                    if (CalcDistance(neighbor, node2) < distance)
+                    if (rel[i] == -1)
                     {
-                        current = neighbor;
+                        next = GetNeighbor(current, i);
                         break;
                     }
                 }
 
-                // 故障していたら失敗
-                if (FaultFlags[current])
+                // 故障していた場合
+                if (FaultFlags[next])
                 {
-                    step = -step;
-                    break;
+                    // 迂回ありのとき
+                    if (detour)
+                    {
+                        try
+                        {
+                            var sub = GetNeighbor(current)
+                                        .First(x => !FaultFlags[x] && x != preview);
+                            preview = current;
+                            current = sub;
+                        }
+                        catch
+                        {
+                            // 非故障かつ後退しない頂点が見つからない場合は失敗
+                            return -1;
+                        }
+                    }
+                    // 迂回なしのとき
+                    else
+                    {
+                        return -1;
+                    }
                 }
-                // 故障していなければ続行
+                // 故障していない場合
                 else
                 {
-                    step++;
+                    preview = current;
+                    current = next;
                 }
+
+                step++;
             }
 
             return step;
         }
 
-        // 選択肢1つ
-        // 迂回あり
-        public int ChangRouting2(uint node1, uint node2)
+        // 提案手法(仮)
+        // para
+        //      timeoutLimit : タイムアウトとみなすステップ数
+        //      detour       : 迂回するか否か
+        // ret
+        //      候補がない   : -1
+        //      タイムアウト : -2
+        public int ProposedRouting(uint node1, uint node2, int timeoutLimit, bool detour)
         {
-            uint current = node1;
-            int step = 0;
+            var current = node1;
+            var preview = node1;
+            var step = 0;
 
             while (current != node2)
             {
-                // 一個前方を見つける
-                var distance = CalcDistance(current, node2);
-                foreach (var neighbor in GetNeighbor(node1))
-                {
-                    if (CalcDistance(neighbor, node2) < distance)
-                    {
-                        current = neighbor;
-                        break;
-                    }
-                }
+                // タイムアウト判定
+                if (step++ >= timeoutLimit) return -2;
 
-                // 故障していたら適当に迂回
-                if (FaultFlags[current])
-                {
-                    var r = new Random(1);
-
-                    step = -step;
-                    break;
-                }
-                // 故障していなければ続行
-                else
-                {
-                    // TODO
-                    
-                    step++;
-                }
-            }
-
-            return step;
-        }
-
-        // 提案手法(仮)1
-        // とりあえず前方を選ぶ
-        public int ProposedRouting1(uint node1, uint node2)
-        {
-            uint current = node1;
-            int step = 0;
-
-            while (current != node2)
-            {
                 // 相対距離を計算
                 var rel = CalcRelativeDistance(current, node2);
 
-                // 前方のうち，非故障を探す
-                var next = current;
+                // 候補頂点を探す
+                uint forward = current, side = current, backward = current;
                 for (int i = 0; i < Dimension; i++)
                 {
                     var neighbor = GetNeighbor(current, i);
-                    if (rel[i] == -1 && FaultFlags[neighbor])
+                    if (!FaultFlags[neighbor])
                     {
-                        next = neighbor;
-                        break;
+                        if (rel[i] == -1)
+                        {
+                            forward = neighbor;
+                            break;
+                        }
+                        else if (rel[i] == 0)
+                        {
+                            side = neighbor;
+                        }
+                        else if (neighbor != preview)
+                        {
+                            backward = neighbor;
+                        }
                     }
                 }
 
-                // 見つからなかったら失敗
-                if (next == current)
+                preview = current;
+
+                // 前方が見つかっていれば前方へ
+                if (forward != current)
                 {
-                    step = -step;
-                    break;
+                    current = forward;
                 }
-                // 見つかれば続行
+                // 横方が見つかっていれば横方へ
+                else if (side != current)
+                {
+                    current = side;
+                }
+                // 後方が見つかっていれば後方へ
+                else if (backward != current)
+                {
+                    current = backward;
+                }
+                // 候補が全くなければ失敗
                 else
                 {
-                    step++;
+                    return -1;
                 }
             }
-
             return step;
         }
     }

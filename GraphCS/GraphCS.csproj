@@ -53,6 +53,11 @@
     <Compile Include="Core\SpinedCube.cs" />
     <Compile Include="Debug.cs" />
     <Compile Include="Experiment.cs" />
+    <Compile Include="NEW\Core\BinaryNode.cs" />
+    <Compile Include="NEW\Debug.cs" />
+    <Compile Include="NEW\Hypercube.cs" />
+    <Compile Include="NEW\Core\AGraph.cs" />
+    <Compile Include="NEW\Core\ANode.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -60,3 +60,77 @@ namespace GraphCS.Core
         }
     }
 }
+
+namespace aaa
+{
+    public class Binary
+    {
+        public int Bin { get; set; }
+        public Binary(int bin)
+        {
+            Bin = bin;
+        }
+        
+        #region 演算子のオーバーロード
+
+        public static Binary operator &(Binary u, Binary v)
+        {
+            return new Binary(u.Bin & v.Bin);
+        }
+        public static Binary operator &(Binary u, int v)
+        {
+            return new Binary(u.Bin & v);
+        }
+
+        public static Binary operator |(Binary u, Binary v)
+        {
+            return new Binary(u.Bin | v.Bin);
+        }
+        public static Binary operator |(Binary u, int v)
+        {
+            return new Binary(u.Bin | v);
+        }
+
+        public static Binary operator ^(Binary u, Binary v)
+        {
+            return new Binary(u.Bin | v.Bin);
+        }
+        public static Binary operator ^(Binary u, int v)
+        {
+            return new Binary(u.Bin | v);
+        }
+
+        public static Binary operator <<(Binary u, int i)
+        {
+            return new Binary(u.Bin << i);
+        }
+
+        public static Binary operator >>(Binary u, int i)
+        {
+            return new Binary(u.Bin >> i);
+        }
+
+        public static Binary operator ~(Binary u)
+        {
+            return new Binary(~u.Bin);
+        }
+        
+        public override bool Equals(object obj)
+        {
+            // objがnullか、型が違うときは、等価でない
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            return (Bin == ((Binary) obj).Bin);
+        }
+
+        // Equalsがtrueを返すときに同じ値を返す
+        public override int GetHashCode()
+        {
+            return Bin;
+        }
+        #endregion
+    }
+}

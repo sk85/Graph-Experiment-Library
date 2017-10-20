@@ -41,7 +41,7 @@ namespace GraphCS.Core
         public Double FaultRatio
         {
             get { return __FaultRatio; }
-            set
+            private set
             {
                 __FaultRatio = value;
                 FaultNodeNum = (uint)(NodeNum * __FaultRatio);
@@ -212,10 +212,7 @@ namespace GraphCS.Core
             distance = sum / num;
             diameter = diam;
         }
-
-
-        // ルーティング
-
+        
 
     }
 }
