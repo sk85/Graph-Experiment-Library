@@ -15,7 +15,7 @@ namespace GraphCS.NEW
         /// </summary>
         public override string Name
         {
-            get { return $"{Dimension}-Hypercube"; }
+            get { return "Hypercube"; }
         }
 
         /// <summary>
@@ -74,6 +74,31 @@ namespace GraphCS.NEW
             c = (c & 0x0f0f0f0f) + (c >> 4 & 0x0f0f0f0f);
             c = (c & 0x00ff00ff) + (c >> 8 & 0x00ff00ff);
             return (c & 0x0000ffff) + (c >> 16 & 0x0000ffff);
+        }
+
+        /// <summary>
+        /// Calculate relative distance. 
+        /// </summary>
+        /// <param name="current">Current node</param>
+        /// <param name="destination">Destination node</param>
+        /// <returns>rel[i] is relative distance of i-th neighbor of current node</returns>
+        public override int[] CalcRelativeDistance(BinaryNode current, BinaryNode destination)
+        {
+            var rel = new int[Dimension];
+
+            for (int i = 0; i < Dimension; i++)
+            {
+                if(current[i] == destination[i])
+                {
+                    rel[i] = 1;
+                }
+                else
+                {
+                    rel[i] = -1;
+                }
+            }
+
+            return rel;
         }
     }
 }

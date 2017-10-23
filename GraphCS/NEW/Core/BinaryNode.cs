@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using GraphCS.NEW.Core;
 
-namespace GraphCS.NEW
+namespace GraphCS.NEW.Core
 {
     /// <summary>
     /// Binary node.

@@ -104,21 +104,17 @@ namespace GraphCS.NEW.Core
 
             var que = new Queue<NodeType>();
             var distance = new int[NodeNum];
-            for (int i = 0; i < NodeNum; i++)
-            {
-                distance[i] = 100000;
-            }
             
             que.Enqueue(node1);
-            distance[node1.Addr] = 0;
+            distance[node1.Addr] = 1;
             while (que.Count > 0)
             {
                 NodeType current = que.Dequeue();
                 foreach (var neighbor in GetNeighbor(current))
                 {
-                    if (distance[neighbor.Addr] == 100000)
+                    if (distance[neighbor.Addr] == 0)
                     {
-                        if (neighbor == node2) return distance[current.Addr] + 1;
+                        if (neighbor == node2) return distance[current.Addr];
                         distance[neighbor.Addr] = distance[current.Addr] + 1;
                         que.Enqueue(neighbor);
                     }
@@ -152,234 +148,179 @@ namespace GraphCS.NEW.Core
             var dis = CalcDistance(current, destination);
             for (int i = 0; i < Dimension; i++)
             {
-                rel[i] = CalcDistance(GetNeighbor(current, i), destination);
+                rel[i] = CalcDistance(GetNeighbor(current, i), destination) - dis;
             }
             return rel;
         }
         #endregion
 
-        #region For experiment
+#if DEBUG
         /// <summary>
-        /// Generating faults.
+        /// Debug Agraph.CalcDistance
         /// </summary>
-        /// <param name="faultRatio">Fault ratio in [0, 1]</param>
-        /// <param name="rand">Random object</param>
-        /// <returns></returns>
-        public bool[] GenerateFaults(double faultRatio, Random rand)
+        public void DEBUG_CalcDistance()
         {
-            int num = (int)(NodeNum * faultRatio);
-            var fault = new bool[num];
-
-            for (int i = 0; i < num; i++)
+            Console.WriteLine("Debug \"AGraph.CalcDistance\"");
+            Console.WriteLine("> {0}-dimensional {1}", Dimension, Name);
+            Console.Write("> ");
+            for (var node1 = new NodeType(); node1.Addr < NodeNum; node1.Addr++)
             {
-                fault[CalcArbitaryNodeID(fault, rand)] = true;
-            }
-
-            return fault;
-        }
-
-        /// <summary>
-        /// Judging that node1 and node2 are connected or not by depth first search.
-        /// </summary>
-        /// <param name="node1">Node</param>
-        /// <param name="node2">Node</param>
-        /// <param name="fault">Fault flags</param>
-        /// <returns>True only if they are connected</returns>
-        public bool IsConnected(NodeType node1, NodeType node2, bool[] fault)
-        {
-            var visited = new bool[NodeNum];
-            var stack = new Stack<NodeType>();
-            stack.Push(node1);
-            visited[node1.Addr] = true;
-            while (stack.Count > 0)
-            {
-                var current = stack.Pop();
-                foreach (var neighbor in GetNeighbor(current))
+                if ((node1.Addr & 0b1111) == 0)
                 {
-                    if (!visited[neighbor.Addr] && !fault[neighbor.Addr])
-                    {
-                        if (neighbor == node2) return true;
-                        visited[neighbor.Addr] = true;
-                        stack.Push(neighbor);
-                    }
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Retuns unfault node randomly.
-        /// </summary>
-        /// <returns>Node</returns>
-        private int CalcArbitaryNodeID(bool[] fault, Random rand)
-        {
-            int x;
-            while (!fault[x = (int)(rand.NextDouble() * NodeNum)]) ;
-            return x;
-        }
-
-        /// <summary>
-        /// Returns ExperimentParametor
-        /// </summary>
-        /// <returns>ExperimentParametors</returns>
-        public void GetExperimentParam(double faultRatio, Random rand, bool[] fault, out NodeType node1, out NodeType node2)
-        {
-            fault = GenerateFaults(faultRatio, rand);
-            node1 = new NodeType();
-            node2 = new NodeType();
-            do
-            {
-                node1.Addr = CalcArbitaryNodeID(fault, rand);
-                if (GetNeighbor(node1).Any(n => !fault[n.Addr]))
-                {
-                    do
-                    {
-                        node2.Addr = CalcArbitaryNodeID(fault, rand);
-                    } while (!IsConnected(node1, node2, fault));
-                    return;
-                }
-            } while (true);
-        }
-        #endregion
-
-        #region Routing
-
-        /// <summary>
-        /// 前方隣接頂点が1つしか見つけられないルーティング
-        /// </summary>
-        /// <param name="node1">出発頂点</param>
-        /// <param name="node2">目的頂点</param>
-        /// <param name="timeoutLimit">タイムアウト上限</param>
-        /// <param name="detour">迂回をするか否か</param>
-        /// <returns>ステップ数(袋小路:-1, タイムアウト:-2)</returns>
-        public int Routing_ForwardSingle(NodeType node1, NodeType node2, int timeoutLimit, bool detour)
-        {
-            var current = node1;
-            var preview = node1;
-            var step = 0;
-
-            while (current != node2)
-            {
-                // タイムアウト判定
-                if (step >= timeoutLimit) return -2;
-
-                // ランダムに一個前方を見つける
-                uint next;
-                {
-                    var rel = CalcRelativeDistance(current, node2);
-                    var count = rel.Count(x => x == -1);
-                    var ii = Rand.Next(count);
-                    int i;
-                    for (i = 0; ii > 0; i++)
-                    {
-                        if (rel[i] == -1) ii--;
-                    }
-                    next = GetNeighbor(current, i);
+                    Console.CursorLeft = 2;
+                    Console.Write($"{(double)(node1.Addr + 1) / NodeNum:###%}");
                 }
 
-                // 故障していた場合
-                if (FaultFlags[next])
+                // node1から各ノードへの距離+1の表を作る
+                var que = new Queue<NodeType>();
+                var dis = new int[NodeNum];
+                que.Enqueue(node1);
+                dis[node1.Addr] = 1;
+                while (que.Count > 0)
                 {
-                    // 迂回ありのとき
-                    if (detour)
+                    NodeType current = que.Dequeue();
+                    foreach (var neighbor in GetNeighbor(current))
                     {
-                        foreach (var x in GetNeighbor(current))
+                        if (dis[neighbor.Addr] == 0)
                         {
-                            if (!FaultFlags[x] && x != preview)
-                            {
-                                preview = current;
-                                current = x;
-                                continue;
-                            }
+                            dis[neighbor.Addr] = dis[current.Addr] + 1;
+                            que.Enqueue(neighbor);
                         }
-                        // 非故障かつ後退しない頂点が見つからない = 袋小路
-                        return -1;
-                    }
-                    // 迂回なしのとき
-                    else
-                    {
-                        return -1;
                     }
                 }
-                // 故障していない場合
-                else
+
+                // チェック
+                var node2 = new NodeType();
+                for (node2.Addr = node1.Addr + 1; node2.Addr < NodeNum; node2.Addr++)
                 {
-                    preview = current;
-                    current = next;
+                    int d = CalcDistance(node1, node2);
+                    if (d != dis[node2.Addr] - 1)
+                    {
+                        Console.WriteLine($"\nd({node1},{node2}) = {dis[node2.Addr] - 1,2} / {d,2}");
+                        Console.WriteLine();
+                        Console.WriteLine("> NG");
+                        return;
+                    }
+                }
+            }
+            Console.CursorLeft = 0;
+            Console.WriteLine("> 100%");
+            Console.WriteLine("> OK");
+        }
+
+        public void DEBUG_CalcRelativeDistance()
+        {
+            Console.WriteLine("Debug \"AGraph.CalcRelativeDistance\"");
+            Console.WriteLine("> {0}-dimensional {1}", Dimension, Name);
+            Console.Write("> ");
+
+            for (var node1 = new NodeType(); node1.Addr < NodeNum; node1.Addr++)
+            {
+                if ((node1.Addr & 0b1111) == 0)
+                {
+                    Console.CursorLeft = 2;
+                    Console.Write($"{(double)(node1.Addr + 1) / NodeNum:###%}");
+                }
+                
+                for (var node2 = new NodeType(); node2.Addr < NodeNum; node2.Addr++)
+                {
+                    var rel = CalcRelativeDistance(node1, node2);
+                    var dis = CalcDistance(node1, node2);
+
+                    for (int i = 0; i < Dimension; i++)
+                    {
+                        if (CalcDistance(GetNeighbor(node1, i), node2) - dis != rel[i])
+                        {
+                            Console.WriteLine("");
+                            Console.WriteLine("> NG");
+                            Console.WriteLine("> node1 = {0}", node1.Addr);
+                            Console.WriteLine("> node2 = {0}", node2.Addr);
+                            return;
+                        }
+                    }
+                }
+            }
+            Console.CursorLeft = 0;
+            Console.WriteLine("> 100%");
+            Console.WriteLine("> OK");
+        }
+
+        public void DEBUG_CalcRelativeDistance2()
+        {
+            Console.WriteLine("Debug \"AGraph.CalcRelativeDistance\"");
+            Console.WriteLine("> {0}-dimensional {1}", Dimension, Name);
+            Console.Write("> ");
+
+            var disMat = new int[NodeNum, NodeNum];
+
+            for (var node1 = new NodeType(); node1.Addr < NodeNum; node1.Addr++)
+            {
+                if ((node1.Addr & 0b1111) == 0)
+                {
+                    Console.CursorLeft = 2;
+                    Console.Write($"{(double)(node1.Addr + 1) / NodeNum:###%}");
                 }
 
-                step++;
+                for (var node2 = new NodeType(); node2.Addr < NodeNum; node2.Addr++)
+                {
+                    var rel = CalcRelativeDistance(node1, node2);
+                    var dis = CalcDistance(node1, node2);
+
+                    for (int i = 0; i < Dimension; i++)
+                    {
+                        var neighbor = GetNeighbor(node1, i);
+                        int n1, n2;
+                        if (neighbor.Addr > node2.Addr)
+                        {
+                            n1 = node2.Addr; n2 = neighbor.Addr;
+                        }
+                        else
+                        {
+                            n1 = neighbor.Addr; n2 = node2.Addr;
+                        }
+
+                        if (disMat[n1, n2] == 0)
+                        {
+                            disMat[n1, n2] = CalcDistance(neighbor, node2);
+                        }
+
+                        if (disMat[n1, n2] - dis != rel[i])
+                        {
+                            Console.WriteLine("");
+                            Console.WriteLine("> NG");
+                            Console.WriteLine("> node1 = {0}", node1.Addr);
+                            Console.WriteLine("> node2 = {0}", node2.Addr);
+                            return;
+                        }
+                    }
+                }
             }
-
-            return step;
-        }
-        #endregion
-    }
-
-    /// <summary>
-    /// State of experiment.
-    /// This class contains all parameters for routing experiment.
-    /// </summary>
-    /// <typeparam name="GraphType">GraphType must be derived class of AGraph</typeparam>
-    /// <typeparam name="NodeType">NodeType must be derived class of ANode</typeparam>
-    class Experiment<GraphType, NodeType>
-        where GraphType : AGraph<NodeType>
-        where NodeType : ANode, new()
-    {
-        /// <summary>
-        /// Graph object
-        /// </summary>
-        public GraphType G { get; }
-
-        /// <summary>
-        /// Random object
-        /// </summary>
-        private Random Rand { get; }
-
-        /// <summary>
-        /// FaultFlags[i] = true means i-th node is fault.
-        /// </summary>
-        public bool[] FaultFlags { get; private set; }
-
-        /// <summary>
-        /// Ininialize new instance with graph object and random object
-        /// </summary>
-        /// <param name="g">Graph object</param>
-        /// <param name="seed">Seed of random</param>
-        public Experiment(GraphType g, int seed)
-        {
-            G = g;
-            Rand = new Random(seed);
+            Console.CursorLeft = 0;
+            Console.WriteLine("> 100%");
+            Console.WriteLine("> OK");
         }
 
         /// <summary>
-        /// Initialize FaultFlags
+        /// 全ノードペア間の距離を幅優先探索で計算して表示。
+        /// GetNeighborの確認などに用いる(非連結なら停止する)
         /// </summary>
-        /// <param name="faultRatio">Fault ratio in [0, 1]</param>
-        /// <param name="rand">Random object</param>
-        /// <returns></returns>
-        public bool[] GenerateFaults(double faultRatio)
+        public void DEBUG_ShowAllPairDistance()
         {
-            int num = (int)(G.NodeNum * faultRatio);
-            var fault = new bool[num];
-
-            for (int i = 0; i < num; i++)
+            for (var node1 = new NodeType(); node1.Addr < NodeNum; node1.Addr++)
             {
-                fault[CalcArbitaryNodeID()] = true;
+                var node2 = new NodeType();
+                for (node2.Addr = node1.Addr + 1; node2.Addr < NodeNum; node2.Addr++)
+                {
+                    Console.WriteLine(
+                        "d({0},{1}) = {2,3}",
+                        node1.Addr,
+                        node2.Addr,
+                        CalcDistanceBFS(node1, node2)
+                    );
+                    //Console.ReadKey();
+                }
             }
-
-            return fault;
         }
-
-        /// <summary>
-        /// Retuns unfault node randomly.
-        /// </summary>
-        /// <returns>Node</returns>
-        private int CalcArbitaryNodeID()
-        {
-            int x;
-            while (FaultFlags[x = (int)(Rand.NextDouble() * G.NodeNum)]) ;
-            return x;
-        }
+#endif
     }
 }

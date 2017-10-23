@@ -6,7 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-using GraphCS.Core;
+using GraphCS.NEW.Core;
+using GraphCS.NEW;
 
 namespace GraphCS
 {
@@ -14,12 +15,19 @@ namespace GraphCS
     {
         static void Main(string[] args)
         {
-            Console.WriteLine(new NEW.BinaryNode(0) == new NEW.BinaryNode(0));
+            var g = new CrossedCube(11);
+            g.DEBUG_CalcDistance();
+            var exp = new Experiment<CrossedCube, BinaryNode>(g, 0);
+
+            exp.FaultRatio = 0.05;
+            exp.Next();
+
+            Console.WriteLine(exp.Routing_proposed(30));
+
             Console.ReadKey();
-            NEW.Debug.Check_CalcDistance(new NEW.Hypercube(1), 2, 10, true);
         }
 
-
+        /*
         static void Check_CalcRelativeDistance(AGraph g, int minDim, int maxDim)
         {
             for (int dim = minDim; dim <= maxDim; dim++)
@@ -91,6 +99,6 @@ namespace GraphCS
 
             } while (true);
         }
-        
+        */
     }
 }

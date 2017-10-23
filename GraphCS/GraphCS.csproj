@@ -54,7 +54,8 @@
     <Compile Include="Debug.cs" />
     <Compile Include="Experiment.cs" />
     <Compile Include="NEW\Core\BinaryNode.cs" />
-    <Compile Include="NEW\Debug.cs" />
+    <Compile Include="NEW\Core\Experiment.cs" />
+    <Compile Include="NEW\CrossedCube.cs" />
     <Compile Include="NEW\Hypercube.cs" />
     <Compile Include="NEW\Core\AGraph.cs" />
     <Compile Include="NEW\Core\ANode.cs" />
