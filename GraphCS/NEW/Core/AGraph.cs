@@ -208,6 +208,10 @@ namespace GraphCS.NEW.Core
             Console.WriteLine("> OK");
         }
 
+        /// <summary>
+        /// Debug CalcRelativeDistance.
+        /// CalcDistanceを都度呼び出しているので遅いかも
+        /// </summary>
         public void DEBUG_CalcRelativeDistance()
         {
             Console.WriteLine("Debug \"AGraph.CalcRelativeDistance\"");
@@ -245,6 +249,10 @@ namespace GraphCS.NEW.Core
             Console.WriteLine("> OK");
         }
 
+        /// <summary>
+        /// Debug CalcRelativeDistance.
+        /// 最初に距離の表を作るので、CalcDistanceの呼び出し回数が減っている(速いかは未確認)
+        /// </summary>
         public void DEBUG_CalcRelativeDistance2()
         {
             Console.WriteLine("Debug \"AGraph.CalcRelativeDistance\"");

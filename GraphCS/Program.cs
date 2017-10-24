@@ -16,15 +16,23 @@ namespace GraphCS
         static void Main(string[] args)
         {
             var g = new CrossedCube(11);
-            g.DEBUG_CalcDistance();
             var exp = new Experiment<CrossedCube, BinaryNode>(g, 0);
 
             exp.FaultRatio = 0.05;
-            exp.Next();
 
-            Console.WriteLine(exp.Routing_proposed(30));
+            while (true)
+            {
+                exp.Next();
+                Console.WriteLine("> {0}", exp.Routing_171025(30));
+                Console.ReadKey();
+            }
 
             Console.ReadKey();
+        }
+
+        static void Test171024()
+        {
+
         }
 
         /*

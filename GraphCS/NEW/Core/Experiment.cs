@@ -167,7 +167,95 @@ namespace GraphCS.NEW.Core
             } while (true);
         }
 
-        public int Routing_proposed(int timeoutLimit)
+        #region Routing
+
+        /// <summary>
+        /// 17/09/20作成のルーティングメソッド。
+        /// </summary>
+        /// <param name="timeoutLimit">タイムアウトまでのステップ数</param>
+        /// <param name="detour">迂回をするか否か</param>
+        /// <returns>ステップ数(タイムアウト:-2、袋小路:-1)</returns>
+        public int Routing_170920(int timeoutLimit, bool detour)
+        {
+            var current = new NodeType();
+            var preview = new NodeType();
+            current.Addr = SourceNode.Addr;
+            preview.Addr = SourceNode.Addr;
+            var step = 0;
+
+            while (current != DestinationNode)
+            {
+                // タイムアウト判定
+                if (step++ >= timeoutLimit) return -2;
+
+                // 相対距離を計算
+                var rel = G.CalcRelativeDistance(current, DestinationNode);
+                
+                // 候補頂点を探す
+                NodeType forward = null, side = null, backward = null;
+                for (int i = 0; i < G.Dimension; i++)
+                {
+                    var neighbor = G.GetNeighbor(current, i);
+                    if (!FaultFlags[neighbor.Addr])
+                    {
+                        if (rel[i] == -1)
+                        {
+                            forward = neighbor;
+                            break;
+                        }
+                        else if (rel[i] == 0)
+                        {
+                            side = neighbor;
+                        }
+                        else if (neighbor != preview)
+                        {
+                            backward = neighbor;
+                        }
+                    }
+                }
+
+                preview.Addr = current.Addr;
+
+                // 前方が見つかっていれば前方へ
+                if (forward != null)
+                {
+                    current = forward;
+                }
+                // 横方が見つかっていれば横方へ
+                else if (side != null)
+                {
+                    current = side;
+                }
+                // 後方が見つかっていれば後方へ
+                else if (backward != null)
+                {
+                    current = backward;
+                }
+                // 候補が全くなければ失敗
+                else
+                {
+                    return -1;
+                }
+            }
+            return step;
+        }
+
+        /// <summary>
+        /// 17/10/25作成のルーティングメソッド。
+        /// <para>
+        ///     [更新1]
+        ///     迂回は必ず実行するように変更
+        /// </para>
+        /// <para>
+        ///     [更新2]
+        ///     相対距離が同等の候補をランダムに選べるように更新。
+        ///     timeoutLimitが十分大きければタイムアウトは起きない。
+        ///     ただし、袋小路で失敗の可能性は残る。
+        /// </para>
+        /// </summary>
+        /// <param name="timeoutLimit">タイムアウトまでのステップ数</param>
+        /// <returns>ステップ数(タイムアウト:-2、袋小路:-1)</returns>
+        public int Routing_171025(int timeoutLimit)
         {
             var current = new NodeType();
             int previewIndex = -1;
@@ -233,6 +321,7 @@ namespace GraphCS.NEW.Core
             }
             return step;
         }
+        #endregion
 
 #if DEBUG
         public void DEBUG_GenerateFaults()
