@@ -37,7 +37,7 @@ AGraphは抽象クラスなので幾つかのメンバを実装しましょう�
         public override int Addr { get; set; }
     }
 
-## グラフのクラスを作る
+### グラフのクラスを作る
 次に、Hypercubeクラスを、AGraph<NodeType>クラスを継承して作ります。
 NodeTypeはANodeの子孫クラスでなければなりません。
 先程作ったBinaryNodeを利用しましょう。
@@ -64,7 +64,7 @@ NodeTypeはANodeの子孫クラスでなければなりません。
         public override BinaryNode GetNeighbor(BinaryNode node, int i) => node ^ (1 << i);
     }
 
-## 自由に実験を行う
+### 自由に実験を行う
 Experimentクラスは実験のパラメタなどを用意するクラスです。
 指定した故障率で故障を発生させたり、その中で非故障な連結ペアを見つけたりする機能が用意されています。
 
