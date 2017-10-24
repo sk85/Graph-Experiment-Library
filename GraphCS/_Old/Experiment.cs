@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.IO;
-using GraphCS.Core;
+using GraphCS.Old.Core;
 
-namespace GraphCS
+namespace GraphCS.Old
 {
-    static class Experiment
+    static class Experiment3
     {
         /// <summary>
         /// 基本的なルーティング．いつやったかは忘れた

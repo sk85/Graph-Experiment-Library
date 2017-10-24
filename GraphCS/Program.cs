@@ -6,8 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-using GraphCS.NEW.Core;
-using GraphCS.NEW;
+using GraphCS.Core;
+using GraphCS.Graphs;
 
 namespace GraphCS
 {
@@ -15,24 +15,8 @@ namespace GraphCS
     {
         static void Main(string[] args)
         {
-            var g = new CrossedCube(11);
-            var exp = new Experiment<CrossedCube, BinaryNode>(g, 0);
-
-            exp.FaultRatio = 0.05;
-
-            while (true)
-            {
-                exp.Next();
-                Console.WriteLine("> {0}", exp.Routing_171025(30));
-                Console.ReadKey();
-            }
-
-            Console.ReadKey();
-        }
-
-        static void Test171024()
-        {
-
+            var exp = new Experiment<BinaryNode>(new CrossedCube(10), 0);
+            Test.Test171024(10000, 0.1, 0.9, 0.1, exp);
         }
 
         /*

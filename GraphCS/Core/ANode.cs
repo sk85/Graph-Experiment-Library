@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GraphCS.NEW.Core
+namespace GraphCS.Core
 {
     /// <summary>
     /// Node class.

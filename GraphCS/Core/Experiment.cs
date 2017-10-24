@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GraphCS.NEW.Core
+namespace GraphCS.Core
 {
     /// <summary>
     /// State of experiment.
@@ -12,9 +12,7 @@ namespace GraphCS.NEW.Core
     /// </summary>
     /// <typeparam name="GraphType">GraphType must be derived class of AGraph</typeparam>
     /// <typeparam name="NodeType">NodeType must be derived class of ANode</typeparam>
-    class Experiment<GraphType, NodeType>
-        where GraphType : AGraph<NodeType>
-        where NodeType : ANode, new()
+    class Experiment<NodeType> where NodeType : ANode, new()
     {
         /// <summary>
         /// Random object
@@ -24,7 +22,7 @@ namespace GraphCS.NEW.Core
         /// <summary>
         /// Graph object
         /// </summary>
-        public GraphType G { get; }
+        public AGraph<NodeType> G { get; }
 
         private double __FaultRatio;
         /// <summary>
@@ -72,7 +70,7 @@ namespace GraphCS.NEW.Core
         /// </summary>
         /// <param name="g">Graph object</param>
         /// <param name="seed">Seed of random</param>
-        public Experiment(GraphType g, int seed)
+        public Experiment(AGraph<NodeType> g, int seed)
         {
             G = g;
             Rand = new Random(seed);
@@ -114,7 +112,7 @@ namespace GraphCS.NEW.Core
         private int CalcArbitaryNodeID()
         {
             int x;
-            while (FaultFlags[x = (int)(Rand.NextDouble() * G.NodeNum)]) ;
+            while (FaultFlags[x = Rand.Next(G.NodeNum)]) ;
             return x;
         }
 

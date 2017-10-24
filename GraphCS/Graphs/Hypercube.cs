@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using GraphCS.NEW.Core;
+using GraphCS.Core;
 
-namespace GraphCS.NEW
+namespace GraphCS.Graphs
 {
     class Hypercube : AGraph<BinaryNode>
     {

@@ -42,28 +42,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\AGraph.Experiment.cs" />
-    <Compile Include="Core\AGraph.Routing.cs" />
+    <Compile Include="_Old\Core\AGraph.Experiment.cs" />
+    <Compile Include="_Old\Core\AGraph.Routing.cs" />
+    <Compile Include="_Old\Core\AGraph.cs" />
+    <Compile Include="_Old\Core\Binary.cs" />
+    <Compile Include="_Old\Core\CrossedCube.cs" />
+    <Compile Include="_Old\Core\Hypecube.cs" />
+    <Compile Include="_Old\Core\LocallyTwistedCube.cs" />
+    <Compile Include="_Old\Core\MobiusCube.cs" />
+    <Compile Include="_Old\Core\SpinedCube.cs" />
+    <Compile Include="_Old\Debug.cs" />
+    <Compile Include="_Old\Experiment.cs" />
+    <Compile Include="Core\BinaryNode.cs" />
+    <Compile Include="Core\Experiment.cs" />
+    <Compile Include="Graphs\CrossedCube.cs" />
+    <Compile Include="Graphs\Hypercube.cs" />
     <Compile Include="Core\AGraph.cs" />
-    <Compile Include="Core\Binary.cs" />
-    <Compile Include="Core\CrossedCube.cs" />
-    <Compile Include="Core\Hypecube.cs" />
-    <Compile Include="Core\LocallyTwistedCube.cs" />
-    <Compile Include="Core\MobiusCube.cs" />
-    <Compile Include="Core\SpinedCube.cs" />
-    <Compile Include="Debug.cs" />
-    <Compile Include="Experiment.cs" />
-    <Compile Include="NEW\Core\BinaryNode.cs" />
-    <Compile Include="NEW\Core\Experiment.cs" />
-    <Compile Include="NEW\CrossedCube.cs" />
-    <Compile Include="NEW\Hypercube.cs" />
-    <Compile Include="NEW\Core\AGraph.cs" />
-    <Compile Include="NEW\Core\ANode.cs" />
+    <Compile Include="Core\ANode.cs" />
+    <Compile Include="Test.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

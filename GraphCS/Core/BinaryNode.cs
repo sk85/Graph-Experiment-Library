@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using GraphCS.NEW.Core;
-
-namespace GraphCS.NEW.Core
+namespace GraphCS.Core
 {
     /// <summary>
     /// Binary node.

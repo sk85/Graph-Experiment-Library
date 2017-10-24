@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GraphCS.Core
+namespace GraphCS.Old.Core
 {
     class LocallyTwistedCube : AGraph
     {
