@@ -11,6 +11,8 @@ namespace GraphCS
 {
     static class Test
     {
+        // Routing_171025でルーティングの実験を行う。
+        // 特殊なことはしてないのでだいたいコレのコピペで行ける
         public static void Test171024<NodeType>
             (int trials, double minRatio, double maxRatio, double ratioInterval, Experiment<NodeType> exp)
             where NodeType : ANode, new()

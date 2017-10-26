@@ -306,6 +306,7 @@ namespace GraphCS.Core
             Console.CursorLeft = 0;
             Console.WriteLine("> 100%");
             Console.WriteLine("> OK");
+            Console.WriteLine();
         }
 
         /// <summary>

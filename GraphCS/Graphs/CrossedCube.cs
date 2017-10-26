@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Diagnostics;
 using GraphCS.Core;
 
 namespace GraphCS.Graphs
 {
-    class CrossedCube : AGraph<BinaryNode>
+    partial class CrossedCube : AGraph<BinaryNode>
     {
         public CrossedCube(int dim) : base(dim) { }
 
@@ -18,9 +19,7 @@ namespace GraphCS.Graphs
 
         public override BinaryNode GetNeighbor(BinaryNode node, int i)
         {
-            const int mask1 = 0x55555555;            // 01010101....01
-            int mask2 = (1 << i) - 1;    // 00...0111...11
-            int mask = ((node.Addr & mask1 & mask2) << 1) | (1 << i);
+            int mask = ((node.Addr & 0x55555555 & ((1 << i) - 1)) << 1) | (1 << i);
             return node ^ mask;
         }
 
@@ -29,22 +28,120 @@ namespace GraphCS.Graphs
         public override int CalcDistance(BinaryNode node1, BinaryNode node2)
         {
             int score = 0;
-            for (int i = Dimension - (Dimension & 1); i >= 0; i -= 2) // iをdouble bit の右側に合わせる
+            for (int i = Dimension - (Dimension & 1); i >= 0; i -= 2)
             {
                 if (score == 0)
                 {
-                    score = (int)((node1[i + 1] ^ node2[i + 1]) + (node1[i] ^ node2[i]));
+                    score = (node1[i + 1] ^ node2[i + 1]) + (node1[i] ^ node2[i]);
                 }
                 else
                 {
-                    if (!(node1[i] == 1 && node2[i] == 1 && (node1[i + 1] == node2[i + 1] ^ (score & 1) == 1)
-                            || node1[i] == 0 && node2[i] == 0 && node1[i + 1] == node2[i + 1]))
+                    bool A = node1[i] == 1, B = node2[i] == 1, C = node1[i + 1] == node2[i + 1];
+                    if (!(A && B && (C ^ (score & 1) == 1) || !A && !B && C))
                     {
                         score += 1;
                     }
                 }
             }
             return score;
+        }
+
+        public override int[] CalcRelativeDistance(BinaryNode current, BinaryNode destination)
+        {
+            var r = new int[Dimension + 1]; // 相対距離
+
+            // distance-preserving pair related
+            Func<int, int, int, int, int, bool> DPPR = (u1, u2, v1, v2, sum) =>
+                (u1 == 1 && v1 == 1 && (u2 == v2 ^ (sum & 1) == 1)) || u1 == 0 && v1 == 0 && u2 == v2;
+
+            // 変数名が長いと見づらいので
+            BinaryNode u = current, v = destination;
+
+            // 同一頂点ならすべて後方
+            if (u == v)
+            {
+                for (int i = 0; i < Dimension; i++) r[i] = 1;
+                return r;
+            }
+
+            // Score、Scoreの累積和、MSBを計算
+            var score = new int[Dimension];     // 論文ではρ
+            var cumsum = new int[Dimension];    // scoreの左方向からの累積和
+            int mspi = 0;    // 異なるペアのうち一番大きな添字
+            for (int i = Dimension - 2 + (Dimension & 1); i >= 0; i -= 2)   // iはビットペアの右側(偶ビット)
+            {
+                int pi = i >> 1;    // ペアのインデックス
+                cumsum[pi] = cumsum[pi + 1] + score[pi + 1];
+                if (cumsum[pi] == 0)
+                {
+                    score[pi] = (u[i + 1] ^ v[i + 1]) + (u[i] ^ v[i]);
+                    if (score[pi] != 0) mspi = pi;
+                }
+                else if (!DPPR(u[i], u[i + 1], v[i], v[i + 1], cumsum[pi]))
+                {
+                    score[pi] = 1;
+                }
+            }
+
+            int f1 = 0, f2 = -1;
+            for (int i = 0; i < Dimension; i += 2)  // iはビットペアの右側(偶ビット)
+            {
+                int pi = i >> 1;
+
+                if (pi < mspi)
+                {
+                    // 0のはずが1になる場合
+                    if (DPPR(u[i], u[i + 1], v[i], v[i + 1], cumsum[pi]))
+                    {
+                        r[i] = r[i + 1] = 1;
+                    }
+                    // 1のはずが0になる場合1
+                    else if (DPPR(u[i] ^ 1, u[i + 1], v[i], v[i + 1], cumsum[pi]))
+                    {
+                        r[i] = -1;
+                        r[i + 1] = f1;
+                    }
+                    // 1のはずが0になる場合2
+                    else if (DPPR(u[i], u[i + 1] ^ 1, v[i], v[i + 1], cumsum[pi]))
+                    {
+                        r[i] = f1;
+                        r[i + 1] = -1;
+                    }
+                    else
+                    {
+                        r[i] = r[i + 1] = f1;
+                    }
+
+                    // フラグの更新
+                    if (u[i] == 1 && v[i] == 1) // 直近で損得が起きるとこ
+                    {
+                        f1 = u[i + 1] == v[i + 1] ^ (cumsum[pi] & 1) == 1 ? 1 : -1;
+                    }
+                    if (score[pi] > 0)  // mspが右にずれたときの次
+                    {
+                        f2 = (v[i + 1] ^ v[i]) == u[i + 1] ? f1 : -1;
+                    }
+                }
+                else if (pi == mspi)
+                {
+                    if (score[pi] == 1) // 両方とも違わない場合は、mspiがずれるので
+                    {
+                        var kk = i + (u[i] ^ v[i]);
+                        r[kk ^ 1] = f2;
+                        r[kk] = 1;
+                    }
+                    else
+                    {
+                        r[i] = r[i + 1] = -1;
+                    }
+                }
+                else
+                {
+                    r[i] = r[i + 1] = score[mspi] == 1 ? 1 : f1;
+                }
+                
+            }
+            return r.Take(Dimension).ToArray();
         }
     }
 }

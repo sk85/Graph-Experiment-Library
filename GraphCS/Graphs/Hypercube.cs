@@ -13,28 +13,20 @@ namespace GraphCS.Graphs
         /// <summary>
         /// Name of the graph
         /// </summary>
-        public override string Name
-        {
-            get { return "Hypercube"; }
-        }
+        public override string Name => "Hypercube";
 
         /// <summary>
         /// Initialize the new graph instance with specified dimension
         /// </summary>
         /// <param name="dim">Dimension</param>
-        public Hypercube(int dim) : base(dim)
-        {
-        }
+        public Hypercube(int dim) : base(dim) { }
 
         /// <summary>
         /// Calculate current node number.
         /// (n-Hypercube has 2^n nodes.)
         /// </summary>
         /// <returns>Number of nodes</returns>
-        protected override int CalcNodeNum()
-        {
-            return 1 << Dimension;
-        }
+        protected override int CalcNodeNum() => 1 << Dimension;
 
         /// <summary>
         /// Returns a degree of the node.
@@ -42,10 +34,7 @@ namespace GraphCS.Graphs
         /// </summary>
         /// <param name="node">Node</param>
         /// <returns>Degree</returns>
-        public override int GetDegree(BinaryNode node)
-        {
-            return Dimension;
-        }
+        public override int GetDegree(BinaryNode node) => Dimension;
 
         /// <summary>
         /// Returns i-th neighbor of the node.
@@ -54,10 +43,7 @@ namespace GraphCS.Graphs
         /// <param name="node">Node</param>
         /// <param name="i">Identifier of neighbor</param>
         /// <returns>i-th neighbor of the node</returns>
-        public override BinaryNode GetNeighbor(BinaryNode node, int i)
-        {
-            return node ^ (1 << i);
-        }
+        public override BinaryNode GetNeighbor(BinaryNode node, int i) => node ^ (1 << i);
 
         /// <summary>
         /// Calculate the distance between node1 and node2.

@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Debug.cs" />
     <Compile Include="_Old\Core\AGraph.Experiment.cs" />
     <Compile Include="_Old\Core\AGraph.Routing.cs" />
     <Compile Include="_Old\Core\AGraph.cs" />

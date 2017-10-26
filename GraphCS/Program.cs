@@ -15,8 +15,19 @@ namespace GraphCS
     {
         static void Main(string[] args)
         {
-            var exp = new Experiment<BinaryNode>(new CrossedCube(10), 0);
-            Test.Test171024(10000, 0.1, 0.9, 0.1, exp);
+            var g = new CrossedCube(2);
+
+            using(var sw = new StreamWriter("../../test2.csv", false))
+            {
+                for (int dim = 2; dim < 31; dim++)
+                {
+                    g.Dimension = dim;
+                    var str = g.CmpSpeed_CalcRelativeDistance();
+                    Console.WriteLine(str);
+                    sw.WriteLine(str);
+                }
+            }
+            Console.ReadKey();
         }
 
         /*
