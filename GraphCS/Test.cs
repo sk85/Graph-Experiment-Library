@@ -6,14 +6,26 @@ using System.Threading.Tasks;
 
 using System.IO;
 using GraphCS.Core;
+using GraphCS.Graphs;
 
 namespace GraphCS
 {
     static class Test
     {
-        // Routing_171025でルーティングの実験を行う。
-        // 特殊なことはしてないのでだいたいコレのコピペで行ける
-        public static void Test171024<NodeType>
+        // CQでルーティング実験
+        public static void T171027()
+        {
+            var CQ = new CrossedCube(2);
+            var exp = new Experiment<BinaryNode>(CQ, 0);
+            Test1<BinaryNode>(100000, 0.01, 0.10, 0.01, exp);
+        }
+
+        /// <summary>
+        /// Routing_171025でルーティングを行い、
+        /// 故障率,成功率,平均経路長,成功回数,合計経路長,タイムアウト回数,袋小路回数
+        /// をcsvで出力
+        /// </summary>
+        public static void Test1<NodeType>
             (int trials, double minRatio, double maxRatio, double ratioInterval, Experiment<NodeType> exp)
             where NodeType : ANode, new()
         {

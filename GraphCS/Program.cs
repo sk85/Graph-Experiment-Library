@@ -16,7 +16,9 @@ namespace GraphCS
         static void Main(string[] args)
         {
             var g = new CrossedCube(2);
+            
 
+            // 時間の計測
             using(var sw = new StreamWriter("../../test2.csv", false))
             {
                 for (int dim = 2; dim < 31; dim++)
