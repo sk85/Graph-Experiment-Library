@@ -139,7 +139,6 @@ namespace GraphCS.Graphs
                 {
                     r[i] = r[i + 1] = score[mspi] == 1 ? 1 : f1;
                 }
-                
             }
             return r.Take(Dimension).ToArray();
         }
