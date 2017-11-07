@@ -168,68 +168,40 @@ namespace GraphCS.Core
         #region Routing
 
         /// <summary>
-        /// 17/09/20作成のルーティングメソッド。
+        /// 迂回しない。
         /// </summary>
-        /// <param name="timeoutLimit">タイムアウトまでのステップ数</param>
-        /// <param name="detour">迂回をするか否か</param>
-        /// <returns>ステップ数(タイムアウト:-2、袋小路:-1)</returns>
-        public int Routing_170920(int timeoutLimit, bool detour)
+        /// <returns>ステップ数(失敗:-1)</returns>
+        public int Routing_NoDetour()
         {
             var current = new NodeType();
-            var preview = new NodeType();
             current.Addr = SourceNode.Addr;
-            preview.Addr = SourceNode.Addr;
             var step = 0;
 
             while (current != DestinationNode)
             {
-                // タイムアウト判定
-                if (step++ >= timeoutLimit) return -2;
+                step++;
 
                 // 相対距離を計算
                 var rel = G.CalcRelativeDistance(current, DestinationNode);
                 
                 // 候補頂点を探す
-                NodeType forward = null, side = null, backward = null;
+                NodeType forward = null;
                 for (int i = 0; i < G.Dimension; i++)
                 {
                     var neighbor = G.GetNeighbor(current, i);
-                    if (!FaultFlags[neighbor.Addr])
+                    if (rel[i] == -1 && !FaultFlags[neighbor.Addr])
                     {
-                        if (rel[i] == -1)
-                        {
-                            forward = neighbor;
-                            break;
-                        }
-                        else if (rel[i] == 0)
-                        {
-                            side = neighbor;
-                        }
-                        else if (neighbor != preview)
-                        {
-                            backward = neighbor;
-                        }
+                        forward = neighbor;
+                        break;
                     }
                 }
 
-                preview.Addr = current.Addr;
-
-                // 前方が見つかっていれば前方へ
+                // 非故障な候補頂点があればルーティング
                 if (forward != null)
                 {
                     current = forward;
                 }
-                // 横方が見つかっていれば横方へ
-                else if (side != null)
-                {
-                    current = side;
-                }
-                // 後方が見つかっていれば後方へ
-                else if (backward != null)
-                {
-                    current = backward;
-                }
-                // 候補が全くなければ失敗
+                // なければ失敗
                 else
                 {
                     return -1;
@@ -239,21 +211,211 @@ namespace GraphCS.Core
         }
 
         /// <summary>
-        /// 17/10/25作成のルーティングメソッド。
-        /// <para>
-        ///     [更新1]
-        ///     迂回は必ず実行するように変更
-        /// </para>
-        /// <para>
-        ///     [更新2]
-        ///     相対距離が同等の候補をランダムに選べるように更新。
-        ///     timeoutLimitが十分大きければタイムアウトは起きない。
-        ///     ただし、袋小路で失敗の可能性は残る。
-        /// </para>
+        /// 後方への迂回をしない。
+        /// 横迂回時にランダムに選ばない。
+        /// </summary>
+        /// <returns>ステップ数(ループ:-2、見つからない:-1)</returns>
+        public int Routing_NoBackTrack_NoRandom()
+        {
+            var visited = new bool[G.NodeNum];
+            var current = new NodeType();
+            var prevIndex = -1;
+            current.Addr = SourceNode.Addr;
+            var step = 0;
+
+            while (current != DestinationNode)
+            {
+                step++;
+                visited[current.Addr] = true;
+
+                // 相対距離を計算
+                var rel = G.CalcRelativeDistance(current, DestinationNode);
+
+                // 候補頂点を探す
+                NodeType forward = null, side = null;
+                for (int i = 0; i < G.Dimension; i++)
+                {
+                    var neighbor = G.GetNeighbor(current, i);
+                    if (!FaultFlags[neighbor.Addr])
+                    {
+                        if (rel[i] == -1)
+                        {
+                            prevIndex = i;
+                            forward = neighbor;
+                            break;
+                        }
+                        else if (rel[i] == 0 && i != prevIndex)
+                        {
+                            prevIndex = i;
+                            side = neighbor;
+                        }
+                    }
+                }
+
+                // 前方が見つかっていれば前方へ
+                if (forward != null)
+                {
+                    current = forward;
+                }
+                // 横方が見つかっていれば横方へ
+                else if (side != null)
+                {
+                    if (visited[side.Addr]) return -2;
+                    current = side;
+                }
+                // なければ失敗
+                else
+                {
+                    return -1;
+                }
+            }
+            return step;
+        }
+
+        /// <summary>
+        /// 後方への迂回をしない。
         /// </summary>
         /// <param name="timeoutLimit">タイムアウトまでのステップ数</param>
-        /// <returns>ステップ数(タイムアウト:-2、袋小路:-1)</returns>
-        public int Routing_171025(int timeoutLimit)
+        /// <returns>ステップ数(タイムアウト:-2、失敗:-1)</returns>
+        public int Routing_NoBackTrack(int timeoutLimit)
+        {
+            var current = new NodeType();
+            var prevIndex = -1;
+            current.Addr = SourceNode.Addr;
+            var step = 0;
+
+            while (current != DestinationNode)
+            {
+                // タイムアウト判定
+                if (step++ > timeoutLimit) return -2;
+
+                // 相対距離を計算
+                var rel = G.CalcRelativeDistance(current, DestinationNode);
+
+                // 候補頂点を探す
+                NodeType forward = null;
+                int sideCount = 0;
+                for (int i = 0; i < G.Dimension; i++)
+                {
+                    var neighbor = G.GetNeighbor(current, i);
+                    if (!FaultFlags[neighbor.Addr])
+                    {
+                        if (rel[i] == -1)
+                        {
+                            prevIndex = i;
+                            forward = neighbor;
+                            break;
+                        }
+                        else if (rel[i] == 0 && i != prevIndex)
+                        {
+                            sideCount++;
+                        }
+                    }
+                }
+
+                // 前方が見つかっていれば前方へ
+                if (forward != null)
+                {
+                    current = forward;
+                }
+                // 横方が見つかっていれば横方をランダムに選ぶ
+                else if (sideCount > 0)
+                {
+                    int ii = 0;
+                    for (int i = Rand.Next(sideCount); i > 0; ii++)
+                    {
+                        if (rel[ii] == 0) i--;
+                    }
+                    current = G.GetNeighbor(current, ii);
+                }
+                // なければ失敗
+                else
+                {
+                    return -1;
+                }
+            }
+            return step;
+        }
+
+        /// <summary>
+        /// 迂回時にランダムに選ばない。
+        /// </summary>
+        /// <returns>ステップ数(ループ:-2、見つからない:-1)</returns>
+        public int Routing_NoRandom()
+        {
+            var visited = new bool[G.NodeNum];
+            var current = new NodeType();
+            var prevIndex = -1;
+            current.Addr = SourceNode.Addr;
+            var step = 0;
+
+            while (current != DestinationNode)
+            {
+                step++;
+                visited[current.Addr] = true;
+
+                // 相対距離を計算
+                var rel = G.CalcRelativeDistance(current, DestinationNode);
+
+                // 候補頂点を探す
+                int forward = -1, side = -1, back = -1;
+                for (int i = 0; i < G.Dimension; i++)
+                {
+                    var neighbor = G.GetNeighbor(current, i);
+                    if (!FaultFlags[neighbor.Addr])
+                    {
+                        if (rel[i] == -1)
+                        {
+                            forward = i;
+                            break;
+                        }
+                        else if (i != prevIndex)
+                        {
+                            if (rel[i] == 0)
+                            {
+                                side = i;
+                            }
+                            else
+                            {
+                                back = i;
+                            }
+                        }
+                    }
+                }
+
+                // 前方が見つかっていれば前方へ
+                if (forward != -1)
+                {
+                    current = G.GetNeighbor(current, forward);
+                    if (visited[current.Addr]) return -2;
+                }
+                // 横方が見つかっていれば横方へ
+                else if (side != -1)
+                {
+                    current = G.GetNeighbor(current, side);
+                    if (visited[current.Addr]) return -2;
+                }
+                // 後方が見つかっていれば横方へ
+                else if (side != -1)
+                {
+                    current = G.GetNeighbor(current, back);
+                    if (visited[current.Addr]) return -2;
+                }
+                // なければ失敗
+                else
+                {
+                    return -1;
+                }
+            }
+            return step;
+        }
+
+        /// <summary>
+        /// ルーティングメソッド。
+        /// </summary>
+        /// <param name="timeoutLimit">タイムアウトまでのステップ数</param>
+        /// <returns>ステップ数(タイムアウト:-2、見つからない:-1)</returns>
+        public int Routing(int timeoutLimit)
         {
             var current = new NodeType();
             int previewIndex = -1;

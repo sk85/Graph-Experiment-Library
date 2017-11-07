@@ -14,29 +14,50 @@ namespace GraphCS.Graphs
 {
     partial class CrossedCube : AGraph<BinaryNode>
     {
-        public string CmpSpeed_CalcRelativeDistance()
+        /// <summary>
+        /// EfeのCalcDistanceをデバッグ
+        /// </summary>
+        public void DEBUG_Efe_GetNext()
         {
-            Console.WriteLine("Compare the speed CalcRelativeDistance");
-            Console.WriteLine($"> {Dimension}-dimensional {Name}");
+            int minDim = 2;
+            int maxDim = 10;
 
-            Stopwatch sw1 = new Stopwatch(), sw2 = new Stopwatch();
-            BinaryNode u = new BinaryNode(), v = new BinaryNode();
-            var rand = new Random();
+            Console.WriteLine("Debug 'Efe_GetNext'");
 
-            for (int i = 0; i < 100000; i++)
+            for (int dim = minDim; dim <= maxDim; dim++)
             {
-                u.Addr = rand.Next(NodeNum);
-                v.Addr = rand.Next(NodeNum);
+                Console.WriteLine("> dim = {0}", dim);
 
-                sw1.Start();
-                base.CalcRelativeDistance(u, v);
-                sw1.Stop();
+                Dimension = dim;
+                var u = new BinaryNode(0);
+                var v = new BinaryNode(0);
+                var rand = new Random();
+                for (u.Addr = 0; u.Addr < NodeNum; u.Addr++)
+                {
+                    for (v.Addr = u.Addr + 1; v.Addr < NodeNum; v.Addr++)
+                    {
+                        var d1 = CalcDistance(u, v);
 
-                sw2.Start();
-                CalcRelativeDistance(u, v);
-                sw2.Stop();
+                        var d2 = 0;
+                        var current = new BinaryNode(u);
+                        while (current != v)
+                        {
+                            Efe_GetNext(current, v, out var n1, out var n2);
+                            current = 
+                                n2 == null                  ? n1 
+                                : (rand.Next() & 1) == 0    ? n1 
+                                : n2;
+                            d2++;
+                        }
+
+                        if (d1 != d2)
+                        {
+                            Console.WriteLine($"({u.Addr},{v.Addr}) [{d1} / {d2}]");
+                            Console.ReadKey();
+                        }
+                    }
+                }
             }
-            return $"{sw1.ElapsedMilliseconds},{sw2.ElapsedMilliseconds}";
         }
     }
 }

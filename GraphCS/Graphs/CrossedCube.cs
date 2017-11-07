@@ -143,5 +143,137 @@ namespace GraphCS.Graphs
             }
             return r.Take(Dimension).ToArray();
         }
+
+        /// <summary>
+        /// EfeのRoute。
+        /// </summary>
+        /// <param name="u">Source node</param>
+        /// <param name="v">Destination node</param>
+        /// <param name="n1">Forward neighbor</param>
+        /// <param name="n2">Forward neighbor(or null)</param>
+        public void Efe_GetNext(BinaryNode u, BinaryNode v, out BinaryNode n1, out BinaryNode n2)
+        {
+            // Leftmost Different Bit Index
+            int l = Dimension - 1;
+            while (u[l] == v[l]) l--;
+
+            if ((l & 1) == 1 && u[l - 1] != v[l - 1])
+            {
+                n1 = GetNeighbor(u, l);
+                n2 = GetNeighbor(u, l - 1);
+            }
+            else
+            {
+                for (int k = l - 1 - (l & 1); k > 0; k -= 2)
+                {
+                    // 上がずれる
+                    if ((u[k] ^ u[k - 1]) != v[k])
+                    {
+                        // 下もずれる
+                        if (u[k - 1] != v[k - 1])
+                        {
+                            // {0}のパターン
+                            n1 = GetNeighbor(u, k - 1);
+                            n2 = null;
+                        }
+                        else
+                        {
+                            // {1, 2}パターン
+                            n1 = GetNeighbor(u, k);
+                            n2 = GetNeighbor(u, l);
+                        }
+                        return;
+                    }
+                    else
+                    {
+                        // 下だけずれる
+                        if (u[k - 1] != v[k - 1])
+                        {
+                            // {2}のパターン
+                            n1 = GetNeighbor(u, l);
+                            n2 = null;
+                            return;
+                        }
+                    }
+                }
+                n1 = GetNeighbor(u, l);
+                n2 = null;
+            }
+        }
+
+        /// <summary>
+        /// Efeのルーティング。
+        /// 迂回しない。
+        /// </summary>
+        /// <returns>ステップ数(失敗:-1)</returns>
+        public int Efe_Routing_NoDetour(BinaryNode node1, BinaryNode node2, bool[] FaultFlags)
+        {
+            var current = new BinaryNode(node1);
+            int step = 0;
+
+            while (current != node2)
+            {
+                step++;
+                Efe_GetNext(current, node2, out var n1, out var n2);
+                if (!FaultFlags[n1.Addr])
+                {
+                    current = n1;
+                }
+                else if (n2 != null && !FaultFlags[n2.Addr])
+                {
+                    current = n2;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+            return step;
+        }
+
+        /// <summary>
+        /// Efeのルーティング。
+        /// </summary>
+        /// <returns>ステップ数(タイムアウト:-2、失敗:-1)</returns>
+        public int Efe_Routing(BinaryNode node1, BinaryNode node2, bool[] FaultFlags, int timeoutLimit)
+        {
+            BinaryNode prev = null;
+            var rand = new Random(0);
+            var current = new BinaryNode(node1);
+            int step = 0;
+
+            while (current != node2)
+            {
+                if (++step > timeoutLimit) return -2;
+
+                Efe_GetNext(current, node2, out var n1, out var n2);
+
+                if (!FaultFlags[n1.Addr])
+                {
+                    prev = current;
+                    current = n1;
+                }
+                else if (n2 != null && !FaultFlags[n2.Addr])
+                {
+                    prev = current;
+                    current = n2;
+                }
+                else
+                {
+                    var q = GetNeighbor(current).Where(x => x != n1 && x != n2 && x != prev && !FaultFlags[x.Addr]);
+                    var count = q.Count();
+                    if (count > 0)
+                    {
+                        prev = current;
+                        current = q.ElementAt(rand.Next(count));
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+            }
+            return step;
+        }
     }
 }
