@@ -17,7 +17,7 @@ namespace GraphCS.Core
         /// <summary>
         /// Random object
         /// </summary>
-        private Random Rand { get; }
+        public Random Rand { get; }
 
         /// <summary>
         /// Graph object
@@ -340,10 +340,9 @@ namespace GraphCS.Core
         /// <summary>
         /// 迂回時にランダムに選ばない。
         /// </summary>
-        /// <returns>ステップ数(ループ:-2、見つからない:-1)</returns>
-        public int Routing_NoRandom()
+        /// <returns>ステップ数(タイムアウト:-2、見つからない:-1)</returns>
+        public int Routing_NoRandom(int timeoutLimit)
         {
-            var visited = new bool[G.NodeNum];
             var current = new NodeType();
             var prevIndex = -1;
             current.Addr = SourceNode.Addr;
@@ -351,8 +350,7 @@ namespace GraphCS.Core
 
             while (current != DestinationNode)
             {
-                step++;
-                visited[current.Addr] = true;
+                if (++step > timeoutLimit) return -1;
 
                 // 相対距離を計算
                 var rel = G.CalcRelativeDistance(current, DestinationNode);
@@ -387,19 +385,16 @@ namespace GraphCS.Core
                 if (forward != -1)
                 {
                     current = G.GetNeighbor(current, forward);
-                    if (visited[current.Addr]) return -2;
                 }
                 // 横方が見つかっていれば横方へ
                 else if (side != -1)
                 {
                     current = G.GetNeighbor(current, side);
-                    if (visited[current.Addr]) return -2;
                 }
                 // 後方が見つかっていれば横方へ
-                else if (side != -1)
+                else if (back != -1)
                 {
                     current = G.GetNeighbor(current, back);
-                    if (visited[current.Addr]) return -2;
                 }
                 // なければ失敗
                 else
@@ -425,7 +420,7 @@ namespace GraphCS.Core
             while (current != DestinationNode)
             {
                 // タイムアウト判定
-                if (step++ >= timeoutLimit) return -2;
+                if (++step >= timeoutLimit) return -2;
 
                 // 相対距離を計算
                 var rel = G.CalcRelativeDistance(current, DestinationNode);

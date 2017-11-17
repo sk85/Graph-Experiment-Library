@@ -19,42 +19,58 @@ namespace GraphCS.Graphs
         /// </summary>
         public void DEBUG_Efe_GetNext()
         {
-            int minDim = 2;
-            int maxDim = 10;
-
             Console.WriteLine("Debug 'Efe_GetNext'");
+            Console.WriteLine("> Checking distance");
 
-            for (int dim = minDim; dim <= maxDim; dim++)
+            Console.WriteLine("> dim = {0}", Dimension);
+            
+            var u = new BinaryNode(0);
+            var v = new BinaryNode(0);
+
+            for (u.Addr = 0; u.Addr < NodeNum; u.Addr++)
             {
-                Console.WriteLine("> dim = {0}", dim);
-
-                Dimension = dim;
-                var u = new BinaryNode(0);
-                var v = new BinaryNode(0);
-                var rand = new Random();
-                for (u.Addr = 0; u.Addr < NodeNum; u.Addr++)
+                for (v.Addr = u.Addr + 1; v.Addr < NodeNum; v.Addr++)
                 {
-                    for (v.Addr = u.Addr + 1; v.Addr < NodeNum; v.Addr++)
+                    var d1 = CalcDistance(u, v);
+
+                    var d2 = 0;
+                    var current = new BinaryNode(u);
+                    while (current != v)
                     {
-                        var d1 = CalcDistance(u, v);
+                        d2++;
+                        Efe_GetNext(current, v, out var n1, out var n2);
+                        current = n1;
+                    }
 
-                        var d2 = 0;
-                        var current = new BinaryNode(u);
-                        while (current != v)
-                        {
-                            Efe_GetNext(current, v, out var n1, out var n2);
-                            current = 
-                                n2 == null                  ? n1 
-                                : (rand.Next() & 1) == 0    ? n1 
-                                : n2;
-                            d2++;
-                        }
+                    if (d1 != d2)
+                    {
+                        Console.WriteLine($"({u.Addr},{v.Addr}) [{d1} / {d2}]");
+                        Console.ReadKey();
+                    }
+                }
+            }
+        }
 
-                        if (d1 != d2)
-                        {
-                            Console.WriteLine($"({u.Addr},{v.Addr}) [{d1} / {d2}]");
-                            Console.ReadKey();
-                        }
+        public void DEBUG_Efe_GetNext2()
+        {
+            Console.WriteLine("Debug 'Efe_GetNext'");
+            Console.WriteLine("> Checking if n1 and n2 are forward");
+
+            Console.WriteLine("> dim = {0}", Dimension);
+            
+            var u = new BinaryNode(0);
+            var v = new BinaryNode(0);
+
+            for (u.Addr = 0; u.Addr < NodeNum; u.Addr++)
+            {
+                for (v.Addr = u.Addr + 1; v.Addr < NodeNum; v.Addr++)
+                {
+                    var d = CalcDistance(u, v);
+                    Efe_GetNext(u, v, out var n1, out var n2);
+                    if (CalcDistance(n1, v) >= d || n2 != null && CalcDistance(n2, v) >= d)
+                    {
+                        Console.WriteLine($"({u.Addr},{v.Addr})");
+                        Console.ReadKey();
                     }
                 }
             }

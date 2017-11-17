@@ -136,35 +136,43 @@ namespace GraphCS
                 Console.WriteLine($"{dim},{sw2.ElapsedMilliseconds},{sw1.ElapsedMilliseconds}");
             }
         }
-
+        
         /// <summary>
         /// Efeらの手法を含めた実験。
         /// 迂回の有無、ランダムの有無も比較する。
         /// </summary>
-        public static void Test171104(int dim)
+        /// 
+            /*
+        public static void Test171104<NodeType>(int dim, int trials, double minRatio, double ratioInterval, int ratioNum)
         {
-            int trials = 100;
-            double minRatio = 0.01;
-            double maxRatio = 0.20;
-            double ratioInteval = 0.01;
-            int cases = 7;
+            var names = new string[]
+            {
+                "Routing_NoDetour",
+                "Routing_NoBackTrack_NoRandom",
+                "Routing_NoBackTrack",
+                "Routing_NoRandom",
+                "Routing",
+                "Efe_Routing_NoDetour",
+                "Efe_Routing",
+            };
 
             // 実験オブジェクト
             var exp = new Experiment<BinaryNode>(new CrossedCube(dim), 0);
-
+            
             // 出力先パス
             var dir = $"../../Output/CQ_Routing/";
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-            var path = dir + $"{DateTime.Now.ToString("yyMMddHHmmss")}_{exp.G.Dimension}_{minRatio}-{maxRatio}.csv";
+            var path = dir + $"{DateTime.Now.ToString("yyMMddHHmmss")}_{exp.G.Dimension}_{minRatio}-{ratioNum}.csv";
 
             // 結果の一時保存先
-            var steps = new int[cases, 20, exp.G.Dimension * 2 + 3];
-            var success = new int[cases];
+            var steps = new int[names.Length, ratioNum];
+            var success = new int[names.Length, ratioNum];
 
             // 実験本体
-            double faultRatio = 0.01;
-            for (int f = 0; faultRatio < maxRatio + ratioInteval; faultRatio = minRatio + ratioInteval * f)
+            for (int f = 0; f < ratioNum; f++)
             {
+                double faultRatio = minRatio * ratioInterval * f;
+
                 Console.WriteLine($"> Fault ratio = {faultRatio}");
                 exp.FaultRatio = faultRatio;
 
@@ -180,8 +188,9 @@ namespace GraphCS
                     int step;
 
                     step = exp.Routing_NoDetour();
-                    steps[0, (int)faultRatio * 100 - 1, step + 2]++;
-
+                    steps[0, f] += step;
+                    success[0, f]++;
+                    
                     step = exp.Routing_NoBackTrack_NoRandom();
                     steps[1, (int)faultRatio * 100 - 1, step + 2]++;
 
@@ -235,6 +244,6 @@ namespace GraphCS
                     sw.WriteLine();
                 }
             }
-        }
+        }*/
     }
 }

@@ -91,7 +91,7 @@ namespace GraphCS.Graphs
                 if (pi < mspi)
                 {
                     // 0のはずが1になる場合
-                    if (DPPR(u[i], u[i + 1], v[i], v[i + 1], cumsum[pi]))
+                    if (score[pi] == 0)
                     {
                         r[i] = r[i + 1] = 1;
                     }
@@ -115,7 +115,7 @@ namespace GraphCS.Graphs
                     // フラグの更新
                     if (u[i] == 1 && v[i] == 1) // 直近で損得が起きるとこ
                     {
-                        f1 = u[i + 1] == v[i + 1] ^ (cumsum[pi] & 1) == 1 ? 1 : -1;
+                        f1 = score[pi] == 0 ? 1 : -1;
                     }
                     if (score[pi] > 0)  // mspが右にずれたときの次
                     {
@@ -232,18 +232,18 @@ namespace GraphCS.Graphs
 
         /// <summary>
         /// Efeのルーティング。
+        /// ランダムでない
         /// </summary>
-        /// <returns>ステップ数(タイムアウト:-2、失敗:-1)</returns>
-        public int Efe_Routing(BinaryNode node1, BinaryNode node2, bool[] FaultFlags, int timeoutLimit)
+        /// <returns>ステップ数(タイムアウト:-1)</returns>
+        public int Efe_Routing_NoRandom(BinaryNode node1, BinaryNode node2, bool[] FaultFlags, int timeoutLimit)
         {
             BinaryNode prev = null;
-            var rand = new Random(0);
             var current = new BinaryNode(node1);
             int step = 0;
 
             while (current != node2)
             {
-                if (++step > timeoutLimit) return -2;
+                if (++step > timeoutLimit) return -1;
 
                 Efe_GetNext(current, node2, out var n1, out var n2);
 
@@ -259,12 +259,58 @@ namespace GraphCS.Graphs
                 }
                 else
                 {
-                    var q = GetNeighbor(current).Where(x => x != n1 && x != n2 && x != prev && !FaultFlags[x.Addr]);
+                    var q = GetNeighbor(current)
+                                //.FirstOrDefault(x => x != prev && !FaultFlags[x.Addr]);
+                                .Where(x => x != prev && !FaultFlags[x.Addr]);
+                    if (q.Any())
+                    {
+                        prev = current;
+                        current = q.ElementAt(0);
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+            }
+            return step;
+        }
+
+        /// <summary>
+        /// Efeのルーティング。
+        /// </summary>
+        /// <returns>ステップ数(タイムアウト:-1)</returns>
+        public int Efe_Routing(Experiment<BinaryNode> exp, int timeoutLimit)
+        {
+            BinaryNode prev = null;
+            var current = new BinaryNode(exp.SourceNode);
+            int step = 0;
+
+            while (current != exp.DestinationNode)
+            {
+                if (++step > timeoutLimit) return -1;
+
+                Efe_GetNext(current, exp.DestinationNode, out var n1, out var n2);
+
+                if (!exp.FaultFlags[n1.Addr])
+                {
+                    prev = current;
+                    current = n1;
+                }
+                else if (n2 != null && !exp.FaultFlags[n2.Addr])
+                {
+                    prev = current;
+                    current = n2;
+                }
+                else
+                {
+                    var q = GetNeighbor(current)
+                                .Where(x => x != prev && !exp.FaultFlags[x.Addr]);
                     var count = q.Count();
                     if (count > 0)
                     {
                         prev = current;
-                        current = q.ElementAt(rand.Next(count));
+                        current = q.ElementAt(exp.Rand.Next(count));
                     }
                     else
                     {
