@@ -12,7 +12,7 @@ namespace GraphCS.Core
     /// </summary>
     /// <typeparam name="GraphType">GraphType must be derived class of AGraph</typeparam>
     /// <typeparam name="NodeType">NodeType must be derived class of ANode</typeparam>
-    class Experiment<NodeType> where NodeType : ANode, new()
+    partial class Experiment<NodeType> where NodeType : ANode, new()
     {
         /// <summary>
         /// Random object
@@ -142,6 +142,28 @@ namespace GraphCS.Core
                 }
             }
             return false;
+        }
+
+        public int CalcDistance()
+        {
+            var que = new Queue<NodeType>();
+            var distance = new int[G.NodeNum];
+
+            que.Enqueue(SourceNode);
+            distance[SourceNode.Addr] = 1;
+            while (true)
+            {
+                NodeType current = que.Dequeue();
+                foreach (var neighbor in G.GetNeighbor(current))
+                {
+                    if (!FaultFlags[neighbor.Addr] && distance[neighbor.Addr] == 0)
+                    {
+                        if (neighbor == DestinationNode) return distance[current.Addr];
+                        distance[neighbor.Addr] = distance[current.Addr] + 1;
+                        que.Enqueue(neighbor);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -476,32 +498,7 @@ namespace GraphCS.Core
             }
             return step;
         }
+
         #endregion
-
-#if DEBUG
-        public void DEBUG_GenerateFaults()
-        {
-            Console.WriteLine("Debug \"GenerateFaults\"");
-
-            for (double faultRatio = 0.0; faultRatio < 1.0; faultRatio += 0.1)
-            {
-                for (int i = 0; i < 100; i++)
-                {
-                    GenerateFaults(faultRatio);
-                    var num = (int)(G.NodeNum * faultRatio);
-                    for (int j = 0; j < G.NodeNum; j++)
-                    {
-                        if (FaultFlags[j]) num--;
-                    }
-                    if (num != 0)
-                    {
-                        Console.WriteLine("> NG");
-                        return;
-                    }
-                }
-            }
-            Console.WriteLine("> OK");
-        }
-#endif
     }
 }

@@ -136,114 +136,253 @@ namespace GraphCS
                 Console.WriteLine($"{dim},{sw2.ElapsedMilliseconds},{sw1.ElapsedMilliseconds}");
             }
         }
-        
+
         /// <summary>
         /// Efeらの手法を含めた実験。
         /// 迂回の有無、ランダムの有無も比較する。
         /// </summary>
-        /// 
-            /*
-        public static void Test171104<NodeType>(int dim, int trials, double minRatio, double ratioInterval, int ratioNum)
+        public static void Test171104()
         {
-            var names = new string[]
-            {
-                "Routing_NoDetour",
-                "Routing_NoBackTrack_NoRandom",
-                "Routing_NoBackTrack",
-                "Routing_NoRandom",
-                "Routing",
-                "Efe_Routing_NoDetour",
-                "Efe_Routing",
-            };
+            // 実験パラメタ
+            int dim = 15;
+            int timeoutLimit = 20;
+            double minRatio = 0.00;
+            double ratioInterval = 0.01;
+            int ratioNum = 21;
+            int trialCount = 10000;
 
             // 実験オブジェクト
-            var exp = new Experiment<BinaryNode>(new CrossedCube(dim), 0);
-            
+            var cq = new CrossedCube(dim);
+            var exp = new Experiment<BinaryNode>(cq, 0);
+
             // 出力先パス
             var dir = $"../../Output/CQ_Routing/";
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
             var path = dir + $"{DateTime.Now.ToString("yyMMddHHmmss")}_{exp.G.Dimension}_{minRatio}-{ratioNum}.csv";
 
             // 結果の一時保存先
-            var steps = new int[names.Length, ratioNum];
-            var success = new int[names.Length, ratioNum];
+            var result = new int[6, ratioNum, timeoutLimit + 1];
 
             // 実験本体
-            for (int f = 0; f < ratioNum; f++)
+            for (int ratio = 0; ratio < ratioNum; ratio++)
             {
-                double faultRatio = minRatio * ratioInterval * f;
+                exp.FaultRatio = minRatio + ratioInterval * ratio;
+                Console.WriteLine($"> Fault ratio = {exp.FaultRatio:0.00}");
 
-                Console.WriteLine($"> Fault ratio = {faultRatio}");
-                exp.FaultRatio = faultRatio;
-
-                for (int i = 0; i < trials; i++)
+                for (int trial = 0; trial < trialCount; trial++)
                 {
                     // 進捗の表示
                     Console.CursorLeft = 4;
-                    Console.Write($"{i + 1} / {trials}");
+                    Console.Write($"{trial + 1} / {trialCount}");
 
                     // パラメタの更新
                     exp.Next();
 
                     int step;
+                    // 迂回なし２種
+                    {
+                        step = cq.Efe_Routing_NoDetour(exp.SourceNode, exp.DestinationNode, exp.FaultFlags);
+                        if (step > 0) result[0, ratio, 0]++;
 
-                    step = exp.Routing_NoDetour();
-                    steps[0, f] += step;
-                    success[0, f]++;
-                    
-                    step = exp.Routing_NoBackTrack_NoRandom();
-                    steps[1, (int)faultRatio * 100 - 1, step + 2]++;
+                        step = exp.Routing_NoDetour();
+                        if (step > 0) result[1, ratio, 0]++;
+                    }
 
-                    step = exp.Routing_NoBackTrack(dim * 2);
-                    steps[2, (int)faultRatio * 100 - 1, step + 2]++;
-
-                    step = exp.Routing_NoRandom();
-                    steps[3, (int)faultRatio * 100 - 1, step + 2]++;
-
-                    step = exp.Routing(dim * 2);
-                    steps[4, (int)faultRatio * 100 - 1, step + 2]++;
-
-                    step = ((CrossedCube)exp.G).Efe_Routing_NoDetour(exp.SourceNode, exp.DestinationNode, exp.FaultFlags);
-                    steps[5, (int)faultRatio * 100 - 1, step + 2]++;
-
-                    step = ((CrossedCube)exp.G).Efe_Routing(exp.SourceNode, exp.DestinationNode, exp.FaultFlags, dim * 2);
-                    steps[6, (int)faultRatio * 100 - 1, step + 2]++;
+                    // 迂回ありランダムなし２種， 迂回ありランダムあり２種
+                    {
+                        var s = new int[]
+                        {
+                            cq.Efe_Routing_NoRandom
+                                (exp, timeoutLimit),
+                            exp.Routing_NoRandom(timeoutLimit),
+                            cq.Efe_Routing
+                                (exp, timeoutLimit),
+                            exp.Routing(timeoutLimit),
+                        };
+                        for (int type = 0; type < 4; type++)
+                        {
+                            result[type + 2, ratio, s[type] > 0 ? s[type] - 1 : timeoutLimit]++;
+                        }
+                    }
                 }
                 Console.WriteLine();
             }
 
-            // csvに保存
-            var names = new string[]
-            {
-                "Routing_NoDetour",
-                "Routing_NoBackTrack_NoRandom",
-                "Routing_NoBackTrack",
-                "Routing_NoRandom",
-                "Routing",
-                "Efe_Routing_NoDetour",
-                "Efe_Routing",
-            };
-            using (var sw = new StreamWriter(path, false, Encoding.GetEncoding("Shift-jis")))
-            {
+            // 出力
+            var str = $"Trial count, {trialCount},\n";
 
-                for (int i = 0; i < names.Length; i++)
+            for (int ratio = 0; ratio < ratioNum; ratio++) str += $",{minRatio + ratioInterval * ratio}";
+            for (int type = 0; type < 2; type++)
+            {
+                str += $"\nCase{type + 1},";
+                for (int ratio = 0; ratio < ratioNum; ratio++)
+                    str += $"{(double)result[type, ratio, 0] / trialCount},";
+            }
+
+            for (int type = 2; type < 6; type++)
+            {
+                str += $"\n";
+                for (int ratio = 0; ratio < ratioNum; ratio++)
+                    str += $",{minRatio + ratioInterval * ratio}";
+
+                for (int step = 0; step < timeoutLimit + 1; step++)
                 {
-                    sw.WriteLine(names[i]);
-                    sw.Write("fault ratio,timeout,fault,");
-                    for (int j = 0; j < dim * 2 + 2; j++) sw.Write("{0},", j);
-                    sw.WriteLine();
-                    for (int j = 0; j < 20; j++)
+                    str += $"\n{step + 1},";
+                    for (int ratio = 0; ratio < ratioNum; ratio++)
                     {
-                        sw.Write("{0}%,", j + 1);
-                        for (int k = 0; k < dim * 2 + 2; k++)
-                        {
-                            sw.Write("{0},", steps[i, j, k]);
-                        }
-                        sw.WriteLine();
+                        str += $"{result[type, ratio, step]},";
                     }
-                    sw.WriteLine();
                 }
             }
-        }*/
+
+            File.AppendAllText(path, str);
+        }
+
+
+        public static void Test171119()
+        {
+            // 実験パラメタ
+            int dim = 15;
+            int timeoutLimit = 20;
+            double minRatio = 0.00;
+            double ratioInterval = 0.01;
+            int ratioNum = 21;
+            int trialCount = 10000;
+
+            // 実験オブジェクト
+            var cq = new CrossedCube(dim);
+            var exp = new Experiment<BinaryNode>(cq, 0);
+
+            // 出力先パス
+            var dir = $"../../Output/CQ_Routing/";
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            var path = dir + $"{DateTime.Now.ToString("yyMMddHHmmss")}_{exp.G.Dimension}_{minRatio}-{ratioNum}.csv";
+
+            // 結果の一時保存先
+            var result = new int[5, ratioNum, timeoutLimit + 1];
+
+            // 実験本体
+            for (int ratio = 0; ratio < ratioNum; ratio++)
+            {
+                exp.FaultRatio = minRatio + ratioInterval * ratio;
+                Console.WriteLine($"> Fault ratio = {exp.FaultRatio:0.00}");
+
+                for (int trial = 0; trial < trialCount; trial++)
+                {
+                    // 進捗の表示
+                    Console.CursorLeft = 4;
+                    Console.Write($"{trial + 1} / {trialCount}");
+
+                    // パラメタの更新
+                    exp.Next();
+
+                    // 距離を計算
+                    int distance = exp.CalcDistance();
+
+                    // ルーティング実験部
+                    var s = new int[]
+                    {
+                        cq.Efe_Routing_NoRandom(exp, timeoutLimit),
+                        cq.Efe_Routing_NoRandom2(exp, timeoutLimit),
+                        exp.Routing_NoRandom(timeoutLimit),
+                        cq.Efe_Routing(exp, timeoutLimit),
+                        exp.Routing(timeoutLimit),
+                    };
+                    for (int type = 0; type < 5; type++)
+                    {
+                        result[type, ratio, s[type] > 0 ? s[type] - distance : timeoutLimit]++;
+                    }
+                }
+                Console.WriteLine();
+            }
+
+            // 出力
+            var str = $"Trials, {trialCount}\n";
+            for (int type = 0; type < 5; type++)
+            {
+                for (int ratio = 0; ratio < ratioNum; ratio++)
+                    str += $",{minRatio + ratioInterval * ratio}";
+
+                for (int step = 0; step < timeoutLimit + 1; step++)
+                {
+                    str += $"\n{step},";
+                    for (int ratio = 0; ratio < ratioNum; ratio++)
+                    {
+                        str += $"{result[type, ratio, step]},";
+                    }
+                }
+                str += $"\n";
+            }
+
+            File.AppendAllText(path, str);
+        }
+
+        // 前方を見つけられる確率
+        // 前方が見つからない場合はランダムで、最短経路で到達できる確率
+        public static void Test180111(int dim)
+        {
+            // 故障率は0.00~0.20まで0.01刻み、0.20~0.90まで0.10刻み
+            List<double> frList = new List<double>();
+            for (int i = 0; i < 20; i++) frList.Add(0.01 * i);
+            for (int i = 0; i < 8; i++) frList.Add(0.20 + 0.1 * i);
+            int seed = 0;
+            int trials = 10000;
+            int timeout = 20;
+
+            var cq = new CrossedCube(dim);
+            var exp = new Experiment<BinaryNode>(cq, seed);
+            var result = new int[2, frList.Count];
+
+
+            Console.WriteLine($"{dim}-dimension, {trials} trials");
+            int b = trials / 100;
+            for (int j = 0; j < frList.Count; j++)
+            {
+                exp.FaultRatio = frList[j];
+
+                Console.Write($"{frList[j]:0.00}...");
+                for (int i = 0; i < trials; i++)
+                {
+                    if (i % b == 0)
+                    {
+                        Console.CursorLeft = 8;
+                        Console.Write($"{i / (double)trials:p0}");
+                    }
+                    exp.Next();
+                    int step;
+                    step = cq.Efe_Routing_NoDetour(exp.SourceNode, exp.DestinationNode, exp.FaultFlags);
+                    if (step > 0) result[0, j]++;
+
+                    step = exp.Routing_NoBackTrack(timeout);
+                    if (step > 0) result[1, j]++;
+                }
+                Console.CursorLeft = 8;
+                Console.Write($"100%\n");
+            }
+
+            // 結果の出力
+            // 出力先パス
+            var dir = $"../../Output/Exp1/";
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            var path = dir + $"{DateTime.Now.ToString("yyMMddHHmmss")}_{exp.G.Dimension}.csv";
+
+            var str = $"Trials, {trials}\n";
+            for (int i = 0; i < frList.Count; i++)
+            {
+                str += $",{frList[i]}";
+            }
+            str += $",\n";
+            for (int i = 0; i < 2; i++)
+            {
+                str += $"case {i}";
+                for (int j = 0; j < frList.Count; j++)
+                {
+                    str += $",{result[i,j]}";
+                }
+                str += $",\n";
+            }
+
+            File.AppendAllText(path, str);
+        }
     }
 }

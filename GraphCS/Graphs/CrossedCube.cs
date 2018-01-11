@@ -235,24 +235,24 @@ namespace GraphCS.Graphs
         /// ランダムでない
         /// </summary>
         /// <returns>ステップ数(タイムアウト:-1)</returns>
-        public int Efe_Routing_NoRandom(BinaryNode node1, BinaryNode node2, bool[] FaultFlags, int timeoutLimit)
+        public int Efe_Routing_NoRandom(Experiment<BinaryNode> exp, int timeoutLimit)
         {
             BinaryNode prev = null;
-            var current = new BinaryNode(node1);
+            var current = new BinaryNode(exp.SourceNode);
             int step = 0;
 
-            while (current != node2)
+            while (current != exp.DestinationNode)
             {
                 if (++step > timeoutLimit) return -1;
 
-                Efe_GetNext(current, node2, out var n1, out var n2);
+                Efe_GetNext(current, exp.DestinationNode, out var n1, out var n2);
 
-                if (!FaultFlags[n1.Addr])
+                if (!exp.FaultFlags[n1.Addr])
                 {
                     prev = current;
                     current = n1;
                 }
-                else if (n2 != null && !FaultFlags[n2.Addr])
+                else if (n2 != null && !exp.FaultFlags[n2.Addr])
                 {
                     prev = current;
                     current = n2;
@@ -261,11 +261,58 @@ namespace GraphCS.Graphs
                 {
                     var q = GetNeighbor(current)
                                 //.FirstOrDefault(x => x != prev && !FaultFlags[x.Addr]);
-                                .Where(x => x != prev && !FaultFlags[x.Addr]);
+                                .Where(x => x != prev && !exp.FaultFlags[x.Addr]);
                     if (q.Any())
                     {
                         prev = current;
                         current = q.ElementAt(0);
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+            }
+            return step;
+        }
+
+        /// <summary>
+        /// Efeのルーティング。
+        /// ランダムでない。
+        /// 迂回時になるべく次元の高い枝を選ぶようにする
+        /// </summary>
+        /// <returns>ステップ数(タイムアウト:-1)</returns>
+        public int Efe_Routing_NoRandom2(Experiment<BinaryNode> exp, int timeoutLimit)
+        {
+            BinaryNode prev = null;
+            var current = new BinaryNode(exp.SourceNode);
+            int step = 0;
+
+            while (current != exp.DestinationNode)
+            {
+                if (++step > timeoutLimit) return -1;
+
+                Efe_GetNext(current, exp.DestinationNode, out var n1, out var n2);
+
+                if (!exp.FaultFlags[n1.Addr])
+                {
+                    prev = current;
+                    current = n1;
+                }
+                else if (n2 != null && !exp.FaultFlags[n2.Addr])
+                {
+                    prev = current;
+                    current = n2;
+                }
+                else
+                {
+                    var q = GetNeighbor(current)
+                            //.FirstOrDefault(x => x != prev && !FaultFlags[x.Addr]);
+                            .Where(x => x != prev && !exp.FaultFlags[x.Addr]);
+                    if (q.Any())
+                    {
+                        prev = current;
+                        current = q.ElementAt(q.Count() - 1);
                     }
                     else
                     {
